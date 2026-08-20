@@ -32,10 +32,25 @@
 데모는 목업 이미지가 아니라 실제로 동작합니다. 캘린더 데모에서 일정을 추가하면 주간보고와 발표 모드에
 바로 반영되고, 인수인계 데모에서는 인계자/인수자 시점을 바꿔가며 권한 차이를 직접 확인할 수 있습니다.
 
-## 실행
+## 실행 방법
+
+### 가장 쉬운 방법 (더블클릭)
+
+1. **Node.js LTS 설치** — https://nodejs.org (한 번만 하면 됩니다)
+2. 이 폴더에서
+   - **Windows**: `start.bat` 더블클릭
+   - **macOS**: `start.command` 더블클릭
+     (처음에 "확인되지 않은 개발자" 경고가 뜨면 파일 우클릭 → 열기)
+   - **Linux**: 터미널에서 `bash start.command`
+3. 잠시 기다리면 브라우저에 http://localhost:5173 이 자동으로 열립니다
+
+처음 실행할 때만 필요한 패키지를 내려받으므로 2~3분 걸립니다. 그다음부터는 몇 초면 열립니다.
+창을 닫거나 `Ctrl+C` 를 누르면 종료됩니다.
+
+### 명령어로 실행
 
 ```bash
-npm install
+npm install        # 처음 한 번만
 npm run dev        # http://localhost:5173
 ```
 
@@ -43,6 +58,18 @@ npm run dev        # http://localhost:5173
 npm run build      # 타입 검사 + 정적 빌드 → dist/
 npm run preview    # 빌드 결과 확인
 ```
+
+### 소스 받기
+
+git이 없다면 GitHub 저장소에서 브랜치를 고른 뒤 **Code → Download ZIP** 으로 받아 압축을 풀면 됩니다.
+
+```bash
+git clone -b claude/vibe-coding-education-program-lgtqes \
+  https://github.com/hong-seok-young/vibe-coding-education.git
+cd vibe-coding-education
+```
+
+> 사내 프록시 환경에서 `npm install` 이 막히는 경우가 있습니다. 그때는 dX팀에 문의하세요.
 
 ## 배포 (Coolify)
 

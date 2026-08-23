@@ -1,5 +1,7 @@
 node_modules/
 dist/
+dist-artifact/
+artifact/
 .env
 .env.local
 *.local

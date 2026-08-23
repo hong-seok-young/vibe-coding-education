@@ -34,7 +34,22 @@
 
 ## 실행 방법
 
-### 가장 쉬운 방법 (더블클릭)
+### 가장 쉬운 방법 (설치 없음)
+
+배포된 링크를 열면 됩니다. 설치도, 다운로드도, 터미널도 필요 없습니다.
+
+> https://claude.ai/code/artifact/5e6c8d27-1bd9-4164-924d-f929cb14bfc4
+
+교육 프로그램 전체(15단계 + 프롬프트 30개 + 동작하는 데모)가 HTML 파일 하나에 들어 있습니다.
+학습 진행 상황은 각자 브라우저에만 저장되므로 여러 명이 같은 링크를 써도 서로 섞이지 않습니다.
+
+같은 파일을 직접 만들어 사내 위키에 첨부하거나 파일 서버에 올리려면:
+
+```bash
+npm run build:artifact     # → artifact/vibe-coding-education.html (약 570 kB, 자립형)
+```
+
+### 내 PC에서 개발 모드로 (더블클릭)
 
 1. **Node.js LTS 설치** — https://nodejs.org (한 번만 하면 됩니다)
 2. 이 폴더에서
@@ -166,6 +181,14 @@ src/
 Vite · React 19 · TypeScript · Tailwind CSS 4 · React Router. 외부 API 호출이나 백엔드가 없는
 정적 앱이라, 사내망 어디에 올려도 그대로 동작합니다. 학습 진행 상황과 테마는 브라우저
 localStorage 에만 저장됩니다.
+
+배포 방식은 세 가지가 있고 같은 소스에서 나옵니다.
+
+| 방식 | 명령 | 쓰는 상황 |
+|---|---|---|
+| 단일 HTML 파일 | `npm run build:artifact` | 링크·첨부로 배포. 서버가 필요 없다 (해시 라우팅) |
+| 정적 파일 묶음 | `npm run build` | nginx 등 웹서버에 올릴 때 (`dist/`) |
+| 컨테이너 | `Dockerfile` | Coolify 자동 배포 |
 
 ## 참고
 

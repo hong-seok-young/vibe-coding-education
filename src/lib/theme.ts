@@ -10,12 +10,19 @@ export function initTheme(): Theme {
   } catch {
     /* noop */
   }
+
+  // 호스트가 테마를 지정한 경우(아티팩트 뷰어 등) 그 값을 먼저 따른다.
+  const hosted = document.documentElement.dataset.theme
+
   const theme: Theme =
     saved === 'light' || saved === 'dark'
       ? saved
-      : window.matchMedia('(prefers-color-scheme: light)').matches
-        ? 'light'
-        : 'dark'
+      : hosted === 'light' || hosted === 'dark'
+        ? hosted
+        : window.matchMedia('(prefers-color-scheme: light)').matches
+          ? 'light'
+          : 'dark'
+
   document.documentElement.classList.toggle('dark', theme === 'dark')
   return theme
 }

@@ -1,0 +1,82 @@
+name: 배포 (GitHub Pages)
+
+# 기본 브랜치에 push 하면 자동으로 빌드해서 배포한다.
+# PR 에서는 배포 없이 빌드·타입검사만 돌려서 깨진 코드가 들어오는 것을 막는다.
+on:
+  push:
+    branches: [claude/vibe-coding-education-program-lgtqes, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write # Pages 배포에 필요
+  id-token: write # 배포 인증 토큰 발급에 필요
+
+# 배포가 겹치면 마지막 것만 살린다. 진행 중인 배포는 취소하지 않는다.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: 빌드
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # package-lock.json 그대로 설치한다 (npm install 과 달리 버전이 바뀌지 않는다)
+      - run: npm ci
+
+      # Pages 설정을 읽어오고, 아직 켜져 있지 않으면 활성화한다.
+      # base_path 를 알아야 하위 경로 배포가 정상 동작한다.
+      - name: Pages 설정
+        id: pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: 빌드 (타입 검사 포함)
+        run: npm run build
+        env:
+          # 예: /vibe-coding-education/  · PR 빌드는 루트로 둔다
+          VITE_BASE: ${{ steps.pages.outputs.base_path || '/' }}
+
+      # GitHub Pages 는 SPA 폴백이 없다. 없는 경로는 404.html 을 주므로
+      # index.html 을 404.html 로 복사해두면 /steps/... 새로고침도 동작한다.
+      - name: SPA 폴백 파일 생성
+        run: cp dist/index.html dist/404.html
+
+      # 링크·첨부로 배포할 단일 HTML 파일도 같이 만들어 둔다 (Actions 산출물로 내려받기 가능)
+      - name: 단일 HTML 파일 빌드
+        run: npm run build:artifact
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: single-file-html
+          path: artifact/vibe-coding-education.html
+          if-no-files-found: error
+
+      - name: Pages 산출물 업로드
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: 배포
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

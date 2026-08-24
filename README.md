@@ -36,18 +36,20 @@
 
 ### 가장 쉬운 방법 (설치 없음)
 
-배포된 링크를 열면 됩니다. 설치도, 다운로드도, 터미널도 필요 없습니다.
+배포된 주소를 열면 됩니다. 설치도, 다운로드도, 터미널도 필요 없습니다.
 
-> https://claude.ai/code/artifact/5e6c8d27-1bd9-4164-924d-f929cb14bfc4
+> **https://hong-seok-young.github.io/vibe-coding-education/**
 
-교육 프로그램 전체(15단계 + 프롬프트 30개 + 동작하는 데모)가 HTML 파일 하나에 들어 있습니다.
-학습 진행 상황은 각자 브라우저에만 저장되므로 여러 명이 같은 링크를 써도 서로 섞이지 않습니다.
+기본 브랜치에 push 하면 GitHub Actions 가 빌드해서 이 주소로 자동 배포합니다.
+학습 진행 상황은 각자 브라우저에만 저장되므로 여러 명이 같은 주소를 써도 서로 섞이지 않습니다.
 
-같은 파일을 직접 만들어 사내 위키에 첨부하거나 파일 서버에 올리려면:
+인터넷 없이 쓰거나 사내 위키에 첨부하려면 파일 하나로 묶을 수도 있습니다.
 
 ```bash
 npm run build:artifact     # → artifact/vibe-coding-education.html (약 570 kB, 자립형)
 ```
+
+이 파일은 Actions 실행 페이지의 산출물(`single-file-html`)에서도 내려받을 수 있습니다.
 
 ### 내 PC에서 개발 모드로 (더블클릭)
 
@@ -86,10 +88,35 @@ cd vibe-coding-education
 
 > 사내 프록시 환경에서 `npm install` 이 막히는 경우가 있습니다. 그때는 dX팀에 문의하세요.
 
-## 배포 (Coolify)
+## 배포
 
-정적 사이트라 컨테이너 하나로 끝납니다. 저장소를 Coolify에 연결하고 빌드 방식을 **Dockerfile**로
-지정하면 됩니다.
+### GitHub Pages (기본 · git push 하면 자동)
+
+`.github/workflows/deploy.yml` 이 기본 브랜치 push 마다 빌드해서 Pages 로 배포합니다.
+PR 에서는 배포 없이 빌드·타입검사만 돌아갑니다.
+
+**최초 1회만 저장소 설정이 필요합니다.** Pages 사이트를 만드는 권한은 워크플로 토큰에 없어서
+이 부분만 사람이 해야 합니다.
+
+> Settings → Pages → Build and deployment → Source: **GitHub Actions**
+
+설정한 뒤 Actions 탭에서 마지막 실행을 **Re-run jobs** 하면 배포됩니다.
+그다음부터는 push 만 하면 자동입니다.
+
+배포 주소: https://hong-seok-young.github.io/vibe-coding-education/
+
+Pages 관련해서 알아둘 것:
+
+- 하위 경로(`/vibe-coding-education/`)로 서빙되므로 빌드 시 `VITE_BASE` 로 그 경로를 넘깁니다.
+  라우터도 `BASE_URL` 을 basename 으로 씁니다.
+- Pages 에는 SPA 폴백이 없어서 `index.html` 을 `404.html` 로 복사합니다.
+  이게 없으면 `/steps/orientation` 직접 진입·새로고침이 404 로 떨어집니다.
+- 저장소가 public 이라 Pages 는 무료입니다. private 으로 바꾸면 유료 플랜이 필요합니다.
+
+### Coolify (사내망에 올릴 때)
+
+사내 데이터를 다루는 도구를 사내 서버에서 돌려야 한다면 이쪽입니다.
+저장소를 Coolify에 연결하고 빌드 방식을 **Dockerfile**로 지정하면 됩니다.
 
 - 컨테이너 포트: `8080` (root가 아닌 사용자로 실행하므로 80이 아니라 8080을 씁니다)
 - 헬스체크 경로: `/healthz`
@@ -186,9 +213,10 @@ localStorage 에만 저장됩니다.
 
 | 방식 | 명령 | 쓰는 상황 |
 |---|---|---|
-| 단일 HTML 파일 | `npm run build:artifact` | 링크·첨부로 배포. 서버가 필요 없다 (해시 라우팅) |
-| 정적 파일 묶음 | `npm run build` | nginx 등 웹서버에 올릴 때 (`dist/`) |
-| 컨테이너 | `Dockerfile` | Coolify 자동 배포 |
+| GitHub Pages | git push (Actions 자동) | 기본. 사내망 제한이 없을 때 |
+| 컨테이너 | `Dockerfile` | Coolify — 사내 서버에서 돌려야 할 때 |
+| 정적 파일 묶음 | `npm run build` | nginx 등 기존 웹서버에 올릴 때 (`dist/`) |
+| 단일 HTML 파일 | `npm run build:artifact` | 서버 없이 첨부·오프라인 배포 (해시 라우팅) |
 
 ## 참고
 

@@ -476,6 +476,10 @@ async function callGoogle(path: string, token: string, init: RequestInit = {}, a
       'DB의 accessToken 컬럼이 암호화된 문자열이다 (평문 아님)',
     ],
     dxNote: 'OAuth 클라이언트 발급과 사내 도메인 제한, 콜백 URL 공개 여부는 dX팀·인프라 협의가 필요합니다.',
+    demo: {
+      kind: 'integrations',
+      hint: '연동이 끝나면 이런 화면이 된다. 계정별 색상, 마지막 동기화 시각, "가져옴/갱신/삭제/실패" 결과 숫자, 토큰이 무효화된 계정의 "재연결 필요" 상태 — 동기화가 조용히 실패하지 않게 만드는 장치들이다.',
+    },
   },
 
   {
@@ -797,6 +801,9 @@ export const icsProvider: CalendarProvider = {
       'ICS URL 입력에 사설 IP 차단(SSRF 방어)이 들어가 있다',
       '새 프로바이더를 추가할 때 손대야 하는 파일이 몇 개인지 말할 수 있다',
     ],
-    demo: { label: '연동 설정 화면 데모', to: '/demo/integrations' },
+    demo: {
+      kind: 'integrations',
+      hint: '읽기 전용 캘린더는 내보내기 토글이 잠기고 이유가 표시된다. 화면이 프로바이더의 능력(capability) 값만 보고 그려지기 때문이다. 동기화 버튼을 눌러 결과 숫자가 어떻게 표시되는지도 보라.',
+    },
   },
 ]

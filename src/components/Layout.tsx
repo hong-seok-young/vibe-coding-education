@@ -40,7 +40,6 @@ export function Layout() {
 
         <nav className="ml-auto flex items-center gap-1">
           <TopLink to="/" label="개요" exact />
-          <TopLink to="/demo/calendar" label="완성 데모" match="/demo" />
           <TopLink to="/prompts" label="프롬프트 모음" />
         </nav>
 
@@ -108,33 +107,6 @@ function Curriculum({ onNavigate, currentPath }: { onNavigate: () => void; curre
 
   return (
     <nav className="space-y-5">
-      <div>
-        <div className="text-muted mb-2 px-2 text-[10.5px] font-semibold tracking-wider">완성 데모</div>
-        <ul className="space-y-0.5">
-          {[
-            { to: '/demo/calendar', label: '캘린더' },
-            { to: '/demo/weekly', label: '주간보고' },
-            { to: '/demo/present', label: '발표 모드' },
-            { to: '/demo/handover', label: '인수인계' },
-            { to: '/demo/integrations', label: '캘린더 연동 설정' },
-          ].map((d) => (
-            <li key={d.to}>
-              <NavLink
-                to={d.to}
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  'flex items-center gap-2 rounded-md px-2 py-1.5 text-[12.5px] transition ' +
-                  (isActive ? 'bg-brand-500/15 text-brand-500 font-medium' : 'text-muted hover:surface-2')
-                }
-              >
-                <span className="text-[10px]">▸</span>
-                {d.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       {parts.map((part) => (
         <div key={part}>
           <div className="text-muted mb-2 px-2 text-[10.5px] font-semibold tracking-wider">{part}</div>
@@ -142,6 +114,7 @@ function Curriculum({ onNavigate, currentPath }: { onNavigate: () => void; curre
             {stepsOf(part).map((s) => {
               const active = currentPath === `/steps/${s.slug}`
               const done = isDone(s.id)
+              const demoActive = currentPath === `/steps/${s.slug}/demo`
               return (
                 <li key={s.id}>
                   <NavLink
@@ -166,6 +139,23 @@ function Curriculum({ onNavigate, currentPath }: { onNavigate: () => void; curre
                     </span>
                     <span className={done && !active ? 'text-muted' : ''}>{s.title}</span>
                   </NavLink>
+
+                  {/* 이 단계에서 만들 결과물의 동작 데모 — 프롬프트를 치기 전에 본다 */}
+                  {s.demo && (
+                    <NavLink
+                      to={`/steps/${s.slug}/demo`}
+                      onClick={onNavigate}
+                      className={
+                        'ml-6 flex items-center gap-1.5 rounded-md px-2 py-1 text-[11.5px] transition ' +
+                        (demoActive
+                          ? 'bg-brand-500/15 text-brand-500 font-medium'
+                          : 'text-muted hover:surface-2 hover:text-brand-500')
+                      }
+                    >
+                      <span className="text-[9px]">▶</span>
+                      완성 데모
+                    </NavLink>
+                  )}
                 </li>
               )
             })}

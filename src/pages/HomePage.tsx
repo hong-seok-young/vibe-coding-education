@@ -33,10 +33,10 @@ export function HomePage() {
             STEP 00부터 시작하기
           </Link>
           <Link
-            to="/demo/calendar"
+            to="/steps/requirements/demo"
             className="border-hair hover:border-brand-500/60 rounded-lg border px-4 py-2.5 text-[13.5px] font-semibold transition"
           >
-            완성된 결과물 먼저 보기
+            ▶ 완성 결과물 미리 보기
           </Link>
           <Link
             to="/prompts"
@@ -52,13 +52,13 @@ export function HomePage() {
         {[
           {
             n: '01',
-            t: '프롬프트를 복사한다',
-            d: '각 스텝에는 그대로 붙여넣을 수 있는 프롬프트가 있다. AI 대화창(Claude Code / Cursor / 사내 AI)에 붙여넣고 실행한다.',
+            t: '완성 데모를 먼저 본다',
+            d: '각 단계 안에 그 단계에서 만들 결과물이 동작하는 상태로 들어 있다. 무엇을 만드는지 눈으로 확인한 뒤 시작한다.',
           },
           {
             n: '02',
-            t: '기다리기 싫으면 샘플을 본다',
-            d: '프롬프트마다 실행하면 나올 결과물을 미리 넣어 두었다. AI 응답을 기다리지 않고 샘플만 읽어도 흐름을 이해할 수 있다.',
+            t: '프롬프트를 복사해 AI에게 시킨다',
+            d: '그대로 붙여넣을 수 있는 프롬프트가 단계마다 있다. 기다리기 싫으면 "샘플 결과물" 탭에 결과를 미리 넣어 두었다.',
           },
           {
             n: '03',
@@ -79,11 +79,11 @@ export function HomePage() {
         <h2 className="mb-3 text-[15px] font-semibold tracking-tight">이 과정에서 만드는 것</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {[
-            { to: '/demo/calendar', t: '캘린더', d: '월/주 뷰, 빠른 입력, 드래그 이동, 카테고리·공개범위', tag: 'STEP 04–05' },
-            { to: '/demo/integrations', t: '외부 캘린더 연동', d: '구글 양방향, 네이버·ICS 읽기 전용, 증분 동기화', tag: 'STEP 06–07' },
-            { to: '/demo/weekly', t: '주간보고', d: '캘린더 자동 집계, 수정 보존, 시간 배분 통계', tag: 'STEP 08' },
-            { to: '/demo/present', t: '발표 모드', d: '주간회의용 전체화면, 키보드 조작, 회의록 복사', tag: 'STEP 09' },
-            { to: '/demo/handover', t: '인수인계', d: '부재 기간 자동 수집, 요청→확인→완료, 감사 로그', tag: 'STEP 10' },
+            { to: '/steps/calendar-ui/demo', t: '캘린더', d: '월/주 뷰, 빠른 입력, 드래그 이동, 카테고리·공개범위', tag: 'STEP 04–05' },
+            { to: '/steps/google-calendar/demo', t: '외부 캘린더 연동', d: '구글 양방향, 네이버·ICS 읽기 전용, 증분 동기화', tag: 'STEP 06–07' },
+            { to: '/steps/weekly-report/demo', t: '주간보고', d: '캘린더 자동 집계, 수정 보존, 시간 배분 통계', tag: 'STEP 08' },
+            { to: '/steps/present-mode/demo', t: '발표 모드', d: '주간회의용 전체화면, 키보드 조작, 회의록 복사', tag: 'STEP 09' },
+            { to: '/steps/handover/demo', t: '인수인계', d: '부재 기간 자동 수집, 요청→확인→완료, 감사 로그', tag: 'STEP 10' },
             { to: '/steps/works-ai', t: 'AI · 인증 · 배포', d: '웍스 AI 연동, RADIUS 로그인, Coolify 배포', tag: 'STEP 11–13' },
           ].map((f) => (
             <Link
@@ -97,7 +97,7 @@ export function HomePage() {
               </div>
               <p className="text-muted mt-1.5 text-[12.5px] leading-6">{f.d}</p>
               <span className="text-brand-500 mt-2 inline-block text-[12px] opacity-0 transition group-hover:opacity-100">
-                열어보기 →
+                해당 단계로 →
               </span>
             </Link>
           ))}
@@ -152,6 +152,11 @@ export function HomePage() {
                         </div>
                         <p className="text-muted mt-0.5 truncate text-[12px]">{s.tagline}</p>
                       </div>
+                      {s.demo && (
+                        <span className="bg-brand-500/15 text-brand-500 shrink-0 rounded px-1.5 py-0.5 text-[10.5px] font-semibold">
+                          ▶ 데모
+                        </span>
+                      )}
                       <span className="text-muted shrink-0 text-[11.5px]">{s.duration}</span>
                       <span className="text-muted shrink-0 text-[11.5px]">프롬프트 {s.prompts.length}</span>
                     </Link>

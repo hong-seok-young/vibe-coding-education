@@ -10,6 +10,15 @@ export type Block =
   | { type: 'flow'; title?: string; steps: string[] }
   | { type: 'files'; title?: string; tree: string }
 
+/** 단계 안에 붙는 완성 데모 */
+export type DemoKind = 'calendar' | 'weekly' | 'present' | 'handover' | 'integrations'
+
+export interface StepDemo {
+  kind: DemoKind
+  /** 데모 탭에 붙는 한 줄 설명 — 이 단계에서 무엇을 보라는 것인지 */
+  hint: string
+}
+
 /** 학습자가 AI에게 복사·붙여넣기 할 프롬프트 */
 export interface Prompt {
   id: string
@@ -44,6 +53,6 @@ export interface Step {
   checklist: string[]
   /** dX팀에 넘겨도 되는 부분 */
   dxNote?: string
-  /** 완성 예시 데모 링크 */
-  demo?: { label: string; to: string }
+  /** 이 단계에서 만들 결과물의 동작하는 데모. 프롬프트를 치기 전에 먼저 본다. */
+  demo?: StepDemo
 }

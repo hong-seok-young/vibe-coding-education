@@ -17,6 +17,11 @@ export function findStep(slug: string) {
   return steps.find((s) => s.slug === slug)
 }
 
+/** 어떤 데모가 어느 단계에 붙어 있는지 */
+export function stepWithDemo(kind: string) {
+  return steps.find((s) => s.demo?.kind === kind)
+}
+
 export function neighbors(slug: string) {
   const i = steps.findIndex((s) => s.slug === slug)
   return { prev: i > 0 ? steps[i - 1] : undefined, next: i < steps.length - 1 ? steps[i + 1] : undefined }
@@ -25,4 +30,4 @@ export function neighbors(slug: string) {
 /** 전체 프롬프트 개수 — 홈 화면 통계용 */
 export const totalPrompts = steps.reduce((n, s) => n + s.prompts.length, 0)
 
-export type { Step } from './types'
+export type { Step, DemoKind, StepDemo } from './types'

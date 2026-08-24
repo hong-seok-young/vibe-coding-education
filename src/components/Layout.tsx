@@ -114,7 +114,6 @@ function Curriculum({ onNavigate, currentPath }: { onNavigate: () => void; curre
             {stepsOf(part).map((s) => {
               const active = currentPath === `/steps/${s.slug}`
               const done = isDone(s.id)
-              const demoActive = currentPath === `/steps/${s.slug}/demo`
               return (
                 <li key={s.id}>
                   <NavLink
@@ -137,25 +136,19 @@ function Curriculum({ onNavigate, currentPath }: { onNavigate: () => void; curre
                     >
                       {done ? '✓' : s.id}
                     </span>
-                    <span className={done && !active ? 'text-muted' : ''}>{s.title}</span>
+                    <span className={'min-w-0 flex-1 ' + (done && !active ? 'text-muted' : '')}>
+                      {s.title}
+                    </span>
+                    {/* 만져볼 수 있는 단계 표시 — 데모는 1번 탭 안에 있다 */}
+                    {s.demo && (
+                      <span
+                        title="직접 만져보는 데모가 있는 단계"
+                        className={'mt-0.5 shrink-0 text-[9px] ' + (active ? 'text-brand-500' : 'text-muted')}
+                      >
+                        ▶
+                      </span>
+                    )}
                   </NavLink>
-
-                  {/* 이 단계에서 만들 결과물의 동작 데모 — 프롬프트를 치기 전에 본다 */}
-                  {s.demo && (
-                    <NavLink
-                      to={`/steps/${s.slug}/demo`}
-                      onClick={onNavigate}
-                      className={
-                        'ml-6 flex items-center gap-1.5 rounded-md px-2 py-1 text-[11.5px] transition ' +
-                        (demoActive
-                          ? 'bg-brand-500/15 text-brand-500 font-medium'
-                          : 'text-muted hover:surface-2 hover:text-brand-500')
-                      }
-                    >
-                      <span className="text-[9px]">▶</span>
-                      완성 데모
-                    </NavLink>
-                  )}
                 </li>
               )
             })}

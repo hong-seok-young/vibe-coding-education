@@ -37,6 +37,10 @@ jobs:
       # package-lock.json 그대로 설치한다 (npm install 과 달리 버전이 바뀌지 않는다)
       - run: npm ci
 
+      # 구글 연동 로직 단위 검증 (요청 파라미터 · 페이지 처리 · 오류 분기)
+      - name: 테스트
+        run: npm test
+
       - name: 빌드 (타입 검사 포함)
         run: npm run build
         env:

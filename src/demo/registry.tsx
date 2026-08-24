@@ -37,8 +37,7 @@ export const DEMOS: Record<DemoKind, DemoMeta> = {
   },
   'google-live': {
     title: '실제 구글 캘린더 연동 테스트',
-    controls:
-      '본인 구글 계정으로 직접 연결해 동기화를 확인하는 화면이다. 구글 클라우드 콘솔에서 클라이언트 ID 하나만 만들면 된다 (준비 절차 접힘 상자 참고).',
+    // 이 데모는 화면 안에 "지금 할 일" 안내가 있으므로 상단 조작법 줄을 두지 않는다
     render: () => <GoogleLiveDemo />,
   },
   integrations: {

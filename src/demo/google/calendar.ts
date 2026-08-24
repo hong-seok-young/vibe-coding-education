@@ -8,13 +8,14 @@
 const BASE = 'https://www.googleapis.com/calendar/v3'
 
 export class GoogleApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-    /** 사용자에게 보여줄 다음 행동 */
-    public remedy: string,
-  ) {
+  status: number
+  /** 사용자에게 보여줄 다음 행동 */
+  remedy: string
+
+  constructor(status: number, message: string, remedy: string) {
     super(message)
+    this.status = status
+    this.remedy = remedy
   }
 }
 

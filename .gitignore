@@ -7,3 +7,5 @@ artifact/
 *.local
 .DS_Store
 .vite/
+tsconfig.tsbuildinfo
+*.tsbuildinfo

@@ -11,7 +11,14 @@ export type Block =
   | { type: 'files'; title?: string; tree: string }
 
 /** 단계 안에 붙는 완성 데모 */
-export type DemoKind = 'calendar' | 'weekly' | 'present' | 'handover' | 'integrations'
+export type DemoKind =
+  | 'calendar'
+  | 'weekly'
+  | 'present'
+  | 'handover'
+  | 'integrations'
+  /** 실제 구글 캘린더에 붙어서 동기화를 직접 확인하는 데모 */
+  | 'google-live'
 
 export interface StepDemo {
   kind: DemoKind

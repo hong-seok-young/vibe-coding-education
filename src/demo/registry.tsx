@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { DemoKind } from '../content/types'
 import { CalendarDemo } from './CalendarDemo'
+import { GoogleLiveDemo } from './GoogleLiveDemo'
 import { HandoverDemo } from './HandoverDemo'
 import { IntegrationsDemo } from './IntegrationsDemo'
 import { PresentDemo } from './PresentDemo'
@@ -33,6 +34,12 @@ export const DEMOS: Record<DemoKind, DemoMeta> = {
     title: '인수인계',
     controls: '"지금 보는 사람"을 바꾸면 인계자·인수자 권한 차이를 확인할 수 있다.',
     render: () => <HandoverDemo />,
+  },
+  'google-live': {
+    title: '실제 구글 캘린더 연동 테스트',
+    controls:
+      '본인 구글 계정으로 직접 연결해 동기화를 확인하는 화면이다. 구글 클라우드 콘솔에서 클라이언트 ID 하나만 만들면 된다 (준비 절차 접힘 상자 참고).',
+    render: () => <GoogleLiveDemo />,
   },
   integrations: {
     title: '캘린더 연동 설정',

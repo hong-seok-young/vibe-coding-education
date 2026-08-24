@@ -43,6 +43,11 @@ jobs:
           # Pages 주소는 https://<계정>.github.io/<저장소>/ 이므로 하위 경로를 알려준다.
           # PR 빌드는 배포하지 않으니 루트로 둔다.
           VITE_BASE: ${{ github.event_name == 'pull_request' && '/' || format('/{0}/', github.event.repository.name) }}
+          # STEP 06 실연동 데모에서 미리 채워줄 구글 OAuth 클라이언트 ID (선택).
+          # 클라이언트 ID는 비밀값이 아니라 브라우저에 노출되는 공개 값이므로 secret 이 아니라 variable 로 둔다.
+          # 설정하지 않으면 학습자가 화면에서 직접 입력한다.
+          # Settings → Secrets and variables → Actions → Variables → GOOGLE_CLIENT_ID
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
 
       # Pages 에는 SPA 폴백이 없다. 없는 경로에는 404.html 을 주므로
       # index.html 을 404.html 로 복사해두면 /steps/... 직접 진입·새로고침도 동작한다.

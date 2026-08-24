@@ -26,6 +26,14 @@ export interface DemoEvent {
   visibility: 'TEAM' | 'PRIVATE'
   source: 'LOCAL' | 'GOOGLE' | 'ICS'
   note?: string
+  /**
+   * 외부 캘린더 일정의 ID. 우리 일정과 외부 일정을 짝지어 두는 값으로,
+   * 같은 일정이 동기화할 때마다 새로 생기는 것을 막는다.
+   * (STEP 03 의 ExternalEventLink 테이블이 하는 일을 데모에서 축약한 것)
+   */
+  externalId?: string
+  /** 외부에서 준 변경 지문. 값이 같으면 내용이 안 바뀐 것으로 보고 건너뛴다 */
+  etag?: string
 }
 
 export interface DemoUser {

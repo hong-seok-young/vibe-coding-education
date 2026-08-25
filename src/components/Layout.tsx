@@ -42,6 +42,7 @@ export function Layout() {
           <TopLink to="/" label="개요" exact />
           <TopLink to="/prompts" label="프롬프트 모음" />
           <TopLink to="/guides" label="안내서" />
+          <TopLink to="/download" label="파일 받기" />
         </nav>
 
         <div className="text-muted hidden items-center gap-2 text-[11.5px] md:flex">

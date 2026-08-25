@@ -4,6 +4,7 @@ export const part3: Step[] = [
   {
     id: '08',
     slug: 'weekly-report',
+    guides: ['edit-html-with-ai'],
     part: 'PART 3 · 업무 활용',
     title: '주간보고 자동 생성',
     tagline: '캘린더에 쌓인 기록이 금요일에 보고서가 되는 구조',

@@ -7,6 +7,8 @@ import { findStep, neighbors, steps } from '../content'
 import { findGuide } from '../content/guides'
 import type { Step } from '../content'
 import { DEMOS } from '../demo/registry'
+import { DownloadCard } from '../components/DownloadCard'
+import { downloadForDemo } from '../download'
 import { useCopy } from '../lib/useCopy'
 import { useProgress } from '../lib/progress'
 
@@ -233,6 +235,8 @@ function StartTab({ step, onNext }: { step: Step; onNext: () => void }) {
   const { copied, copy } = useCopy()
   const allPrompts = step.prompts.map((p) => `# ${p.label}\n\n${p.body}`).join('\n\n---\n\n')
   const demo = step.demo ? DEMOS[step.demo.kind] : null
+  // 이 단계의 데모를 파일로 받아 갈 수 있으면 데모 아래에 내려받기 카드를 붙인다
+  const download = step.demo ? downloadForDemo(step.demo.kind) : undefined
   const stepGuides = (step.guides ?? []).map(findGuide).filter((g) => !!g)
 
   return (
@@ -340,6 +344,11 @@ function StartTab({ step, onNext }: { step: Step; onNext: () => void }) {
             </p>
           )}
           <div className="border-hair min-h-[480px] border-b">{demo.render()}</div>
+          {download && (
+            <div className="mx-auto w-full max-w-[860px] px-5 pt-5">
+              <DownloadCard app={download} dense />
+            </div>
+          )}
         </div>
       )}
     </div>

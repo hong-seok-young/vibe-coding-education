@@ -4,6 +4,7 @@ import { stepWithDemo } from './content'
 import { DemoProvider } from './demo/store'
 import { GuidePage } from './pages/GuidePage'
 import { GuidesPage } from './pages/GuidesPage'
+import { DownloadsPage } from './pages/DownloadsPage'
 import { HomePage } from './pages/HomePage'
 import { PromptsPage } from './pages/PromptsPage'
 import { StepPage } from './pages/StepPage'
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/prompts" element={<PromptsPage />} />
           <Route path="/guides" element={<GuidesPage />} />
           <Route path="/guides/:id" element={<GuidePage />} />
+          <Route path="/download" element={<DownloadsPage />} />
           {/* 데모는 각 단계 안으로 옮겼다. 예전 /demo/* 링크는 해당 단계로 보낸다. */}
           <Route path="/demo" element={<Navigate to="/" replace />} />
           <Route path="/demo/:section" element={<DemoRedirect />} />

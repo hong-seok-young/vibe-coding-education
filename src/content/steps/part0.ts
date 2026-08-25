@@ -4,7 +4,7 @@ export const part0: Step[] = [
   {
     id: '00',
     slug: 'orientation',
-    guides: ['ai-tool', 'local-run'],
+    guides: ['ai-tool', 'local-run', 'edit-html-with-ai'],
     part: 'PART 0 · 준비',
     title: '바이브 코딩 오리엔테이션',
     tagline: '코드를 못 짜도 소프트웨어를 만들 수 있는 이유와, 그 한계까지',

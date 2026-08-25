@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>__TITLE__</title>
+<style>
+/* ────────────────────────────────────────────────────────────
+   1) 색·간격 값. 여기만 바꾸면 앱 전체 톤이 바뀐다.
+   ──────────────────────────────────────────────────────────── */
+:root {
+  --page:#f7f8fa; --surface:#fff; --surface-2:#eceef2; --border:#d9dde4;
+  --text:#14181f; --muted:#5a6373; --brand:#4a6ff0; --danger:#d84a4a;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page:#0d1015; --surface:#14181f; --surface-2:#1d222c; --border:#262c38;
+    --text:#f7f8fa; --muted:#7e8797; --brand:#6b91fb; --danger:#f07a7a;
+  }
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; background:var(--page); color:var(--text);
+  font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:14px; line-height:1.6;
+}
+button, select, input, textarea { font:inherit; color:inherit; }
+button { cursor:pointer; }
+h1,h2,h3 { margin:0; font-weight:650; }
+
+/* 공통 부품 */
+.wrap { max-width:1100px; margin:0 auto; padding:0 16px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); }
+.btn {
+  border:1px solid var(--border); background:var(--surface); border-radius:8px;
+  padding:6px 12px; font-size:13px;
+}
+.btn:hover { border-color:var(--brand); color:var(--brand); }
+.btn-primary { background:var(--brand); border-color:var(--brand); color:#fff; }
+.btn-primary:hover { opacity:.9; color:#fff; }
+.btn-danger { color:var(--danger); border-color:var(--border); }
+.muted { color:var(--muted); }
+.row { display:flex; align-items:center; gap:8px; }
+.spacer { flex:1; }
+.pill { display:inline-block; padding:1px 7px; border-radius:999px; font-size:11.5px; }
+
+/* 상단 */
+header { border-bottom:1px solid var(--border); background:var(--surface); }
+header .wrap { display:flex; align-items:center; gap:12px; height:52px; }
+header h1 { font-size:15px; }
+nav { display:flex; gap:4px; }
+nav button {
+  border:0; background:transparent; padding:6px 12px; border-radius:8px;
+  font-size:13px; color:var(--muted);
+}
+nav button[aria-current="true"] { background:var(--surface-2); color:var(--text); font-weight:600; }
+
+main { padding:20px 0 60px; }
+.toolbar { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+
+/* 캘린더 — 월 보기 */
+.month { display:grid; grid-template-columns:repeat(7,1fr); border-top:1px solid var(--border); }
+.month .dow {
+  padding:6px 8px; font-size:12px; color:var(--muted); text-align:center;
+  border-bottom:1px solid var(--border); background:var(--surface-2);
+}
+.month .cell {
+  min-height:104px; border-right:1px solid var(--border); border-bottom:1px solid var(--border);
+  padding:4px; background:var(--surface); text-align:left;
+}
+.month .cell:nth-child(7n+1) { border-left:1px solid var(--border); }
+.month .cell.dim { background:var(--page); }
+.month .cell .num { font-size:12px; color:var(--muted); padding:2px 4px; }
+.month .cell.today .num { background:var(--brand); color:#fff; border-radius:999px; padding:2px 6px; }
+.chip {
+  display:block; width:100%; text-align:left; border:0; border-radius:5px;
+  padding:2px 6px; margin-bottom:2px; font-size:11.5px; color:#fff;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+/* 캘린더 — 주 보기 */
+.week { display:grid; grid-template-columns:52px repeat(7,1fr); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.week .head { background:var(--surface-2); border-bottom:1px solid var(--border); padding:6px 4px; text-align:center; font-size:12px; }
+.week .times { border-right:1px solid var(--border); }
+.week .hour { height:44px; border-bottom:1px solid var(--border); font-size:11px; color:var(--muted); padding:2px 4px; }
+.week .col { position:relative; border-right:1px solid var(--border); background:var(--surface); }
+.week .slot { height:44px; border-bottom:1px solid var(--border); }
+.week .ev {
+  position:absolute; border-radius:5px; color:#fff; font-size:11px; padding:2px 5px;
+  overflow:hidden; border:1px solid rgba(255,255,255,.35); text-align:left;
+}
+
+/* 주간보고 */
+.bar { display:flex; height:10px; border-radius:999px; overflow:hidden; background:var(--surface-2); }
+.report-item { display:flex; gap:8px; padding:5px 0; border-bottom:1px dashed var(--border); }
+textarea { width:100%; min-height:78px; border:1px solid var(--border); border-radius:8px; padding:8px; background:var(--surface); resize:vertical; }
+
+/* 발표 모드 */
+.present { min-height:420px; padding:28px; }
+.present h2 { font-size:26px; }
+.present li { font-size:16px; padding:3px 0; }
+
+/* 인수인계 */
+.hi { padding:10px 12px; border-bottom:1px solid var(--border); }
+.hi:last-child { border-bottom:0; }
+
+/* 모달 */
+.backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; padding:16px; z-index:50; }
+.modal { background:var(--surface); border-radius:12px; border:1px solid var(--border); width:100%; max-width:420px; padding:18px; }
+.field { margin-bottom:10px; }
+.field label { display:block; font-size:12px; color:var(--muted); margin-bottom:3px; }
+.field input, .field select { width:100%; padding:7px 9px; border:1px solid var(--border); border-radius:8px; background:var(--page); }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+</style>
+</head>
+<body>
+
+<!--
+  ────────────────────────────────────────────────────────────
+  __TITLE__
+
+  이 파일 하나가 앱 전체입니다. 서버도, 설치도 필요 없습니다.
+  더블클릭해서 브라우저로 열면 바로 동작하고, 입력한 내용은
+  브라우저 저장소(localStorage)에 남습니다.
+
+  ■ 이 파일로 실습하는 법
+    1. 이 파일을 AI 채팅창에 첨부합니다.
+    2. "이 HTML 파일에서 ○○ 기능을 추가/수정해줘. 파일 하나로 유지해줘." 라고 씁니다.
+    3. AI가 준 파일을 받아서 다시 브라우저로 열어 확인합니다.
+
+  ■ 코드 구조 (아래 <script> 안)
+    1) 데이터        - 분류·사용자·초기 일정
+    2) 날짜 도구      - 주 시작, 날짜 포맷 같은 잔 계산
+    3) 저장          - localStorage 읽기/쓰기
+    4) 집계          - 일정 → 주간보고 항목으로 묶는 규칙
+    5) 화면          - 탭별로 화면을 그리는 함수들
+    6) 시작          - 첫 그리기와 키보드 단축키
+  ────────────────────────────────────────────────────────────
+-->
+
+<header>
+  <div class="wrap">
+    <h1>__TITLE__</h1>
+    <nav id="tabs"></nav>
+    <div class="spacer"></div>
+    <button class="btn" id="reset">데이터 초기화</button>
+  </div>
+</header>
+
+<main><div class="wrap" id="view"></div></main>
+<div id="modal-root"></div>
+
+<script>
+'use strict'
+
+/* ════════════════════════════════════════════════════════════
+   1) 데이터
+   ════════════════════════════════════════════════════════════ */
+
+/** 일정 분류. 여기에 한 줄 추가하면 캘린더·주간보고에 자동으로 반영된다. */
+const CATEGORIES = [
+  { id: 'dev',     name: '개발', color: '#4a6ff0' },
+  { id: 'meet',    name: '회의', color: '#e0793a' },
+  { id: 'support', name: '지원', color: '#2fa37a' },
+  { id: 'edu',     name: '교육', color: '#8b5cf6' },
+  { id: 'etc',     name: '기타', color: '#78839a' },
+]
+const catOf = (id) => CATEGORIES.find((c) => c.id === id) || CATEGORIES[4]
+
+/** 나 + 같은 팀 사람들. 발표 모드에서 순서대로 넘어간다. */
+const ME = { id: 'u1', name: '홍길동', dept: 'dX팀' }
+const TEAM = [
+  { id: 'u2', name: '김철수', dept: 'dX팀' },
+  { id: 'u3', name: '이영희', dept: 'dX팀' },
+  { id: 'u4', name: '박민수', dept: 'dX팀' },
+]
+
+/** 어떤 화면을 켤지. 다운로드할 때 정해진다. */
+const ENABLED_TABS = __TABS__
+
+/* ════════════════════════════════════════════════════════════
+   2) 날짜 도구
+   ════════════════════════════════════════════════════════════ */
+
+const DAY = 86400000
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x }
+/** 그 날짜가 속한 주의 월요일 00:00 */
+function startOfWeek(d) {
+  const x = new Date(d); x.setHours(0, 0, 0, 0)
+  const dow = (x.getDay() + 6) % 7   // 월=0 … 일=6
+  return addDays(x, -dow)
+}
+const sameDay = (a, b) => a.toDateString() === b.toDateString()
+const pad = (n) => String(n).padStart(2, '0')
+const ymd = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+const hm = (d) => pad(d.getHours()) + ':' + pad(d.getMinutes())
+const minutesBetween = (a, b) => Math.max(0, Math.round((b - a) / 60000))
+function fmtDuration(min) {
+  const h = Math.floor(min / 60), m = min % 60
+  if (h && m) return h + '시간 ' + m + '분'
+  if (h) return h + '시간'
+  return m + '분'
+}
+const DOW = ['월', '화', '수', '목', '금', '토', '일']
+
+/* ════════════════════════════════════════════════════════════
+   3) 저장 — 브라우저 localStorage 하나에 모아 둔다
+   ════════════════════════════════════════════════════════════ */
+
+const KEY = 'work-manager-v1'
+
+/** 처음 열었을 때 채워 넣는 예시 일정 (이번 주 기준으로 만들어진다) */
+function seedEvents() {
+  // [요일(월=0), 시작시각, 소요(분), 제목, 분류, 비공개?]
+  const seeds = [
+    [0, 9.5, 30, '주간 스크럼', 'meet'],
+    [0, 10, 180, '캘린더 월 뷰 구현', 'dev'],
+    [0, 14, 120, '캘린더 주 뷰 겹침 처리', 'dev'],
+    [0, 16.5, 60, 'dX팀 정기회의', 'meet'],
+    [1, 9.5, 30, '주간 스크럼', 'meet'],
+    [1, 10, 150, '일정 저장 기능', 'dev'],
+    [1, 13.5, 90, '캘린더 연동 정책 논의', 'meet'],
+    [1, 15.5, 90, '타 팀 데이터 추출 지원', 'support'],
+    [2, 9.5, 30, '주간 스크럼', 'meet'],
+    [2, 10, 120, '구글 연동 붙이기', 'dev'],
+    [2, 13, 60, '치과', 'etc', true],
+    [2, 14.5, 120, '증분 동기화 구현', 'dev'],
+    [3, 9.5, 30, '주간 스크럼', 'meet'],
+    [3, 10, 120, '동기화 오류 잡기', 'dev'],
+    [3, 13.5, 120, '분기 계획 리뷰', 'meet'],
+    [3, 16, 60, '사용자 문의 대응', 'support'],
+    [4, 9.5, 30, '주간 스크럼', 'meet'],
+    [4, 10, 120, '주간보고 집계 로직', 'dev'],
+    [4, 13, 120, '사내 보안 교육', 'edu'],
+    [4, 15.5, 90, '월말 정산 자료 정리', 'etc'],
+  ]
+  const base = startOfWeek(new Date())
+  return seeds.map(([dow, sh, mins, title, categoryId, priv], i) => {
+    const start = addDays(base, dow)
+    start.setHours(Math.floor(sh), Math.round((sh % 1) * 60), 0, 0)
+    return {
+      id: 'e' + i,
+      title,
+      start: start.toISOString(),
+      end: new Date(start.getTime() + mins * 60000).toISOString(),
+      allDay: false,
+      categoryId,
+      visibility: priv ? 'PRIVATE' : 'TEAM',
+    }
+  })
+}
+
+function seedHandover() {
+  const from = addDays(startOfWeek(new Date()), 9)
+  return {
+    toUserId: 'u2',
+    absentFrom: ymd(from),
+    absentTo: ymd(addDays(from, 2)),
+    reason: '휴가',
+    items: [
+      { id: 'h1', title: 'A 고객 정기 점검', detail: '8월 점검 항목 정리 완료 / 수요일 14시 점검 미팅 대신 참석 / 막히면 010-0000-0000', status: 'TODO', acked: false },
+      { id: 'h2', title: 'B 서비스 배포 확인', detail: '스테이징 검증 완료 / 금요일 오전 운영 배포 후 에러 로그 확인 / 롤백 절차는 위키 참고', status: 'TODO', acked: false },
+      { id: 'h3', title: '월말 정산 자료 정리', detail: 'raw 데이터 수집 완료 / 금요일까지 정산 시트 업데이트 / 양식은 공유 드라이브', status: 'TODO', acked: false },
+      { id: 'h4', title: '주간 스크럼 참석 대행', detail: '진행 중인 캘린더 앱 개발 진척만 공유해주면 됩니다.', status: 'TODO', acked: false },
+    ],
+  }
+}
+
+/** 저장된 전체 상태 */
+let state = load()
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY)
+    if (raw) {
+      const s = JSON.parse(raw)
+      if (s && Array.isArray(s.events)) {
+        return { events: s.events, handover: s.handover || seedHandover(), notes: s.notes || {} }
+      }
+    }
+  } catch (e) { /* 저장소를 못 읽으면 새로 만든다 */ }
+  return { events: seedEvents(), handover: seedHandover(), notes: {} }
+}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)) }
+  catch (e) { console.warn('저장 실패', e) }
+}
+
+/** 일정은 저장할 때 문자열이므로 쓸 때 Date 로 되돌린다 */
+const asDate = (e) => ({ ...e, start: new Date(e.start), end: new Date(e.end) })
+const events = () => state.events.map(asDate).sort((a, b) => a.start - b.start)
+
+/* ════════════════════════════════════════════════════════════
+   4) 집계 — 일정을 주간보고 항목으로 묶는 규칙
+   이 함수만 고치면 보고서 문장이 통째로 바뀐다.
+   ════════════════════════════════════════════════════════════ */
+
+/** 같은 분류 + 같은 제목이면 한 줄로 합치고, 2회 이상이면 횟수·총 시간을 붙인다. */
+function aggregate(list, from, to) {
+  const groups = new Map()
+  for (const e of list) {
+    if (e.visibility === 'PRIVATE') continue      // 비공개 일정은 보고서에 넣지 않는다
+    if (e.start < from || e.start >= to) continue
+    const cat = catOf(e.categoryId)
+    const key = cat.name + '::' + e.title.trim().toLowerCase()
+    const minutes = e.allDay ? 480 : minutesBetween(e.start, e.end)
+    const g = groups.get(key)
+    if (g) { g.minutes += minutes; g.count += 1 }
+    else groups.set(key, { title: e.title.trim(), categoryName: cat.name, color: cat.color, minutes, count: 1 })
+  }
+  return [...groups.values()]
+    .map((g) => ({ ...g, content: g.count > 1 ? g.title + ' (' + g.count + '회, ' + fmtDuration(g.minutes) + ')' : g.title }))
+    .sort((a, b) => a.categoryName.localeCompare(b.categoryName, 'ko') || b.minutes - a.minutes)
+}
+
+/** 분류별로 다시 묶어서 화면·마크다운에 쓰기 좋게 만든다 */
+function byCategory(items) {
+  const map = new Map()
+  for (const i of items) {
+    const cur = map.get(i.categoryName) || { color: i.color, items: [], minutes: 0 }
+    cur.items.push(i); cur.minutes += i.minutes
+    map.set(i.categoryName, cur)
+  }
+  return [...map.entries()].map(([name, v]) => ({ name, ...v })).sort((a, b) => b.minutes - a.minutes)
+}
+
+/* ════════════════════════════════════════════════════════════
+   5) 화면
+   ════════════════════════════════════════════════════════════ */
+
+const $ = (sel) => document.querySelector(sel)
+/** HTML 에 값을 끼워 넣기 전에 <, & 같은 글자를 안전하게 바꾼다 */
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+
+const TAB_LABELS = { calendar: '캘린더', weekly: '주간보고', present: '발표 모드', handover: '인수인계' }
+
+let tab = ENABLED_TABS[0]
+let calMode = 'month'            // 'month' | 'week'
+let cursor = new Date()          // 캘린더가 보고 있는 날짜
+let weekOffset = 0               // 주간보고가 보고 있는 주 (0 = 이번 주)
+let presentIdx = 0               // 발표 모드에서 지금 발표 중인 사람
+
+function render() {
+  $('#tabs').innerHTML = ENABLED_TABS
+    .map((t) => '<button data-tab="' + t + '" aria-current="' + (t === tab) + '">' + TAB_LABELS[t] + '</button>')
+    .join('')
+  const view = $('#view')
+  if (tab === 'calendar') view.innerHTML = calendarView()
+  if (tab === 'weekly') view.innerHTML = weeklyView()
+  if (tab === 'present') view.innerHTML = presentView()
+  if (tab === 'handover') view.innerHTML = handoverView()
+}
+
+/* ── 캘린더 ───────────────────────────────────────────────── */
+
+function calendarView() {
+  const label = calMode === 'month'
+    ? cursor.getFullYear() + '년 ' + (cursor.getMonth() + 1) + '월'
+    : (() => { const s = startOfWeek(cursor); return ymd(s) + ' ~ ' + ymd(addDays(s, 6)) })()
+
+  const bar =
+    '<div class="toolbar">' +
+      '<button class="btn" data-cal="prev">←</button>' +
+      '<button class="btn" data-cal="today">오늘</button>' +
+      '<button class="btn" data-cal="next">→</button>' +
+      '<strong style="margin-left:6px">' + esc(label) + '</strong>' +
+      '<div class="spacer"></div>' +
+      '<button class="btn' + (calMode === 'month' ? ' btn-primary' : '') + '" data-cal="month">월</button>' +
+      '<button class="btn' + (calMode === 'week' ? ' btn-primary' : '') + '" data-cal="week">주</button>' +
+      '<button class="btn btn-primary" data-cal="new">+ 일정 추가</button>' +
+    '</div>' +
+    '<div class="toolbar muted" style="font-size:12px">' +
+      CATEGORIES.map((c) => '<span class="pill" style="background:' + c.color + '22;color:' + c.color + '">' + c.name + '</span>').join('') +
+      '<span>· 빈 칸을 누르면 일정을 추가하고, 일정을 누르면 수정합니다.</span>' +
+    '</div>'
+
+  return bar + (calMode === 'month' ? monthGrid() : weekGrid())
+}
+
+function monthGrid() {
+  const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1)
+  const start = startOfWeek(first)
+  const evs = events()
+  const today = new Date()
+  let html = '<div class="month">' + DOW.map((d) => '<div class="dow">' + d + '</div>').join('')
+
+  for (let i = 0; i < 42; i++) {
+    const day = addDays(start, i)
+    const dim = day.getMonth() !== cursor.getMonth()
+    const dayEvents = evs.filter((e) => sameDay(e.start, day))
+    html += '<div class="cell' + (dim ? ' dim' : '') + (sameDay(day, today) ? ' today' : '') + '" data-day="' + ymd(day) + '">' +
+      '<div class="num">' + day.getDate() + '</div>' +
+      dayEvents.slice(0, 4).map((e) =>
+        '<button class="chip" data-event="' + e.id + '" style="background:' + catOf(e.categoryId).color + '">' +
+          (e.allDay ? '' : hm(e.start) + ' ') + esc(e.title) + (e.visibility === 'PRIVATE' ? ' 🔒' : '') +
+        '</button>').join('') +
+      (dayEvents.length > 4 ? '<div class="num">+' + (dayEvents.length - 4) + '</div>' : '') +
+    '</div>'
+  }
+  return html + '</div>'
+}
+
+const HOUR_FROM = 8, HOUR_TO = 21, SLOT_H = 44
+
+function weekGrid() {
+  const start = startOfWeek(cursor)
+  const evs = events()
+  const today = new Date()
+
+  let html = '<div class="week"><div class="head"></div>'
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(start, i)
+    html += '<div class="head"' + (sameDay(d, today) ? ' style="color:var(--brand);font-weight:700"' : '') + '>' +
+      DOW[i] + ' ' + (d.getMonth() + 1) + '/' + d.getDate() + '</div>'
+  }
+
+  html += '<div class="times">'
+  for (let h = HOUR_FROM; h < HOUR_TO; h++) html += '<div class="hour">' + pad(h) + ':00</div>'
+  html += '</div>'
+
+  for (let i = 0; i < 7; i++) {
+    const day = addDays(start, i)
+    html += '<div class="col" data-col="' + ymd(day) + '">'
+    for (let h = HOUR_FROM; h < HOUR_TO; h++) html += '<div class="slot" data-hour="' + h + '"></div>'
+    html += laidOut(evs.filter((e) => sameDay(e.start, day) && !e.allDay))
+    html += '</div>'
+  }
+  return html + '</div>'
+}
+
+/**
+ * 시간이 겹치는 일정을 좌우로 나눠 놓는다.
+ * 시작 시각 순으로 훑으면서, 이미 끝난 칸이 있으면 그 칸을 다시 쓴다.
+ */
+function laidOut(list) {
+  const cols = []       // cols[i] = 그 칸에서 마지막으로 끝난 시각
+  const placed = list.map((e) => {
+    let c = cols.findIndex((endAt) => endAt <= e.start)
+    if (c === -1) { c = cols.length; cols.push(e.end) } else cols[c] = e.end
+    return { e, col: c }
+  })
+  const n = Math.max(1, cols.length)
+  return placed.map(({ e, col }) => {
+    const top = ((e.start.getHours() + e.start.getMinutes() / 60) - HOUR_FROM) * SLOT_H
+    const height = Math.max(18, (minutesBetween(e.start, e.end) / 60) * SLOT_H - 2)
+    const width = 100 / n
+    return '<button class="ev" data-event="' + e.id + '" style="top:' + top + 'px;height:' + height + 'px;' +
+      'left:' + (col * width) + '%;width:' + (width - 1) + '%;background:' + catOf(e.categoryId).color + '">' +
+      esc(e.title) + '</button>'
+  }).join('')
+}
+
+/* ── 일정 편집 창 ─────────────────────────────────────────── */
+
+function openEditor(ev) {
+  const isNew = !ev.id
+  const s = new Date(ev.start), e = new Date(ev.end)
+  $('#modal-root').innerHTML =
+    '<div class="backdrop" data-close="1"><div class="modal">' +
+      '<h3 style="margin-bottom:12px">' + (isNew ? '일정 추가' : '일정 수정') + '</h3>' +
+      '<div class="field"><label>제목</label><input id="f-title" value="' + esc(ev.title || '') + '" placeholder="무슨 일을 하나요?" /></div>' +
+      '<div class="field"><label>날짜</label><input id="f-date" type="date" value="' + ymd(s) + '" /></div>' +
+      '<div class="grid2">' +
+        '<div class="field"><label>시작</label><input id="f-start" type="time" value="' + hm(s) + '" /></div>' +
+        '<div class="field"><label>종료</label><input id="f-end" type="time" value="' + hm(e) + '" /></div>' +
+      '</div>' +
+      '<div class="grid2">' +
+        '<div class="field"><label>분류</label><select id="f-cat">' +
+          CATEGORIES.map((c) => '<option value="' + c.id + '"' + (c.id === ev.categoryId ? ' selected' : '') + '>' + c.name + '</option>').join('') +
+        '</select></div>' +
+        '<div class="field"><label>공개 범위</label><select id="f-vis">' +
+          '<option value="TEAM"' + (ev.visibility !== 'PRIVATE' ? ' selected' : '') + '>팀 공개 (보고서에 들어감)</option>' +
+          '<option value="PRIVATE"' + (ev.visibility === 'PRIVATE' ? ' selected' : '') + '>비공개 (보고서에서 빠짐)</option>' +
+        '</select></div>' +
+      '</div>' +
+      '<div class="row" style="margin-top:14px">' +
+        (isNew ? '' : '<button class="btn btn-danger" id="f-del">삭제</button>') +
+        '<div class="spacer"></div>' +
+        '<button class="btn" data-close="1">취소</button>' +
+        '<button class="btn btn-primary" id="f-save">저장</button>' +
+      '</div>' +
+    '</div></div>'
+
+  $('#f-title').focus()
+
+  $('#f-save').onclick = () => {
+    const date = $('#f-date').value
+    const start = new Date(date + 'T' + ($('#f-start').value || '09:00'))
+    let end = new Date(date + 'T' + ($('#f-end').value || '10:00'))
+    if (end <= start) end = new Date(start.getTime() + 60 * 60000)   // 끝이 시작보다 빠르면 1시간짜리로 본다
+    const next = {
+      id: ev.id || 'e' + Date.now(),
+      title: $('#f-title').value.trim() || '제목 없음',
+      start: start.toISOString(),
+      end: end.toISOString(),
+      allDay: false,
+      categoryId: $('#f-cat').value,
+      visibility: $('#f-vis').value,
+    }
+    state.events = isNew ? [...state.events, next] : state.events.map((x) => (x.id === next.id ? next : x))
+    save(); closeModal(); render()
+  }
+  const del = $('#f-del')
+  if (del) del.onclick = () => {
+    state.events = state.events.filter((x) => x.id !== ev.id)
+    save(); closeModal(); render()
+  }
+}
+
+const closeModal = () => { $('#modal-root').innerHTML = '' }
+
+/* ── 주간보고 ─────────────────────────────────────────────── */
+
+/** 보고 대상 주의 시작·끝 */
+function weekRange(offset) {
+  const from = addDays(startOfWeek(new Date()), offset * 7)
+  return { from, to: addDays(from, 7) }
+}
+
+function weeklyView() {
+  const { from, to } = weekRange(weekOffset)
+  const items = aggregate(events(), from, to)
+  const total = items.reduce((s, i) => s + i.minutes, 0)
+  const groups = byCategory(items)
+  const noteKey = 'w' + weekOffset
+  const note = state.notes[noteKey] || { next: '', issue: '' }
+
+  const bars = groups.map((g) =>
+    '<div style="width:' + (total ? (g.minutes / total) * 100 : 0) + '%;background:' + g.color + '"></div>').join('')
+
+  const legend = groups.map((g) =>
+    '<span class="pill" style="background:' + g.color + '22;color:' + g.color + '">' +
+    g.name + ' ' + (total ? Math.round((g.minutes / total) * 100) : 0) + '%</span>').join(' ')
+
+  const list = groups.length === 0
+    ? '<p class="muted">이 주에는 집계할 일정이 없습니다. 캘린더에서 일정을 넣어 보세요.</p>'
+    : groups.map((g) =>
+        '<div style="margin-bottom:14px">' +
+          '<div class="row" style="margin-bottom:4px"><strong style="color:' + g.color + '">' + g.name + '</strong>' +
+          '<span class="muted" style="font-size:12px">' + fmtDuration(g.minutes) + '</span></div>' +
+          g.items.map((i) => '<div class="report-item"><span>·</span><span>' + esc(i.content) + '</span></div>').join('') +
+        '</div>').join('')
+
+  return '<div class="toolbar">' +
+      '<button class="btn" data-week="-1">← 지난주</button>' +
+      '<button class="btn" data-week="0">이번 주</button>' +
+      '<button class="btn" data-week="1">다음주 →</button>' +
+      '<strong style="margin-left:6px">' + ymd(from) + ' ~ ' + ymd(addDays(to, -1)) + '</strong>' +
+      '<div class="spacer"></div>' +
+      '<button class="btn" id="copy-md">마크다운으로 복사</button>' +
+    '</div>' +
+    '<div class="card" style="padding:18px">' +
+      '<div class="row" style="margin-bottom:8px"><strong>' + ME.name + '</strong>' +
+        '<span class="muted">' + ME.dept + '</span><div class="spacer"></div>' +
+        '<span class="muted">총 ' + fmtDuration(total) + '</span></div>' +
+      '<div class="bar" style="margin-bottom:6px">' + bars + '</div>' +
+      '<div style="margin-bottom:16px">' + legend + '</div>' +
+      '<h3 style="margin-bottom:8px">이번 주 한 일</h3>' + list +
+      '<h3 style="margin:16px 0 6px">다음 주 계획</h3>' +
+      '<textarea data-note="next" placeholder="다음 주에 할 일을 적습니다">' + esc(note.next) + '</textarea>' +
+      '<h3 style="margin:16px 0 6px">이슈 · 도움 필요</h3>' +
+      '<textarea data-note="issue" placeholder="막힌 것, 다른 팀에 요청할 것">' + esc(note.issue) + '</textarea>' +
+    '</div>' +
+    '<p class="muted" style="font-size:12.5px;margin-top:10px">' +
+      '“한 일”은 캘린더 일정에서 자동으로 만들어집니다. 비공개 일정은 빠지고, 같은 제목은 한 줄로 합쳐집니다. ' +
+      '규칙을 바꾸려면 코드의 <code>aggregate</code> 함수를 고치세요.</p>'
+}
+
+/** 주간보고를 마크다운 문자열로 */
+function weeklyMarkdown() {
+  const { from, to } = weekRange(weekOffset)
+  const groups = byCategory(aggregate(events(), from, to))
+  const note = state.notes['w' + weekOffset] || { next: '', issue: '' }
+  let out = '# 주간보고 (' + ymd(from) + ' ~ ' + ymd(addDays(to, -1)) + ')\n\n' + ME.dept + ' ' + ME.name + '\n\n## 이번 주 한 일\n'
+  for (const g of groups) {
+    out += '\n### ' + g.name + ' (' + fmtDuration(g.minutes) + ')\n'
+    for (const i of g.items) out += '- ' + i.content + '\n'
+  }
+  out += '\n## 다음 주 계획\n' + (note.next || '-') + '\n\n## 이슈\n' + (note.issue || '-') + '\n'
+  return out
+}
+
+/* ── 발표 모드 ────────────────────────────────────────────── */
+
+/** 팀원들의 보고 내용 (예시). 실제 서비스라면 서버에서 받아온다. */
+const TEAM_REPORTS = {
+  u2: { done: ['사내 포털 개편 3차 배포 (4회, 16시간)', '데이터 이관 검증 (3회, 9시간)', '주간 스크럼 (5회, 2시간 30분)'],
+        next: ['포털 4차 배포 준비', '이관 잔여 데이터 정리'],
+        issues: ['이관 대상 레거시 DB 접근 권한 미발급 — 인프라팀 확인 필요'] },
+  u3: { done: ['리포트 화면 개선 (14시간)', '고객 문의 대응 (5회, 8시간)', '주간 스크럼 (5회, 2시간 30분)'],
+        next: ['리포트 필터 추가', '문의 FAQ 정리'], issues: [] },
+  u4: { done: ['결제 모듈 점검 (10시간)', '장애 대응 (2회, 5시간)'],
+        next: ['결제 로그 대시보드'], issues: ['야간 장애 당번 인수인계 필요'] },
+}
+
+const speakers = () => [ME, ...TEAM]
+
+function presentView() {
+  const people = speakers()
+  const p = people[presentIdx % people.length]
+  let done, next, issues
+
+  if (p.id === ME.id) {
+    const { from, to } = weekRange(0)
+    done = aggregate(events(), from, to).map((i) => i.content)
+    const note = state.notes['w0'] || {}
+    next = (note.next || '').split('\n').filter(Boolean)
+    issues = (note.issue || '').split('\n').filter(Boolean)
+  } else {
+    const r = TEAM_REPORTS[p.id] || { done: [], next: [], issues: [] }
+    done = r.done; next = r.next; issues = r.issues
+  }
+
+  const ul = (arr, empty) => arr.length
+    ? '<ul style="margin:0;padding-left:20px">' + arr.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>'
+    : '<p class="muted">' + empty + '</p>'
+
+  return '<div class="toolbar">' +
+      '<button class="btn" data-present="prev">← 이전</button>' +
+      '<button class="btn" data-present="next">다음 →</button>' +
+      '<span class="muted">' + (presentIdx % people.length + 1) + ' / ' + people.length + ' · 키보드 ← → 로도 넘어갑니다</span>' +
+      '<div class="spacer"></div>' +
+      '<button class="btn" data-present="full">전체화면</button>' +
+    '</div>' +
+    '<div class="card present">' +
+      '<h2>' + esc(p.name) + ' <span class="muted" style="font-size:15px">' + esc(p.dept) + '</span></h2>' +
+      '<h3 style="margin:20px 0 6px">이번 주 한 일</h3>' + ul(done, '집계된 일정이 없습니다') +
+      '<h3 style="margin:20px 0 6px">다음 주 계획</h3>' + ul(next, '작성 전') +
+      '<h3 style="margin:20px 0 6px">이슈</h3>' + ul(issues, '없음') +
+    '</div>'
+}
+
+/* ── 인수인계 ─────────────────────────────────────────────── */
+
+const HANDOVER_STATUS = { TODO: '대기', IN_PROGRESS: '진행중', BLOCKED: '막힘', DONE: '완료' }
+
+function handoverView() {
+  const h = state.handover
+  const to = TEAM.find((u) => u.id === h.toUserId) || TEAM[0]
+  const acked = h.items.filter((i) => i.acked).length
+  const done = h.items.filter((i) => i.status === 'DONE').length
+  const pct = h.items.length ? Math.round((acked / h.items.length) * 100) : 0
+
+  const items = h.items.map((i) =>
+    '<div class="hi">' +
+      '<div class="row">' +
+        '<label class="row" style="gap:6px;cursor:pointer">' +
+          '<input type="checkbox" data-ack="' + i.id + '"' + (i.acked ? ' checked' : '') + ' />' +
+          '<strong>' + esc(i.title) + '</strong></label>' +
+        '<div class="spacer"></div>' +
+        '<select data-status="' + i.id + '">' +
+          Object.entries(HANDOVER_STATUS).map(([k, v]) =>
+            '<option value="' + k + '"' + (i.status === k ? ' selected' : '') + '>' + v + '</option>').join('') +
+        '</select>' +
+      '</div>' +
+      '<p class="muted" style="margin:4px 0 0;font-size:13px">' + esc(i.detail) + '</p>' +
+    '</div>').join('')
+
+  return '<div class="toolbar">' +
+      '<strong>인수인계서</strong>' +
+      '<span class="muted">' + esc(ME.name) + ' → ' + esc(to.name) + '</span>' +
+      '<div class="spacer"></div>' +
+      '<button class="btn" id="copy-handover">마크다운으로 복사</button>' +
+    '</div>' +
+    '<div class="card" style="padding:16px;margin-bottom:12px">' +
+      '<div class="grid2">' +
+        '<div class="field"><label>부재 시작</label><input type="date" data-ho="absentFrom" value="' + h.absentFrom + '" /></div>' +
+        '<div class="field"><label>부재 종료</label><input type="date" data-ho="absentTo" value="' + h.absentTo + '" /></div>' +
+      '</div>' +
+      '<div class="grid2">' +
+        '<div class="field"><label>사유</label><input data-ho="reason" value="' + esc(h.reason) + '" /></div>' +
+        '<div class="field"><label>인수자</label><select data-ho="toUserId">' +
+          TEAM.map((u) => '<option value="' + u.id + '"' + (u.id === h.toUserId ? ' selected' : '') + '>' + u.name + '</option>').join('') +
+        '</select></div>' +
+      '</div>' +
+      '<div class="row" style="margin-top:6px">' +
+        '<div class="bar" style="flex:1"><div style="width:' + pct + '%;background:var(--brand)"></div></div>' +
+        '<span class="muted" style="font-size:12px">확인 ' + acked + '/' + h.items.length + ' · 완료 ' + done + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div class="card">' + items + '</div>' +
+    '<p class="muted" style="font-size:12.5px;margin-top:10px">' +
+      '인수자가 항목마다 체크를 하면 “받았다”는 기록이 남습니다. 모두 확인되기 전에는 인수인계가 끝난 것이 아닙니다.</p>'
+}
+
+function handoverMarkdown() {
+  const h = state.handover
+  const to = TEAM.find((u) => u.id === h.toUserId) || TEAM[0]
+  let out = '# 인수인계서\n\n- 인계: ' + ME.name + '\n- 인수: ' + to.name +
+    '\n- 부재: ' + h.absentFrom + ' ~ ' + h.absentTo + ' (' + h.reason + ')\n\n## 항목\n'
+  for (const i of h.items) {
+    out += '\n### ' + i.title + ' [' + HANDOVER_STATUS[i.status] + (i.acked ? ' · 확인함' : ' · 미확인') + ']\n' + i.detail + '\n'
+  }
+  return out
+}
+
+/* ════════════════════════════════════════════════════════════
+   6) 시작 — 클릭·키보드를 화면 동작에 연결한다
+   ════════════════════════════════════════════════════════════ */
+
+/** 클립보드 복사 (https 가 아니면 옛 방식으로 한 번 더 시도한다) */
+async function copyText(text, btn) {
+  try { await navigator.clipboard.writeText(text) }
+  catch (e) {
+    const ta = document.createElement('textarea')
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'
+    document.body.appendChild(ta); ta.select()
+    try { document.execCommand('copy') } finally { document.body.removeChild(ta) }
+  }
+  if (btn) { const old = btn.textContent; btn.textContent = '복사됨 ✓'; setTimeout(() => { btn.textContent = old }, 1500) }
+}
+
+/** 그 날짜 그 시각에 1시간짜리 새 일정을 연다 */
+function newEventAt(dateStr, hour) {
+  const start = new Date(dateStr + 'T' + pad(hour) + ':00')
+  openEditor({ title: '', start, end: new Date(start.getTime() + 3600000), categoryId: 'dev', visibility: 'TEAM' })
+}
+
+document.addEventListener('click', (ev) => {
+  const t = ev.target
+  const hit = (sel) => t.closest(sel)
+
+  // 편집 창: 어두운 배경이나 [취소]를 누르면 닫는다
+  if (t.classList.contains('backdrop') || t.matches('button[data-close]')) { closeModal(); return }
+
+  const tabBtn = hit('[data-tab]')
+  if (tabBtn) { tab = tabBtn.dataset.tab; render(); return }
+
+  if (t.id === 'reset') {
+    if (confirm('예시 데이터로 되돌립니다. 지금까지 넣은 내용은 사라집니다.')) {
+      state = { events: seedEvents(), handover: seedHandover(), notes: {} }
+      save(); render()
+    }
+    return
+  }
+
+  const evBtn = hit('[data-event]')
+  if (evBtn) {
+    const found = state.events.find((x) => x.id === evBtn.dataset.event)
+    if (found) openEditor(asDate(found))
+    return
+  }
+
+  const cal = hit('[data-cal]')
+  if (cal) {
+    const a = cal.dataset.cal
+    if (a === 'prev') cursor = calMode === 'month' ? new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1) : addDays(cursor, -7)
+    if (a === 'next') cursor = calMode === 'month' ? new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1) : addDays(cursor, 7)
+    if (a === 'today') cursor = new Date()
+    if (a === 'month' || a === 'week') calMode = a
+    if (a === 'new') { newEventAt(ymd(new Date()), 9); return }
+    render(); return
+  }
+
+  const slot = hit('.slot')
+  if (slot) { newEventAt(slot.parentElement.dataset.col, Number(slot.dataset.hour)); return }
+
+  const cell = hit('.cell')
+  if (cell) { newEventAt(cell.dataset.day, 9); return }
+
+  const wk = hit('[data-week]')
+  if (wk) { weekOffset = Number(wk.dataset.week); render(); return }
+
+  if (t.id === 'copy-md') { copyText(weeklyMarkdown(), t); return }
+  if (t.id === 'copy-handover') { copyText(handoverMarkdown(), t); return }
+
+  const pr = hit('[data-present]')
+  if (pr) {
+    const n = speakers().length
+    if (pr.dataset.present === 'next') presentIdx = (presentIdx + 1) % n
+    if (pr.dataset.present === 'prev') presentIdx = (presentIdx - 1 + n) % n
+    if (pr.dataset.present === 'full') { document.documentElement.requestFullscreen?.(); return }
+    render(); return
+  }
+})
+
+/* 값이 바뀌는 것들 */
+document.addEventListener('input', (ev) => {
+  const note = ev.target.closest('[data-note]')
+  if (note) {   // 다시 그리면 커서가 튀므로 저장만 한다
+    const key = 'w' + weekOffset
+    state.notes[key] = { ...(state.notes[key] || { next: '', issue: '' }), [note.dataset.note]: note.value }
+    save()
+  }
+})
+
+document.addEventListener('change', (ev) => {
+  const t = ev.target
+
+  const st = t.closest('[data-status]')
+  if (st) {
+    state.handover.items = state.handover.items.map((i) => (i.id === st.dataset.status ? { ...i, status: t.value } : i))
+    save(); render(); return
+  }
+  const ack = t.closest('[data-ack]')
+  if (ack) {
+    state.handover.items = state.handover.items.map((i) => (i.id === ack.dataset.ack ? { ...i, acked: t.checked } : i))
+    save(); render(); return
+  }
+  const ho = t.closest('[data-ho]')
+  if (ho) { state.handover[ho.dataset.ho] = t.value; save(); render(); return }
+})
+
+/* 키보드 단축키 */
+document.addEventListener('keydown', (ev) => {
+  // 편집 창이 열려 있으면 입력칸에 커서가 있어도 Esc·Enter 는 받는다
+  if (ev.key === 'Escape') { closeModal(); return }
+  if (ev.key === 'Enter' && document.querySelector('.modal') && ev.target.tagName === 'INPUT') {
+    ev.preventDefault(); $('#f-save').click(); return
+  }
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(ev.target.tagName)) return
+
+  if (tab === 'calendar') {
+    if (ev.key === 'ArrowLeft') { cursor = calMode === 'month' ? new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1) : addDays(cursor, -7); render() }
+    if (ev.key === 'ArrowRight') { cursor = calMode === 'month' ? new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1) : addDays(cursor, 7); render() }
+    if (ev.key === 't' || ev.key === 'T') { cursor = new Date(); render() }
+    if (ev.key === 'm' || ev.key === 'M') { calMode = 'month'; render() }
+    if (ev.key === 'w' || ev.key === 'W') { calMode = 'week'; render() }
+  }
+  if (tab === 'present') {
+    const n = speakers().length
+    if (ev.key === 'ArrowRight' || ev.key === ' ') { presentIdx = (presentIdx + 1) % n; render() }
+    if (ev.key === 'ArrowLeft') { presentIdx = (presentIdx - 1 + n) % n; render() }
+  }
+})
+
+render()
+</script>
+</body>
+</html>

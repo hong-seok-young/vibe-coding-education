@@ -124,6 +124,29 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* 결과물 내려받기 */}
+      <section className="border-hair mb-8 rounded-xl border p-5">
+        <h2 className="text-[15px] font-semibold tracking-tight">결과물은 HTML 파일로도 받아 갑니다</h2>
+        <p className="text-muted mt-2 text-[13px] leading-7">
+          화면에서 만져 본 결과물을 <strong>파일 하나</strong>로 받을 수 있습니다. 더블클릭하면 바로 열리고, 그 파일을 AI
+          채팅창에 첨부해 "여기에 이 기능 넣어줘"라고 시키면 그대로 기능 수정 실습이 됩니다.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            to="/download"
+            className="bg-brand-500 hover:bg-brand-600 rounded-lg px-3 py-1.5 text-[12.5px] font-semibold text-white transition"
+          >
+            ↓ 파일 받으러 가기
+          </Link>
+          <Link
+            to="/guides/edit-html-with-ai"
+            className="border-hair text-muted hover:text-brand-500 rounded-lg border px-3 py-1.5 text-[12.5px] transition"
+          >
+            AI에 첨부해서 고치는 법 →
+          </Link>
+        </div>
+      </section>
+
       {/* 커리큘럼 */}
       <section>
         <h2 className="mb-3 text-[15px] font-semibold tracking-tight">전체 15단계</h2>

@@ -21,6 +21,7 @@
 | `/steps/:slug/:tab` | 탭을 주소로 공유·새로고침할 수 있다 (`prompt`·`sample`·`explain`·`check`) |
 | `/prompts` | 전체 프롬프트 30개 검색·복사 |
 | `/guides` · `/guides/:id` | **안내서** — 손이 막히는 지점의 클릭 단위 절차 |
+| `/download` | **결과물 내려받기** — 완성 결과물을 HTML 파일 하나로 저장 |
 
 각 단계는 이렇게 쓰도록 설계했습니다.
 
@@ -68,7 +69,7 @@
 
 여기에 `trouble`(막히면)과 `note`(부연)가 선택으로 붙습니다.
 
-현재 들어 있는 안내서 7개:
+현재 들어 있는 안내서 8개:
 
 | id | 제목 | 언제 |
 |---|---|---|
@@ -79,6 +80,7 @@
 | `ai-tool` | 프롬프트를 붙여넣을 AI 도구 준비하기 | STEP 00 |
 | `github-pages` | 내 저장소에 올려서 인터넷에 띄우기 | STEP 13 |
 | `dx-request` | dX팀에 제대로 요청하기 (RADIUS · Coolify) | STEP 12 · 13 · 14 |
+| `edit-html-with-ai` | 받은 HTML 파일을 AI에게 고치게 하기 (6칸) | STEP 00 · 08 · 내려받기 후 |
 
 `Step` 에 `guides: ['google-client-id', ...]` 를 넣으면 그 단계의 **① 이번 시간** 탭 아래에
 안내서 링크가 자동으로 붙습니다. STEP 06 데모 안에서는 `google-client-id` 안내서가
@@ -87,6 +89,35 @@
 > 외부 서비스(구글 콘솔·깃허브) 화면은 수시로 개편됩니다. 그래서 각 칸에 버튼 이름뿐 아니라
 > **"이러면 성공"** 기준을 같이 적어 두었습니다. 이름이 바뀌어도 목표를 보고 찾을 수 있게 하기
 > 위해서입니다. 각 안내서 맨 아래에도 같은 취지의 문구가 있습니다.
+
+### 결과물 내려받기 (`/download`)
+
+화면에서 만져본 결과물을 **HTML 파일 하나**로 받아 갈 수 있습니다. 받은 파일을 AI 채팅창에
+첨부해서 "여기에 이 기능 넣어줘"라고 시키는 것이 이 기능의 목적입니다 — 프롬프트로 화면을
+바꾸는 경험을, 교육 사이트를 떠나지 않고 한 번 더 하게 만드는 장치입니다.
+
+받아지는 파일은 **번들 결과가 아니라 사람이 읽는 소스**입니다. 빌드 도구·프레임워크·CDN 없이
+순수 HTML·CSS·자바스크립트로만 되어 있고, 주석은 한국어이며 코드가 6개 구역
+(데이터 / 날짜 도구 / 저장 / 집계 / 화면 / 시작)으로 나뉘어 있습니다. AI가 통째로 읽고 고칠 수
+있는 크기(약 40 kB)로 유지하는 것이 제약 조건입니다.
+
+| id | 파일 | 켜지는 화면 |
+|---|---|---|
+| `workspace` | `work-manager.html` | 캘린더 · 주간보고 · 발표 모드 · 인수인계 |
+| `calendar` | `work-calendar.html` | 캘린더 |
+| `weekly` | `weekly-report.html` | 주간보고 · 발표 모드 |
+| `handover` | `handover.html` | 인수인계 |
+
+원본은 `src/download/app.html` 하나입니다. 내려받을 때 `__TABS__`(켤 화면)와 `__TITLE__` 두
+자리만 치환하므로, 네 파일의 코드는 같고 맨 위 `ENABLED_TABS` 한 줄만 다릅니다. 교육생이 그 줄에
+화면 이름을 추가하면 나머지 화면도 켜집니다.
+
+카드마다 **"시켜볼 것"** 프롬프트가 붙어 있고, 모든 프롬프트 앞에는 같은 머리말
+(`src/download/index.ts` 의 `PREFACE`)이 붙습니다. `파일 하나짜리 HTML 로 통째로 다시 주세요` —
+이 한 줄이 없으면 AI가 바뀐 조각만 돌려줘서 교육생이 붙일 곳을 찾지 못합니다.
+
+내려받기 카드는 `/download` 뿐 아니라 **데모가 있는 단계의 데모 바로 아래**에도 자동으로 붙습니다
+(`src/download/index.ts` 의 `BY_DEMO` 매핑). 클릭 단위 절차는 `edit-html-with-ai` 안내서에 있습니다.
 
 ### STEP 06 은 진짜로 연동해볼 수 있습니다
 
@@ -238,8 +269,11 @@ src/
 │     ├─ part2.ts          STEP 06–07  외부 캘린더 연동 (구글, 네이버·ICS)
 │     ├─ part3.ts          STEP 08–10  업무 활용 (주간보고, 발표 모드, 인수인계)
 │     └─ part4.ts          STEP 11–14  웍스 AI, RADIUS, Coolify, 운영·요청서
-├─ components/             Layout, Blocks 렌더러, PromptCard, CodeBlock, GuideView
-├─ pages/                  HomePage, StepPage, PromptsPage, GuidesPage, GuidePage
+├─ download/               결과물을 HTML 파일 하나로 내려주기
+│  ├─ app.html             내려받는 앱의 원본 (순수 HTML·CSS·JS, 주석 한국어)
+│  └─ index.ts             파일 목록·실습 프롬프트·치환·저장 함수
+├─ components/             Layout, Blocks 렌더러, PromptCard, CodeBlock, GuideView, DownloadCard
+├─ pages/                  HomePage, StepPage, PromptsPage, GuidesPage, GuidePage, DownloadsPage
 ├─ demo/                   동작하는 완성 결과물 데모 (각 단계의 "완성 데모" 탭에서 렌더링)
 │  ├─ registry.tsx         데모 종류 → 컴포넌트 · 조작법 매핑
 │  ├─ GoogleLiveDemo.tsx   STEP 06 실연동 데모 (실제 구글 캘린더)

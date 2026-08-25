@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { fmtDate, fmtTime } from '../lib/dates'
-import { useCopy } from '../lib/useCopy'
+import { GuideView } from '../components/GuideView'
+import { findGuide } from '../content/guides'
 import { useDemo } from './store'
 import { useGoogleLive } from './google/useGoogleLive'
 
@@ -10,13 +12,14 @@ import { useGoogleLive } from './google/useGoogleLive'
  * 교육생이 수업 중에 따라오는 화면이므로 "지금 할 일" 하나만 크게 보이게 만든다.
  * 설명·비교표·주의사항은 접어두고, 필요할 때만 펼치게 한다.
  */
+/** 이 데모를 하려면 먼저 끝내야 하는 안내서 */
+const setupGuide = findGuide('google-client-id')!
+
 export function GoogleLiveDemo() {
   const g = useGoogleLive()
   const { events } = useDemo()
   const [openSetup, setOpenSetup] = useState(false)
   const [openWhy, setOpenWhy] = useState(false)
-  const origin = typeof window !== 'undefined' ? window.location.origin : ''
-  const { copied, copy } = useCopy()
 
   const googleEvents = events
     .filter((e) => e.source === 'GOOGLE' && e.externalId)
@@ -65,53 +68,15 @@ export function GoogleLiveDemo() {
         <div className="text-muted mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px]">
           <span>이 브라우저에만 저장됩니다.</span>
           <button onClick={() => setOpenSetup((v) => !v)} className="text-brand-500 underline">
-            {openSetup ? '준비 절차 접기' : '클라이언트 ID 만드는 법 (5분)'}
+            {openSetup ? '안내서 접기' : '클라이언트 ID 만드는 법 — 클릭 단위 안내서'}
           </button>
           {g.clientIdFromEnv && <span>배포 설정값이 미리 채워져 있습니다.</span>}
         </div>
 
         {openSetup && (
-          <ol className="border-hair mt-3 space-y-2.5 rounded-lg border border-dashed p-3.5 text-[13px] leading-7">
-            <li>
-              <b>1.</b>{' '}
-              <a
-                href="https://console.cloud.google.com/projectcreate"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-brand-500 underline"
-              >
-                구글 클라우드 콘솔
-              </a>
-              에서 프로젝트를 만듭니다.
-            </li>
-            <li>
-              <b>2.</b> API 라이브러리에서 <b>Google Calendar API</b> 를 켭니다. (안 켜면 나중에 403)
-            </li>
-            <li>
-              <b>3.</b> OAuth 동의 화면을 만들고, 외부 유형이면 <b>테스트 사용자에 본인 계정을 추가</b>합니다.
-              (안 하면 동의 화면에서 막힙니다)
-            </li>
-            <li>
-              <b>4.</b> 사용자 인증 정보 → OAuth 클라이언트 ID → <b>웹 애플리케이션</b> →{' '}
-              <b>승인된 JavaScript 원본</b>에 아래 주소를 그대로 넣습니다.
-              <span className="surface-2 border-hair mt-1.5 flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2">
-                <code className="min-w-0 flex-1 truncate font-mono text-[12px]">{origin}</code>
-                <button
-                  onClick={() => copy(origin)}
-                  className="border-hair hover:border-brand-500/60 shrink-0 rounded border px-2 py-1 text-[11.5px]"
-                >
-                  {copied ? '복사됨 ✓' : '복사'}
-                </button>
-              </span>
-              <span className="text-muted mt-1 block text-[12px]">
-                주소 뒤 경로(/vibe-coding-education)는 넣지 않습니다. 리디렉션 URI 는 쓰지 않습니다.
-              </span>
-            </li>
-            <li>
-              <b>5.</b> 만들어진 클라이언트 ID를 위 칸에 붙여넣습니다. (클라이언트 <b>시크릿은 쓰지 않습니다</b> —
-              브라우저에 두면 안 되는 값입니다)
-            </li>
-          </ol>
+          <div className="border-hair mt-3 rounded-xl border border-dashed p-4">
+            <GuideView guide={setupGuide} />
+          </div>
         )}
       </Card>
 
@@ -160,6 +125,16 @@ export function GoogleLiveDemo() {
             </button>
             {g.expired && <span className="text-[12.5px] text-amber-500">토큰이 만료됐습니다. 다시 연결하세요.</span>}
           </div>
+        )}
+
+        {connected && (
+          <p className="text-muted mt-2 text-[12px] leading-6">
+            실습이 끝나면{' '}
+            <Link to="/guides/google-revoke" className="text-brand-500 underline">
+              권한 정리 안내서
+            </Link>
+            대로 구글 계정에서 이 앱의 접근 권한까지 지우세요.
+          </p>
         )}
 
         {g.error && (
@@ -216,6 +191,9 @@ export function GoogleLiveDemo() {
             구글 캘린더 열기 ↗
           </a>
           <span>거기서 일정을 추가·수정·삭제한 뒤 "변경분만 가져오기"를 눌러보세요.</span>
+          <Link to="/guides/google-sync-test" className="text-brand-500 underline">
+            순서대로 따라 하는 안내서 →
+          </Link>
           {g.syncToken && (
             <button onClick={g.resetSyncToken} className="underline hover:text-brand-500">
               책갈피 버리기 (다음이 전체 동기화로 돌아가는 것 확인)

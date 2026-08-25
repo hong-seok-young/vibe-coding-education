@@ -20,6 +20,7 @@
 | `/steps/:slug` | 각 단계 — **① 이번 시간 / ② 프롬프트 / ③ 샘플 결과 / ④ 원리 / ⑤ 확인** 5개 탭 |
 | `/steps/:slug/:tab` | 탭을 주소로 공유·새로고침할 수 있다 (`prompt`·`sample`·`explain`·`check`) |
 | `/prompts` | 전체 프롬프트 30개 검색·복사 |
+| `/guides` · `/guides/:id` | **안내서** — 손이 막히는 지점의 클릭 단위 절차 |
 
 각 단계는 이렇게 쓰도록 설계했습니다.
 
@@ -49,6 +50,43 @@
 | STEP 08 주간보고 | 주간보고 |
 | STEP 09 발표 모드 | 발표 모드 |
 | STEP 10 인수인계 | 인수인계 |
+
+### 안내서 (`/guides`)
+
+"구글 클라우드 콘솔에서 클라이언트 ID를 만드세요" 같은 문장은 교육생 입장에서 아무 도움이 안 됩니다.
+그래서 손이 막히는 지점은 **설명이 아니라 절차 문서**로 따로 뺐습니다.
+
+안내서 한 칸(`GuideStep`)은 항상 이 다섯 가지를 갖습니다.
+
+| 필드 | 내용 |
+|---|---|
+| `where` | 어느 화면인지 (`구글 클라우드 콘솔 › 사용자 인증 정보`) |
+| `link` | 그 화면으로 바로 가는 링크 — 누르면 새 탭 |
+| `click` | 화면에 뜬 글자 그대로의 버튼·메뉴 이름을 순서대로 |
+| `input` | 넣을 값 + 복사 버튼 (`{{origin}}`·`{{repo}}` 는 렌더링할 때 실제 값으로 치환) |
+| `expect` | **이러면 성공** — 다음 칸으로 넘어가도 되는 판단 기준 |
+
+여기에 `trouble`(막히면)과 `note`(부연)가 선택으로 붙습니다.
+
+현재 들어 있는 안내서 7개:
+
+| id | 제목 | 언제 |
+|---|---|---|
+| `google-client-id` | 구글 클라이언트 ID 만들기 (8칸) | STEP 06 실연동 전 |
+| `google-sync-test` | 구글에서 바꾼 일정이 정말 들어오는지 확인하기 | STEP 06 실습 중 |
+| `google-revoke` | 실습 끝나고 구글 권한 정리하기 | STEP 06 끝난 뒤 |
+| `local-run` | 이 교육 사이트를 내 컴퓨터에서 띄우기 | STEP 00 · 02 |
+| `ai-tool` | 프롬프트를 붙여넣을 AI 도구 준비하기 | STEP 00 |
+| `github-pages` | 내 저장소에 올려서 인터넷에 띄우기 | STEP 13 |
+| `dx-request` | dX팀에 제대로 요청하기 (RADIUS · Coolify) | STEP 12 · 13 · 14 |
+
+`Step` 에 `guides: ['google-client-id', ...]` 를 넣으면 그 단계의 **① 이번 시간** 탭 아래에
+안내서 링크가 자동으로 붙습니다. STEP 06 데모 안에서는 `google-client-id` 안내서가
+접이식으로 통째로 펼쳐집니다 — 화면을 떠나지 않고 따라 할 수 있게.
+
+> 외부 서비스(구글 콘솔·깃허브) 화면은 수시로 개편됩니다. 그래서 각 칸에 버튼 이름뿐 아니라
+> **"이러면 성공"** 기준을 같이 적어 두었습니다. 이름이 바뀌어도 목표를 보고 찾을 수 있게 하기
+> 위해서입니다. 각 안내서 맨 아래에도 같은 취지의 문구가 있습니다.
 
 ### STEP 06 은 진짜로 연동해볼 수 있습니다
 
@@ -191,16 +229,17 @@ docker run --rm -p 8080:8080 vibe-edu   # http://localhost:8080
 ```
 src/
 ├─ content/                교육 콘텐츠 (여기만 고치면 커리큘럼이 바뀐다)
-│  ├─ types.ts             Step / Prompt / Block 타입 정의
+│  ├─ types.ts             Step / Prompt / Block / Guide 타입 정의
 │  ├─ index.ts             전체 단계 목록과 조회 함수
+│  ├─ guides.ts            안내서 (클릭 단위 절차) — /guides 에서 렌더링
 │  └─ steps/
 │     ├─ part0.ts          STEP 00–01  준비 (오리엔테이션, PRD)
 │     ├─ part1.ts          STEP 02–05  앱의 뼈대 (셋업, 데이터 모델, 캘린더, CRUD)
 │     ├─ part2.ts          STEP 06–07  외부 캘린더 연동 (구글, 네이버·ICS)
 │     ├─ part3.ts          STEP 08–10  업무 활용 (주간보고, 발표 모드, 인수인계)
 │     └─ part4.ts          STEP 11–14  웍스 AI, RADIUS, Coolify, 운영·요청서
-├─ components/             Layout, Blocks 렌더러, PromptCard, CodeBlock
-├─ pages/                  HomePage, StepPage, PromptsPage
+├─ components/             Layout, Blocks 렌더러, PromptCard, CodeBlock, GuideView
+├─ pages/                  HomePage, StepPage, PromptsPage, GuidesPage, GuidePage
 ├─ demo/                   동작하는 완성 결과물 데모 (각 단계의 "완성 데모" 탭에서 렌더링)
 │  ├─ registry.tsx         데모 종류 → 컴포넌트 · 조작법 매핑
 │  ├─ GoogleLiveDemo.tsx   STEP 06 실연동 데모 (실제 구글 캘린더)

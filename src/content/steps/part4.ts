@@ -402,6 +402,7 @@ function fallback(input: string, reason: string) {
   {
     id: '12',
     slug: 'radius-auth',
+    guides: ['dx-request'],
     part: 'PART 4 · AI · 인증 · 배포',
     title: 'RADIUS 로그인 연동',
     tagline: '사내 계정으로 로그인하게 만들기',
@@ -755,6 +756,7 @@ async function stubAuthenticate(username: string, password: string) {
   {
     id: '13',
     slug: 'coolify-deploy',
+    guides: ['github-pages', 'dx-request'],
     part: 'PART 4 · AI · 인증 · 배포',
     title: 'Coolify 배포',
     tagline: '내 컴퓨터에서만 되던 것을 팀이 쓰게 만들기',
@@ -1068,6 +1070,7 @@ dropdb -U app wc_restore_test`,
   {
     id: '14',
     slug: 'operate-and-next',
+    guides: ['dx-request'],
     part: 'PART 4 · AI · 인증 · 배포',
     title: '운영, 그리고 dX팀에 넘기기',
     tagline: '만든 것을 계속 쓰이게 만드는 일 + 잘 요청하는 방법',

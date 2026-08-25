@@ -4,6 +4,7 @@ export const part1: Step[] = [
   {
     id: '02',
     slug: 'project-setup',
+    guides: ['local-run', 'ai-tool'],
     part: 'PART 1 · 앱의 뼈대',
     title: '프로젝트 셋업',
     tagline: '빈 폴더에서 "localhost에 화면이 뜬다"까지',

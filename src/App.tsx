@@ -2,6 +2,8 @@ import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { stepWithDemo } from './content'
 import { DemoProvider } from './demo/store'
+import { GuidePage } from './pages/GuidePage'
+import { GuidesPage } from './pages/GuidesPage'
 import { HomePage } from './pages/HomePage'
 import { PromptsPage } from './pages/PromptsPage'
 import { StepPage } from './pages/StepPage'
@@ -15,6 +17,8 @@ export default function App() {
           <Route path="/steps/:slug" element={<StepPage />} />
           <Route path="/steps/:slug/:tab" element={<StepPage />} />
           <Route path="/prompts" element={<PromptsPage />} />
+          <Route path="/guides" element={<GuidesPage />} />
+          <Route path="/guides/:id" element={<GuidePage />} />
           {/* 데모는 각 단계 안으로 옮겼다. 예전 /demo/* 링크는 해당 단계로 보낸다. */}
           <Route path="/demo" element={<Navigate to="/" replace />} />
           <Route path="/demo/:section" element={<DemoRedirect />} />

@@ -62,4 +62,59 @@ export interface Step {
   dxNote?: string
   /** 이 단계에서 만들 결과물의 동작하는 데모. 프롬프트를 치기 전에 먼저 본다. */
   demo?: StepDemo
+  /** 이 단계에서 손이 막히는 지점의 클릭 단위 안내서 id 목록 (src/content/guides.ts) */
+  guides?: string[]
+}
+
+/* ────────────────────────────────────────────────────────────
+   안내서(Guide) — "말로만 설명" 대신 클릭 단위로 따라 하는 문서.
+   한 스텝 = 한 화면에서 하는 한 가지 동작.
+   ──────────────────────────────────────────────────────────── */
+
+/** 안내서 한 칸에서 입력해야 하는 값. 복사 버튼이 붙는다. */
+export interface GuideInput {
+  /** 어느 칸에 넣는지 — 화면에 보이는 입력란 이름 그대로 */
+  label: string
+  /**
+   * 넣을 값. `{{origin}}` 은 지금 보고 있는 사이트 주소로,
+   * `{{repo}}` 는 이 교육용 저장소 주소로 렌더링할 때 치환된다.
+   */
+  value: string
+  /** 값에 대한 주의사항 */
+  note?: string
+}
+
+export interface GuideStep {
+  /** 어느 화면인지 — "구글 클라우드 콘솔 › 사용자 인증 정보" */
+  where: string
+  /** 그 화면으로 바로 가는 링크 */
+  link?: { href: string; label: string }
+  /** 화면에서 무엇을 누르는지. 버튼·메뉴 이름을 화면에 뜬 글자 그대로 적는다. */
+  click: string[]
+  /** 타이핑하거나 붙여넣어야 하는 값 */
+  input?: GuideInput
+  /** 이렇게 되면 성공 — 다음 칸으로 넘어가도 되는 기준 */
+  expect: string
+  /** 안 될 때 */
+  trouble?: string
+  /** 부연 설명 */
+  note?: string
+}
+
+export interface Guide {
+  id: string
+  title: string
+  /** 왜 이걸 해야 하는지 한 줄 */
+  why: string
+  /** 예상 소요 시간 */
+  minutes: string
+  /** 누가 하는 일인지 — 교육생 본인 / dX팀 */
+  who: '교육생' | 'dX팀'
+  /** 시작 전에 있어야 하는 것 */
+  before?: string[]
+  steps: GuideStep[]
+  /** 끝나면 손에 남는 것 */
+  result: string
+  /** dX팀에 넘겨도 되는 부분 */
+  dxNote?: string
 }

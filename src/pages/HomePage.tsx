@@ -94,6 +94,36 @@ export function HomePage() {
         </p>
       </section>
 
+      {/* 안내서 */}
+      <section className="border-hair mb-8 rounded-xl border p-5">
+        <h2 className="text-[15px] font-semibold tracking-tight">"어디 들어가서 뭘 눌러요?" 는 안내서에</h2>
+        <p className="text-muted mt-2 text-[13px] leading-7">
+          구글 클라이언트 ID 만들기, 내 컴퓨터에서 띄우기, 깃허브로 배포하기처럼 <strong>손이 막히는 부분</strong>은
+          따로 안내서로 뺐습니다. 설명이 아니라 링크 · 누를 버튼 · 넣을 값 · 성공 기준이 칸마다 적혀 있습니다.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            ['google-client-id', '구글 클라이언트 ID 만들기'],
+            ['local-run', '내 컴퓨터에서 띄우기'],
+            ['github-pages', '인터넷에 배포하기'],
+          ].map(([id, label]) => (
+            <Link
+              key={id}
+              to={`/guides/${id}`}
+              className="border-brand-500/50 text-brand-500 hover:bg-brand-500/10 rounded-lg border px-3 py-1.5 text-[12.5px] font-semibold transition"
+            >
+              {label} →
+            </Link>
+          ))}
+          <Link
+            to="/guides"
+            className="border-hair text-muted hover:text-brand-500 rounded-lg border px-3 py-1.5 text-[12.5px] transition"
+          >
+            전체 보기
+          </Link>
+        </div>
+      </section>
+
       {/* 커리큘럼 */}
       <section>
         <h2 className="mb-3 text-[15px] font-semibold tracking-tight">전체 15단계</h2>

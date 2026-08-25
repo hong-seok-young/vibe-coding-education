@@ -4,6 +4,7 @@ import { Blocks } from '../components/Blocks'
 import { Inline } from '../components/Inline'
 import { PromptCard } from '../components/PromptCard'
 import { findStep, neighbors, steps } from '../content'
+import { findGuide } from '../content/guides'
 import type { Step } from '../content'
 import { DEMOS } from '../demo/registry'
 import { useCopy } from '../lib/useCopy'
@@ -126,10 +127,10 @@ export function StepPage() {
 
         {tab === 'prompt' && (
           <div className="space-y-5">
-            <Guide>
+            <TabHint>
               아래 프롬프트를 <strong>순서대로 하나씩</strong> AI 대화창에 붙여넣는다. 하나가 끝나고 결과를 확인한
               뒤 다음으로 넘어간다. 한 번에 여러 개를 붙여넣으면 결과가 섞인다.
-            </Guide>
+            </TabHint>
             {step.prompts.map((p, i) => (
               <PromptCard key={p.id} prompt={p} index={i} />
             ))}
@@ -138,20 +139,20 @@ export function StepPage() {
 
         {tab === 'sample' && (
           <div className="space-y-5">
-            <Guide>
+            <TabHint>
               프롬프트를 실행하면 나올 결과를 미리 넣어둔 것이다. <strong>AI를 기다리지 않고 이 탭만 읽어도</strong>{' '}
               전체 흐름을 이해할 수 있다.
-            </Guide>
+            </TabHint>
             <Blocks blocks={step.sample} />
           </div>
         )}
 
         {tab === 'explain' && (
           <div className="space-y-5">
-            <Guide>
+            <TabHint>
               dX팀이 대신 만들어 주더라도 <strong>왜 그렇게 하는지, 무엇을 결정해야 하는지</strong>는 알아야 한다.
               이 탭이 그 내용이다.
-            </Guide>
+            </TabHint>
             <Blocks blocks={step.explain} />
           </div>
         )}
@@ -232,6 +233,7 @@ function StartTab({ step, onNext }: { step: Step; onNext: () => void }) {
   const { copied, copy } = useCopy()
   const allPrompts = step.prompts.map((p) => `# ${p.label}\n\n${p.body}`).join('\n\n---\n\n')
   const demo = step.demo ? DEMOS[step.demo.kind] : null
+  const stepGuides = (step.guides ?? []).map(findGuide).filter((g) => !!g)
 
   return (
     <div>
@@ -270,6 +272,29 @@ function StartTab({ step, onNext }: { step: Step; onNext: () => void }) {
           <p className="text-muted mt-3 rounded-xl border border-violet-500/40 bg-violet-500/5 px-4 py-2.5 text-[12.5px] leading-6">
             🛠️ <Inline text={step.dxNote} />
           </p>
+        )}
+
+        {stepGuides.length > 0 && (
+          <section className="border-hair mt-3 rounded-xl border border-dashed p-4">
+            <h2 className="text-[13px] font-semibold">이 단계에서 손이 막히면 — 클릭 단위 안내서</h2>
+            <p className="text-muted mt-1 text-[12.5px] leading-6">
+              어느 링크로 들어가서 어느 버튼을 누르는지까지 적혀 있습니다.
+            </p>
+            <ul className="mt-2.5 flex flex-wrap gap-2">
+              {stepGuides.map((g) => (
+                <li key={g.id}>
+                  <Link
+                    to={`/guides/${g.id}`}
+                    className="border-brand-500/50 text-brand-500 hover:bg-brand-500/10 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12.5px] font-semibold transition"
+                  >
+                    {g.title}
+                    <span className="text-muted font-normal">· {g.minutes}</span>
+                    <span>→</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         {demo && step.demo && (
@@ -335,10 +360,10 @@ function CheckTab({
 
   return (
     <div className="space-y-5">
-      <Guide>
+      <TabHint>
         하나씩 직접 눌러 확인한다. AI는 "동작할 것 같은 코드"를 아주 잘 만들지만,{' '}
         <strong>실제로 동작하는지는 실행해봐야 안다.</strong>
-      </Guide>
+      </TabHint>
 
       <ul className="border-hair surface divide-y overflow-hidden rounded-xl border">
         {step.checklist.map((c, i) => {
@@ -386,7 +411,7 @@ function CheckTab({
 }
 
 /** 탭마다 맨 위에 붙는 한 줄 안내 — "지금 뭘 하는 시간인지" */
-function Guide({ children }: { children: React.ReactNode }) {
+function TabHint({ children }: { children: React.ReactNode }) {
   return (
     <p className="border-hair surface-2 rounded-xl border px-4 py-3 text-[13px] leading-7">{children}</p>
   )

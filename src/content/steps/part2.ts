@@ -4,6 +4,7 @@ export const part2: Step[] = [
   {
     id: '06',
     slug: 'google-calendar',
+    guides: ['google-client-id', 'google-sync-test', 'google-revoke'],
     part: 'PART 2 · 외부 캘린더 연동',
     title: '구글 캘린더 연동',
     tagline: 'OAuth 로그인 → 일정 읽기 → 내보내기 → 증분 동기화',

@@ -1,0 +1,7 @@
+# API 키가 들어있는 파일 — 절대 커밋하지 않는다
+.env
+
+__pycache__/
+*.pyc
+venv/
+.venv/

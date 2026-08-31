@@ -1,11 +1,12 @@
 """사내 이슈 데일리 리포트 봇 — 바이브코딩 실습 완성본.
 
 파이프라인:
-    수집(RSS · 네이버 뉴스 · DART 공시) → Claude API 요약 → Gmail 발송
+    수집(RSS · 네이버 뉴스 · DART 공시) → Claude API 요약 → Outlook 발송
 
 실행:
     python main.py --dry-run     # 메일 없이 콘솔로만 확인 (처음엔 이걸로)
     python main.py --no-ai       # AI 요약 없이 목록만
+    python main.py --login       # 아웃룩(Microsoft) 로그인만 미리 해두기
     python main.py               # 전체 실행 (메일 발송)
 
 설정은 모두 같은 폴더의 .env 파일에서 읽는다. (.env.example 참고)
@@ -15,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import json
 import os
 import re
 import smtplib
@@ -54,10 +56,26 @@ DART_API_KEY = os.getenv("DART_API_KEY", "")
 NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "")
 NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET", "")
 
-GMAIL_ADDRESS = os.getenv("GMAIL_ADDRESS", "")
-# 앱 비밀번호는 구글이 "abcd efgh ijkl mnop" 처럼 띄어쓰기와 함께 보여준다. 붙여서 쓴다.
-GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "").replace(" ", "")
-MAIL_TO = _env_list("MAIL_TO") or ([GMAIL_ADDRESS] if GMAIL_ADDRESS else [])
+# ── 아웃룩(Microsoft 365 / Outlook.com) 발송 설정 ──────────
+# 보내는 사람이자, MAIL_TO 를 비웠을 때의 기본 수신자.
+OUTLOOK_ADDRESS = os.getenv("OUTLOOK_ADDRESS", "")
+
+# 발송 방식: graph(권장) | smtp | auto(기본 — 설정된 쪽을 알아서 고른다)
+MAIL_PROVIDER = os.getenv("MAIL_PROVIDER", "auto").strip().lower()
+
+# Graph 방식에 필요한 값. Azure 포털에 등록한 앱의 ID (비밀번호는 필요 없다).
+MS_CLIENT_ID = os.getenv("MS_CLIENT_ID", "").strip()
+# 회사 계정이면 사내 테넌트 ID, 개인 outlook.com 계정도 섞어 쓰려면 common.
+MS_TENANT_ID = os.getenv("MS_TENANT_ID", "common").strip() or "common"
+# 로그인 결과(토큰)를 저장해 두는 파일. 두 번째 실행부터는 로그인 창이 안 뜬다.
+MS_TOKEN_CACHE = os.getenv("MS_TOKEN_CACHE", ".ms_token_cache.json")
+
+# SMTP 방식(옛 방식)에만 필요. 사내 정책상 막혀 있는 회사가 많다.
+OUTLOOK_PASSWORD = os.getenv("OUTLOOK_PASSWORD", "").strip()
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.office365.com").strip()
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+
+MAIL_TO = _env_list("MAIL_TO") or ([OUTLOOK_ADDRESS] if OUTLOOK_ADDRESS else [])
 
 
 @dataclass
@@ -355,31 +373,160 @@ def build_html(summary: str, items: list[Item]) -> str:
 </body></html>"""
 
 
-def send_mail(subject: str, html_body: str, plain_body: str) -> None:
-    if not (GMAIL_ADDRESS and GMAIL_APP_PASSWORD):
-        print("  ! 메일 설정이 없습니다 (.env의 GMAIL_ADDRESS / GMAIL_APP_PASSWORD)")
-        return
-    if not MAIL_TO:
-        print("  ! 받는 사람이 없습니다 (.env의 MAIL_TO)")
-        return
+# ── 방법 1. Microsoft Graph API (권장) ────────────────────
+# 회사 아웃룩(Microsoft 365)은 2025년부터 "아이디 + 비밀번호" 로 메일을 보내는
+# 옛 방식(SMTP 기본 인증)을 막았다. 지금 확실하게 되는 길은 Graph API 다.
+# 흐름: 화면에 뜬 코드를 브라우저에 입력해 한 번 로그인 → 토큰을 파일에 저장 →
+#       다음부터는 자동. 비밀번호를 .env 에 적지 않아도 되니 더 안전하다.
+
+GRAPH_SCOPES = ["Mail.Send"]
+GRAPH_SEND_URL = "https://graph.microsoft.com/v1.0/me/sendMail"
+
+
+def _msal_app():
+    """MSAL 앱 객체. 토큰 캐시를 파일에 붙여 둔다."""
+    try:
+        import msal
+    except ImportError:
+        print("  ! msal 라이브러리가 없습니다.  pip install -r requirements.txt 를 먼저 실행하세요.")
+        return None, None
+
+    cache = msal.SerializableTokenCache()
+    cache_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), MS_TOKEN_CACHE)
+    if os.path.exists(cache_path):
+        cache.deserialize(open(cache_path, encoding="utf-8").read())
+
+    app = msal.PublicClientApplication(
+        MS_CLIENT_ID,
+        authority=f"https://login.microsoftonline.com/{MS_TENANT_ID}",
+        token_cache=cache,
+    )
+    return app, cache_path
+
+
+def _save_cache(cache, cache_path: str) -> None:
+    if cache.has_state_changed:
+        with open(cache_path, "w", encoding="utf-8") as f:
+            f.write(cache.serialize())
+
+
+def graph_access_token(interactive: bool = True) -> str:
+    """액세스 토큰을 얻는다. 저장된 토큰이 있으면 조용히 갱신하고, 없으면 로그인 안내를 띄운다."""
+    if not MS_CLIENT_ID:
+        print("  ! .env 의 MS_CLIENT_ID 가 비어 있습니다 (Azure 앱 등록 후 받은 값).")
+        return ""
+
+    app, cache_path = _msal_app()
+    if app is None:
+        return ""
+
+    result = None
+    accounts = app.get_accounts()
+    if accounts:
+        result = app.acquire_token_silent(GRAPH_SCOPES, account=accounts[0])
+
+    if not result:
+        if not interactive:
+            print("  ! 저장된 로그인이 없습니다.  python main.py --login 을 먼저 실행하세요.")
+            return ""
+        flow = app.initiate_device_flow(scopes=GRAPH_SCOPES)
+        if "user_code" not in flow:
+            print(f"  ! 로그인 시작 실패: {flow.get('error_description', flow)}")
+            return ""
+        print()
+        print("  ┌─ 아웃룩 로그인 ─────────────────────────────")
+        print(f"  │ 1) 브라우저에서 {flow['verification_uri']} 열기")
+        print(f"  │ 2) 코드 입력: {flow['user_code']}")
+        print("  │ 3) 회사 아웃룩 계정으로 로그인 후 [수락]")
+        print("  └───────────────────────────────────────────")
+        print("  (로그인을 마칠 때까지 여기서 기다립니다)")
+        result = app.acquire_token_by_device_flow(flow)
+
+    _save_cache(app.token_cache, cache_path)
+
+    if "access_token" not in result:
+        print(f"  ! 로그인 실패: {result.get('error_description', result)}")
+        return ""
+    return result["access_token"]
+
+
+def send_via_graph(subject: str, html_body: str) -> bool:
+    token = graph_access_token()
+    if not token:
+        return False
+
+    payload = {
+        "message": {
+            "subject": subject,
+            "body": {"contentType": "HTML", "content": html_body},
+            "toRecipients": [{"emailAddress": {"address": a}} for a in MAIL_TO],
+        },
+        "saveToSentItems": True,
+    }
+    res = requests.post(
+        GRAPH_SEND_URL,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+        data=json.dumps(payload),
+        timeout=30,
+    )
+    if res.status_code == 202:           # 202 Accepted 가 정상 (본문은 비어 있다)
+        return True
+
+    print(f"  ! Graph 발송 실패 [{res.status_code}] {res.text[:300]}")
+    if res.status_code == 403:
+        print("    → 앱에 Mail.Send 권한이 없거나 관리자 동의가 안 된 상태입니다.")
+    return False
+
+
+# ── 방법 2. SMTP (옛 방식) ────────────────────────────────
+# 사내 정책이 아직 허용하거나, 개인 outlook.com 계정을 쓸 때만 된다.
+# 회사 계정에서 535 오류가 나면 막힌 것이니 위의 Graph 방식으로 간다.
+
+def send_via_smtp(subject: str, html_body: str, plain_body: str) -> bool:
+    if not (OUTLOOK_ADDRESS and OUTLOOK_PASSWORD):
+        print("  ! .env 의 OUTLOOK_ADDRESS / OUTLOOK_PASSWORD 가 비어 있습니다.")
+        return False
 
     message = EmailMessage()
     message["Subject"] = subject
-    message["From"] = GMAIL_ADDRESS
+    message["From"] = OUTLOOK_ADDRESS
     message["To"] = ", ".join(MAIL_TO)
     message.set_content(plain_body)                       # 텍스트만 보는 메일 앱을 위한 대체본
     message.add_alternative(html_body, subtype="html")
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as smtp:
-            smtp.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as smtp:
+            smtp.starttls()                               # 587 포트는 접속 후 암호화로 전환한다
+            smtp.login(OUTLOOK_ADDRESS, OUTLOOK_PASSWORD)
             smtp.send_message(message)
-    except smtplib.SMTPAuthenticationError:
-        print("  ! 로그인 실패 — 구글 계정에 2단계 인증을 켜고 '앱 비밀번호'를 발급받아 쓰세요.")
-        print("    (평소 쓰는 구글 비밀번호로는 로그인되지 않습니다)")
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"  ! 로그인 실패 — {e.smtp_code} {e.smtp_error!r}")
+        print("    회사 아웃룩은 SMTP 기본 인증이 막혀 있는 경우가 대부분입니다.")
+        print("    .env 에 MS_CLIENT_ID 를 채우고 Graph 방식(MAIL_PROVIDER=graph)으로 보내세요.")
+        return False
+    except OSError as e:
+        print(f"  ! SMTP 접속 실패 — {e}")
+        print("    사내 방화벽이 587 포트를 막았을 수 있습니다.")
+        return False
+    return True
+
+
+def send_mail(subject: str, html_body: str, plain_body: str) -> None:
+    if not MAIL_TO:
+        print("  ! 받는 사람이 없습니다 (.env의 MAIL_TO 또는 OUTLOOK_ADDRESS)")
         return
 
-    print(f"  ✓ 메일 발송 완료 → {', '.join(MAIL_TO)}")
+    provider = MAIL_PROVIDER
+    if provider == "auto":
+        provider = "graph" if MS_CLIENT_ID else "smtp"
+
+    if provider == "graph":
+        ok = send_via_graph(subject, html_body)
+    else:
+        ok = send_via_smtp(subject, html_body, plain_body)
+
+    if ok:
+        print(f"  ✓ 메일 발송 완료 ({provider}) → {', '.join(MAIL_TO)}")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -390,7 +537,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="사내 이슈 데일리 리포트 봇")
     parser.add_argument("--dry-run", action="store_true", help="메일을 보내지 않고 콘솔에만 출력")
     parser.add_argument("--no-ai", action="store_true", help="AI 요약을 건너뜀")
+    parser.add_argument("--login", action="store_true",
+                        help="아웃룩(Microsoft) 로그인만 미리 해둔다. 수집·발송은 하지 않음")
     args = parser.parse_args()
+
+    if args.login:
+        print("아웃룩 로그인을 시작합니다.")
+        if graph_access_token():
+            print(f"  ✓ 로그인 완료. 토큰을 {MS_TOKEN_CACHE} 에 저장했습니다.")
+            print("    이제 python main.py 로 바로 발송할 수 있습니다.")
+            return 0
+        return 1
 
     if not KEYWORDS and not RSS_FEEDS and not DART_WATCH:
         print("설정된 키워드가 없습니다. .env 파일의 KEYWORDS를 채워주세요.")

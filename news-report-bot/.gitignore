@@ -5,3 +5,6 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+
+# 아웃룩 로그인 토큰 — 커밋하지 않는다
+.ms_token_cache.json

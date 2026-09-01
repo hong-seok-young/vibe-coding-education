@@ -6,9 +6,11 @@
 <title>이슈봇 만들기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"></noscript>
 <style>
-
   :root {
     --paper: #eef0ee;
     --surface: #ffffff;
@@ -25,6 +27,7 @@
     --good-wash: #e3f0e6;
     --focus: #2f6fb0;
     --shadow: 0 1px 2px rgba(20, 24, 22, 0.06), 0 6px 20px -8px rgba(20, 24, 22, 0.12);
+    --toc-w: 250px;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -74,73 +77,231 @@
     line-height: 1.6;
   }
 
-  .wrap {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 40px 20px 80px;
-  }
-
-  code, .mono, .num, .stat-value {
+  code, .mono {
     font-family: "IBM Plex Mono", ui-monospace, monospace;
   }
 
-  /* ── 헤더 ── */
+  /* ── 플로팅 목차 ── */
 
-  .roadmap {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 22px;
-  }
-
-  .roadmap span, .roadmap a {
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    color: var(--muted);
+  .toc-toggle {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 30;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid var(--line-strong);
     background: var(--surface);
-    text-decoration: none;
-  }
-
-  .roadmap a:hover {
     color: var(--ink);
-    border-color: var(--line-strong);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    font-size: 16px;
   }
 
-  .roadmap span.current {
-    border-color: var(--accent);
-    color: var(--accent-ink);
+  .toc-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .toc-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 11, 0.4);
+    z-index: 24;
+  }
+
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--toc-w);
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    padding: 22px 14px 30px;
+    z-index: 25;
+  }
+
+  .toc-brand {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    padding: 0 10px;
+    margin-bottom: 4px;
+  }
+
+  .toc-brand .sub {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .toc-close {
+    display: none;
+    position: absolute;
+    top: 14px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .toc-mini-progress {
+    margin: 14px 10px 16px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border-radius: 10px;
+  }
+
+  .toc-mini-progress .n {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .toc-mini-track {
+    margin-top: 6px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .toc-mini-fill {
+    height: 100%;
+    width: 0%;
     background: var(--accent);
+    border-radius: inherit;
+    transition: width 0.3s ease;
+  }
+
+  .toc-group-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 10px 4px;
+  }
+
+  .toc-link {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    position: relative;
+  }
+
+  .toc-link:hover { background: var(--surface-2); color: var(--ink); }
+
+  .toc-link:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+
+  .toc-link.current {
+    background: var(--accent-wash);
+    color: var(--accent);
     font-weight: 600;
   }
 
+  .toc-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line-strong);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .toc-link.done .toc-badge {
+    background: var(--good);
+    border-color: var(--good);
+    color: #fff;
+  }
+
+  .toc-link.done .toc-badge::before { content: "✓"; }
+  .toc-link.done .toc-badge > * { display: none; }
+
+  @media (max-width: 900px) {
+    .toc-toggle { display: flex; }
+    .toc-backdrop.show { display: block; }
+    .toc {
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+    .toc.open { transform: translateX(0); }
+    .toc-close { display: block; }
+    .content-outer { margin-left: 0 !important; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toc { transition: none; }
+  }
+
+  /* ── 본문 레이아웃 ── */
+
+  .content-outer {
+    margin-left: var(--toc-w);
+    min-height: 100vh;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 90px;
+  }
+
   h1 {
-    font-size: clamp(26px, 4vw, 34px);
+    font-size: clamp(24px, 4vw, 30px);
     font-weight: 700;
     margin: 0 0 8px;
     letter-spacing: -0.01em;
     text-wrap: balance;
   }
 
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+
   .lede {
     color: var(--ink-soft);
-    font-size: 15.5px;
+    font-size: 15px;
     max-width: 62ch;
-    margin: 0 0 28px;
+    margin: 0 0 20px;
   }
 
   .lede strong { color: var(--ink); }
-
-  /* ── 진행 바 ── */
 
   .progress-card {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 14px;
-    padding: 18px 20px;
+    padding: 16px 18px;
     box-shadow: var(--shadow);
-    margin-bottom: 34px;
+    margin-bottom: 30px;
   }
 
   .progress-top {
@@ -151,15 +312,13 @@
     margin-bottom: 10px;
   }
 
-  .progress-top .label {
-    font-size: 13px;
-    color: var(--muted);
-  }
+  .progress-top .label { font-size: 13px; color: var(--muted); }
 
   .progress-top .stat-value {
     font-size: 15px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
   }
 
   .progress-track {
@@ -177,28 +336,31 @@
     transition: width 0.35s ease;
   }
 
-  .progress-note {
-    margin: 12px 0 0;
-    font-size: 12.5px;
-    color: var(--muted);
+  .progress-note { margin: 12px 0 0; font-size: 12.5px; color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-fill, .toc-mini-fill { transition: none; }
+  }
+
+  /* ── 페이지 전환 ── */
+
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.15s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .progress-fill { transition: none; }
+    .page.active { animation: none; }
   }
 
-  /* ── 섹션 ── */
+  /* prep 페이지 내부 (기존 체크리스트 스타일) */
 
-  section.group {
-    margin-bottom: 36px;
-  }
+  section.group { margin-bottom: 0; }
 
-  .group-head {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    margin-bottom: 4px;
-  }
+  .group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
 
   .group-head .num {
     font-size: 13px;
@@ -209,23 +371,13 @@
     padding: 2px 8px;
   }
 
-  .group-head h2 {
-    font-size: 18px;
-    font-weight: 700;
-    margin: 0;
-  }
+  .group-head h2 { font-size: 17px; }
 
-  .group-sub {
-    color: var(--muted);
-    font-size: 13.5px;
-    margin: 0 0 14px 0;
-  }
+  .group-sub { color: var(--muted); font-size: 13.5px; margin: 0 0 14px 0; }
 
-  .items {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+  .page-inner > section.group { margin-bottom: 30px; }
+
+  .items { display: flex; flex-direction: column; gap: 10px; }
 
   .item {
     display: grid;
@@ -238,22 +390,13 @@
     transition: border-color 0.15s ease, background 0.15s ease;
   }
 
-  .item:has(.check:checked) {
-    border-color: var(--good);
-    background: var(--good-wash);
-  }
+  .item:has(.check:checked) { border-color: var(--good); background: var(--good-wash); }
 
-  @media (prefers-reduced-motion: reduce) {
-    .item { transition: none; }
-  }
+  @media (prefers-reduced-motion: reduce) { .item { transition: none; } }
 
-  .check-col {
-    display: flex;
-    justify-content: center;
-    padding-top: 2px;
-  }
+  .check-col { display: flex; justify-content: center; padding-top: 2px; }
 
-  .check {
+  .check, .page-check {
     appearance: none;
     width: 20px;
     height: 20px;
@@ -266,12 +409,12 @@
     flex-shrink: 0;
   }
 
-  .check:focus-visible {
+  .check:focus-visible, .page-check:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
 
-  .check::after {
+  .check::after, .page-check::after {
     content: "";
     width: 10px;
     height: 6px;
@@ -281,12 +424,8 @@
     opacity: 0;
   }
 
-  .check:checked {
-    background: var(--good);
-    border-color: var(--good);
-  }
-
-  .check:checked::after { opacity: 1; }
+  .check:checked, .page-check:checked { background: var(--good); border-color: var(--good); }
+  .check:checked::after, .page-check:checked::after { opacity: 1; }
 
   .item-title {
     display: flex;
@@ -309,24 +448,11 @@
   .tag.required { background: var(--accent-wash); color: var(--accent); }
   .tag.free { background: var(--good-wash); color: var(--good); }
 
-  .item p {
-    margin: 0 0 8px;
-    font-size: 13.5px;
-    color: var(--ink-soft);
-  }
-
+  .item p { margin: 0 0 8px; font-size: 13.5px; color: var(--ink-soft); }
   .item p:last-child { margin-bottom: 0; }
+  .item .warn { color: var(--accent); }
 
-  .item .warn {
-    color: var(--accent);
-  }
-
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-  }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 
   .btn {
     display: inline-flex;
@@ -342,25 +468,10 @@
     background: var(--surface);
   }
 
-  .btn:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
-  }
-
-  .btn.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--accent-ink);
-  }
-
-  .btn.big {
-    font-size: 14.5px;
-    padding: 12px 22px;
-  }
-
+  .btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.big { font-size: 14.5px; padding: 12px 22px; }
   .btn .arrow { font-size: 15px; line-height: 1; }
-
-  /* ── 다운로드 카드 ── */
 
   .download-card {
     background: var(--surface);
@@ -371,101 +482,26 @@
     margin-bottom: 14px;
   }
 
-  .download-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
-  }
+  .download-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .download-head h3 { margin: 0; font-size: 16px; font-weight: 700; }
+  .download-card > p { margin: 0 0 4px; font-size: 13.5px; color: var(--ink-soft); }
 
-  .download-head h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-  }
+  .tiny { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
 
-  .download-card > p {
-    margin: 0 0 4px;
-    font-size: 13.5px;
-    color: var(--ink-soft);
-  }
-
-  .tiny {
-    font-size: 12px;
-    color: var(--muted);
-    margin: 10px 0 0;
-  }
-
-  .filetable {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 12px;
-    font-size: 13px;
-  }
-
-  .filetable th, .filetable td {
-    text-align: left;
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .filetable th {
-    color: var(--muted);
-    font-weight: 600;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
+  .filetable { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+  .filetable th, .filetable td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .filetable th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
   .filetable td:last-child, .filetable th:last-child { text-align: right; }
 
-  .install-details {
-    margin-top: 14px;
-    padding-top: 12px;
-    border-top: 1px solid var(--line);
-  }
+  .install-details { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .install-details summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .install-details summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .install-details[open] summary { color: var(--ink); margin-bottom: 8px; }
 
-  .install-details summary {
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-soft);
-  }
+  .install-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 13px; color: var(--ink-soft); }
+  .install-list strong { color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.95em; }
 
-  .install-details summary:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
-  }
-
-  .install-details[open] summary {
-    color: var(--ink);
-    margin-bottom: 8px;
-  }
-
-  .install-list {
-    margin: 0;
-    padding-left: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    font-size: 13px;
-    color: var(--ink-soft);
-  }
-
-  .install-list strong {
-    color: var(--ink);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 0.95em;
-  }
-
-  .kv {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 4px 12px;
-    font-size: 13px;
-    margin-top: 8px;
-  }
-
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 13px; margin-top: 8px; }
   .kv dt { color: var(--muted); }
   .kv dd { margin: 0; }
 
@@ -476,8 +512,6 @@
     font-size: 0.92em;
   }
 
-  /* ── 하단 ── */
-
   .callout {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -486,138 +520,46 @@
     padding: 16px 18px;
     font-size: 13.5px;
     color: var(--ink-soft);
-    margin-top: 8px;
+    margin-top: 22px;
   }
 
   .callout strong { color: var(--ink); }
+  .callout a { color: var(--accent); }
 
-  footer {
-    margin-top: 44px;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
-    font-size: 12px;
+  /* ── 실습 STEP 페이지 ── */
+
+  .page-head { margin-bottom: 18px; }
+
+  .page-eyebrow {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
     color: var(--muted);
-  }
-  /* ── 실습 섹션 (사전 준비 스타일 위에 얹는 추가분) ── */
-
-  .progress-card { position: sticky; top: 12px; z-index: 5; }
-
-  .phase-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin: 0 0 6px;
-    letter-spacing: -0.01em;
-  }
-
-  .flow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin: 0 0 28px;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-  }
-
-  .flow span.chip {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 5px 12px;
-  }
-
-  .flow span.arrow { color: var(--line-strong); }
-
-  .step-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 18px 20px 20px;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow);
-    transition: border-color 0.15s ease;
-  }
-
-  .step-card:has(.step-check:checked) { border-color: var(--good); }
-
-  @media (prefers-reduced-motion: reduce) {
-    .step-card { transition: none; }
-  }
-
-  .step-check-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     margin-bottom: 8px;
   }
 
-  .step-check {
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    border: 1.5px solid var(--line-strong);
-    background: var(--surface);
-    cursor: pointer;
-    display: grid;
-    place-content: center;
-    flex-shrink: 0;
+  .page-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
   }
 
-  .step-check:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
-  }
+  .page-check-wrap { display: flex; }
 
-  .step-check::after {
-    content: "";
-    width: 10px;
-    height: 6px;
-    border-left: 2px solid var(--accent-ink);
-    border-bottom: 2px solid var(--accent-ink);
-    transform: rotate(-45deg) translateY(-1px);
-    opacity: 0;
-  }
-
-  .step-check:checked {
-    background: var(--good);
-    border-color: var(--good);
-  }
-
-  .step-check:checked::after { opacity: 1; }
-
-  .step-num {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--accent);
-    background: var(--accent-wash);
-    border-radius: 999px;
-    padding: 3px 10px;
-    letter-spacing: 0.02em;
-  }
-
-  .step-check-row h3 {
-    flex: 1;
-    min-width: 140px;
-    font-size: 16px;
-    font-weight: 700;
-    margin: 0;
-  }
+  .page-title-row h2 { flex: 1; min-width: 160px; }
 
   .step-time {
     font-size: 12px;
     color: var(--muted);
     font-family: "IBM Plex Mono", ui-monospace, monospace;
+    flex-shrink: 0;
   }
 
-  .step-desc {
-    font-size: 13.5px;
-    color: var(--ink-soft);
-    margin: 0 0 14px;
-  }
+  .step-desc { font-size: 14px; color: var(--ink-soft); margin: 0; }
 
   .cmd-box {
     display: flex;
@@ -626,26 +568,15 @@
     background: var(--surface-2);
     border-radius: 8px;
     padding: 8px 12px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
     font-size: 12.5px;
     flex-wrap: wrap;
   }
 
   .cmd-label { color: var(--muted); flex-shrink: 0; }
+  .cmd-text { font-family: "IBM Plex Mono", ui-monospace, monospace; color: var(--ink); flex: 1; min-width: 140px; }
 
-  .cmd-text {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    color: var(--ink);
-    flex: 1;
-    min-width: 140px;
-  }
-
-  .prompt-box {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 14px;
-  }
+  .prompt-box { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
 
   .prompt-box-head {
     display: flex;
@@ -653,7 +584,7 @@
     justify-content: space-between;
     gap: 10px;
     background: var(--surface-2);
-    padding: 8px 12px;
+    padding: 9px 14px;
     font-size: 12px;
     font-weight: 600;
     color: var(--ink-soft);
@@ -661,10 +592,10 @@
 
   .prompt-text {
     margin: 0;
-    padding: 14px;
+    padding: 16px;
     font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 12.5px;
-    line-height: 1.65;
+    font-size: 13px;
+    line-height: 1.7;
     white-space: pre-wrap;
     word-break: break-word;
     color: var(--ink);
@@ -683,48 +614,23 @@
   }
 
   .copy-btn:hover { color: var(--ink); }
+  .copy-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .copy-btn.copied { color: var(--good); border-color: var(--good); }
 
-  .copy-btn:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
-  }
-
-  .copy-btn.copied {
-    color: var(--good);
-    border-color: var(--good);
-  }
-
-  .criteria-box {
-    background: var(--good-wash);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 4px;
-  }
+  .criteria-box { background: var(--good-wash); border-radius: 10px; padding: 14px 16px; margin-bottom: 4px; }
 
   .criteria-label {
     font-size: 12px;
     font-weight: 700;
     color: var(--good);
-    margin: 0 0 6px;
+    margin: 0 0 8px;
     text-transform: uppercase;
     letter-spacing: 0.03em;
   }
 
-  .criteria-box ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
+  .criteria-box ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
 
-  .criteria-box li {
-    font-size: 13px;
-    color: var(--ink-soft);
-    padding-left: 20px;
-    position: relative;
-  }
+  .criteria-box li { font-size: 13.5px; color: var(--ink-soft); padding-left: 22px; position: relative; }
 
   .criteria-box li::before {
     content: "✓";
@@ -734,89 +640,132 @@
     font-weight: 700;
   }
 
-  .answer-details {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--line);
-  }
-
-  .answer-details summary {
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-soft);
-  }
-
-  .answer-details summary:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: 2px;
-  }
-
-  .answer-details[open] summary {
-    color: var(--ink);
-    margin-bottom: 10px;
-  }
+  .answer-details { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .answer-details summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--ink-soft); }
+  .answer-details summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .answer-details[open] summary { color: var(--ink); margin-bottom: 12px; }
 
   .code-box { position: relative; }
-
-  .code-box .copy-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-  }
+  .code-box .copy-btn { position: absolute; top: 8px; right: 8px; }
 
   .code-block {
     margin: 0;
     background: var(--surface-2);
     border-radius: 10px;
-    padding: 14px;
+    padding: 16px;
     overflow-x: auto;
     font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 12px;
+    font-size: 12.5px;
     line-height: 1.6;
     color: var(--ink);
     white-space: pre;
   }
 
-  .callout a { color: var(--accent); }
+  /* ── 페이지 이동 바 ── */
+
+  .page-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 34px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  .page-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 9px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .page-nav-btn:hover { background: var(--surface-2); }
+  .page-nav-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .page-nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .page-nav-btn:disabled:hover { background: var(--surface); }
+  .page-nav-btn.next { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .page-nav-btn.next:hover { filter: brightness(1.05); }
+
+  .page-nav-pos {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  footer {
+    margin-top: 44px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
+<button class="toc-toggle" id="tocToggle" aria-label="목차 열기" aria-expanded="false">☰</button>
+<div class="toc-backdrop" id="tocBackdrop"></div>
+<nav class="toc" id="toc" aria-label="실습 목차">
+  <button class="toc-close" id="tocClose" aria-label="목차 닫기">✕</button>
+  <div class="toc-brand">이슈봇 만들기<span class="sub">사전 준비부터 발송까지</span></div>
 
-  <nav class="roadmap" aria-label="실습 진행 순서">
-    <a href="#prep">0 · 사전 준비</a>
-    <a href="#part1">1 · 수집</a>
-    <a href="#part2">2 · 메일 발송</a>
-  </nav>
-
-  <h1>이슈봇 만들기</h1>
-  <p class="lede">
-    키워드를 정해두면 <strong>매일 아침 내 메일함으로 리포트가 오는 봇</strong>을,
-    사전 준비부터 발송까지 이 페이지 하나로 직접 만든다. 체크박스와 진행률은
-    이 브라우저에 저장되니 나중에 다시 열어도 이어서 할 수 있다.
-  </p>
-
-  <div class="progress-card">
-    <div class="progress-top">
-      <span class="label">전체 진행률</span>
-      <span class="stat-value"><span id="doneCount">0</span> / <span id="totalCount">0</span> 완료</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
-    <p class="progress-note" id="progressNote">체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전</p>
+  <div class="toc-mini-progress">
+    <span class="n"><span id="tocDone">0</span> / <span id="tocTotal">0</span> 완료</span>
+    <div class="toc-mini-track"><div class="toc-mini-fill" id="tocFill"></div></div>
   </div>
 
-  <section id="prep">
-    <div class="group-head">
-      <span class="num">0</span>
-      <h2>시작 전에</h2>
+  <a class="toc-link" data-page="prep" href="#prep"><span class="toc-badge">0</span>사전 준비</a>
+
+  <div class="toc-group-label">실습 1 · 수집</div>
+      <a class="toc-link" data-page="s0" href="#s0"><span class="toc-badge">0</span>뼈대</a>
+      <a class="toc-link" data-page="s1" href="#s1"><span class="toc-badge">1</span>RSS</a>
+      <a class="toc-link" data-page="s2" href="#s2"><span class="toc-badge">2</span>네이버</a>
+      <a class="toc-link" data-page="s3" href="#s3"><span class="toc-badge">3</span>DART</a>
+      <a class="toc-link" data-page="s4" href="#s4"><span class="toc-badge">4</span>정리</a>
+
+  <div class="toc-group-label">실습 2 · 메일 발송</div>
+      <a class="toc-link" data-page="s5" href="#s5"><span class="toc-badge">5</span>메일 조립</a>
+      <a class="toc-link" data-page="s6" href="#s6"><span class="toc-badge">6</span>아웃룩 발송</a>
+      <a class="toc-link" data-page="s7" href="#s7"><span class="toc-badge">7</span>새 아웃룩</a>
+      <a class="toc-link" data-page="s8" href="#s8"><span class="toc-badge">8</span>완성</a>
+</nav>
+
+<div class="content-outer">
+  <div class="wrap">
+
+    <div class="progress-card">
+      <div class="progress-top">
+        <span class="label">전체 진행률</span>
+        <span class="stat-value"><span id="doneCount">0</span> / <span id="totalCount">0</span> 완료</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <p class="progress-note" id="progressNote">체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전</p>
     </div>
-    <p class="group-sub">
-      당일 발급받으면 2시간 중 40분이 그냥 날아간다. 아래 <span id="itemCountWord">체크리스트</span>를
-      <strong>실습 전에 미리</strong> 끝내 두면 실습 시간에는 코드에만 집중할 수 있다. 항목당 5~10분.
-    </p>
+
+  <section class="page" data-page="prep" id="prep">
+    <div class="page-inner">
+      <h1>이슈봇 만들기</h1>
+      <p class="lede">
+        키워드를 정해두면 <strong>매일 아침 내 메일함으로 리포트가 오는 봇</strong>을,
+        사전 준비부터 발송까지 이 페이지 하나로 직접 만든다. 왼쪽 목차로 언제든
+        원하는 단계로 바로 이동할 수 있고, 체크박스와 진행률은 이 브라우저에 저장된다.
+      </p>
+
+      <div class="group-head" style="margin-top: 26px;">
+        <span class="num">0</span>
+        <h2>시작 전에</h2>
+      </div>
+      <p class="group-sub">
+        당일 발급받으면 2시간 중 40분이 그냥 날아간다. 아래 <span id="itemCountWord">체크리스트</span>를
+        <strong>실습 전에 미리</strong> 끝내 두면 실습 시간에는 코드에만 집중할 수 있다. 항목당 5~10분.
+      </p>
 
   <section class="group">
     <div class="group-head">
@@ -997,48 +946,28 @@
     <strong>막히면?</strong> 에러 메시지 전문을 그대로 복사해서 Claude에게 붙여넣는 것이 가장 빠릅니다.
     DART <code>[013]</code>은 오류가 아니라 그 기간에 공시가 없다는 뜻이니 당황하지 않아도 됩니다.
   </div>
+    </div>
   </section>
 
-  <div class="phase-title" style="margin-top: 44px;">실습 — 프롬프트로 직접 만들기</div>
-  <p class="group-sub">
-    아래 순서대로 <strong>AI에게 프롬프트를 주고, 성공 기준을 확인</strong>하면서 진행한다.
-    막히면 그 단계의 <strong>정답 코드</strong>를 열어서 비교하거나 그대로 갈아 끼우면 된다.
-  </p>
-
-  <div class="flow">
-    <span class="chip">① 프롬프트 복사</span>
-    <span class="arrow">→</span>
-    <span class="chip">② AI에게 붙여넣기</span>
-    <span class="arrow">→</span>
-    <span class="chip">③ 저장하고 실행</span>
-    <span class="arrow">→</span>
-    <span class="chip">④ 성공 기준 확인</span>
-    <span class="arrow">→</span>
-    <span class="chip">안 되면 정답 코드로 교체</span>
-  </div>
-
-  <section class="group" id="part1">
-    <div class="group-head">
-      <span class="num">1</span>
-      <h2>실습 1 · 수집 (45분)</h2>
-    </div>
-    <p class="group-sub">RSS → 네이버 → DART 순서로 붙인다. 키가 없어도 되는 RSS부터 시작해서 첫 성공을 빨리 본다.</p>
-
-    <div class="step-card" id="s0">
-      <label class="step-check-row">
-        <input type="checkbox" class="step-check" data-id="s0">
-        <span class="step-num">STEP 0</span>
-        <h3>프로젝트 뼈대 — 설정 읽어오기</h3>
+  <section class="page" data-page="s0" id="s0">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 1 · 수집</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s0">
+        </label>
+        <h2>STEP 0 · 프로젝트 뼈대 — 설정 읽어오기</h2>
         <span class="step-time">5분</span>
-      </label>
+      </div>
       <p class="step-desc">main.py 파일을 만들고, .env에 적어둔 키워드·키를 코드에서 읽어오는 부분부터 시작한다. 여기서부터는 화면에 뭔가 찍히면 다음 단계로 넘어가도 된다.</p>
+    </div>
 
-      <div class="prompt-box">
-        <div class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-          <button class="copy-btn" data-copy="prompt-s0">복사</button>
-        </div>
-        <pre class="prompt-text" id="prompt-s0">news-report-bot 폴더에 main.py 파일을 만들어줘. 다음을 포함해야 해:
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s0">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s0">news-report-bot 폴더에 main.py 파일을 만들어줘. 다음을 포함해야 해:
 
 1. python-dotenv로 .env 파일을 읽어온다 (load_dotenv() 호출).
 2. .env의 값을 쉼표로 구분해 리스트로 만드는 _env_list(name) 함수를 만들고,
@@ -1053,22 +982,22 @@
 7. HTML 태그와 엔티티를 제거하는 clean_text(raw) 함수도 추가해줘
    (정규식으로 &lt;...&gt; 태그 제거한 뒤 html.unescape 적용).
 8. 맨 아래에 KEYWORDS를 출력하는 코드를 넣어서 잘 읽히는지 확인할 수 있게 해줘.</pre>
-      </div>
+    </div>
 
-      <div class="criteria-box">
-        <p class="criteria-label">성공 기준</p>
-        <ul>
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
           <li>pip install python-dotenv 로 라이브러리를 먼저 설치했다</li>
           <li>python main.py 를 실행하면 .env에 적은 키워드가 그대로 출력된다</li>
           <li>Item(source=&quot;RSS&quot;, title=&quot;테스트&quot;, link=&quot;x&quot;) 를 만들어 item.when 을 출력하면 &quot;-&quot; 가 나온다</li>
-        </ul>
-      </div>
+      </ul>
+    </div>
 
-      <details class="answer-details">
-        <summary>안 되면? 정답 코드 보기</summary>
-        <div class="code-box">
-          <button class="copy-btn code-copy-btn" data-copy="code-s0">복사</button>
-          <pre class="code-block" id="code-s0">def _env_list(name: str) -&gt; list[str]:
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s0">복사</button>
+        <pre class="code-block" id="code-s0">def _env_list(name: str) -&gt; list[str]:
     &quot;&quot;&quot;쉼표로 구분된 환경변수를 리스트로. 빈 값은 버린다.&quot;&quot;&quot;
     return [v.strip() for v in os.getenv(name, &quot;&quot;).split(&quot;,&quot;) if v.strip()]
 
@@ -1104,30 +1033,34 @@ class Item:
 def clean_text(raw: str) -&gt; str:
     &quot;&quot;&quot;HTML 태그와 엔티티를 걷어낸다. (네이버 API 응답은 &lt;b&gt; 태그가 섞여 온다)&quot;&quot;&quot;
     return html.unescape(re.sub(r&quot;&lt;[^&gt;]+&gt;&quot;, &quot;&quot;, raw)).strip()</pre>
-        </div>
-      </details>
-    </div>
+      </div>
+    </details>
+  </section>
 
-    <div class="step-card" id="s1">
-      <label class="step-check-row">
-        <input type="checkbox" class="step-check" data-id="s1">
-        <span class="step-num">STEP 1</span>
-        <h3>RSS 수집 — 키 없이 첫 성공</h3>
+  <section class="page" data-page="s1" id="s1">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 1 · 수집</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s1">
+        </label>
+        <h2>STEP 1 · RSS 수집 — 키 없이 첫 성공</h2>
         <span class="step-time">10분</span>
-      </label>
+      </div>
       <p class="step-desc">구글 뉴스는 키워드 검색 결과를 RSS로 내준다. API 키가 전혀 필요 없어서, 여기서 가장 먼저 결과물을 본다.</p>
+    </div>
 
       <div class="cmd-box">
         <span class="cmd-label">터미널에 먼저 입력</span>
         <code class="cmd-text" id="cmd-s1">pip install feedparser</code>
         <button class="copy-btn" data-copy="cmd-s1">복사</button>
       </div>
-      <div class="prompt-box">
-        <div class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-          <button class="copy-btn" data-copy="prompt-s1">복사</button>
-        </div>
-        <pre class="prompt-text" id="prompt-s1">이어서, 구글 뉴스 RSS로 기사를 모으는 기능을 추가해줘.
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s1">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s1">이어서, 구글 뉴스 RSS로 기사를 모으는 기능을 추가해줘.
 
 1. google_news_rss(keyword) 함수: 아래 형태의 URL 문자열을 리턴해줘 (keyword는 URL 인코딩).
    https://news.google.com/rss/search?q={keyword}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko
@@ -1143,22 +1076,22 @@ def clean_text(raw: str) -&gt; str:
    - 모은 Item 리스트를 리턴한다.
 
 3. 맨 아래 확인용 코드에 collect_rss() 결과 개수를 출력하는 줄을 추가해줘.</pre>
-      </div>
+    </div>
 
-      <div class="criteria-box">
-        <p class="criteria-label">성공 기준</p>
-        <ul>
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
           <li>pip install feedparser 를 실행했다</li>
           <li>python main.py 를 실행하면 에러 없이 &quot;RSS 몇 건&quot; 형태로 개수가 찍힌다</li>
           <li>.env의 KEYWORDS에 흔한 단어(예: 삼성전자)를 넣으면 0건보다 많이 나온다</li>
-        </ul>
-      </div>
+      </ul>
+    </div>
 
-      <details class="answer-details">
-        <summary>안 되면? 정답 코드 보기</summary>
-        <div class="code-box">
-          <button class="copy-btn code-copy-btn" data-copy="code-s1">복사</button>
-          <pre class="code-block" id="code-s1">def google_news_rss(keyword: str) -&gt; str:
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s1">복사</button>
+        <pre class="code-block" id="code-s1">def google_news_rss(keyword: str) -&gt; str:
     &quot;&quot;&quot;구글 뉴스는 키워드 검색 결과를 RSS로 내준다. 키가 필요 없어 실습 시작용으로 좋다.&quot;&quot;&quot;
     return f&quot;https://news.google.com/rss/search?q={quote(keyword)}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko&quot;
 
@@ -1189,30 +1122,34 @@ def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
             ))
 
     return items</pre>
-        </div>
-      </details>
-    </div>
+      </div>
+    </details>
+  </section>
 
-    <div class="step-card" id="s2">
-      <label class="step-check-row">
-        <input type="checkbox" class="step-check" data-id="s2">
-        <span class="step-num">STEP 2</span>
-        <h3>네이버 뉴스 API — 헤더로 인증하기</h3>
+  <section class="page" data-page="s2" id="s2">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 1 · 수집</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s2">
+        </label>
+        <h2>STEP 2 · 네이버 뉴스 API — 헤더로 인증하기</h2>
         <span class="step-time">10분</span>
-      </label>
+      </div>
       <p class="step-desc">처음으로 인증 키가 필요한 API. 요청 헤더에 키를 실어 보내는 방식을 경험한다.</p>
+    </div>
 
       <div class="cmd-box">
         <span class="cmd-label">터미널에 먼저 입력</span>
         <code class="cmd-text" id="cmd-s2">pip install requests</code>
         <button class="copy-btn" data-copy="cmd-s2">복사</button>
       </div>
-      <div class="prompt-box">
-        <div class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-          <button class="copy-btn" data-copy="prompt-s2">복사</button>
-        </div>
-        <pre class="prompt-text" id="prompt-s2">네이버 뉴스 검색 API로 기사를 모으는 collect_naver_news(display=10) 함수를 추가해줘.
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s2">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s2">네이버 뉴스 검색 API로 기사를 모으는 collect_naver_news(display=10) 함수를 추가해줘.
 
 - NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 가 하나라도 없으면
   &quot;- 네이버 키가 없어 건너뜀 (.env의 NAVER_CLIENT_ID / SECRET)&quot; 을 출력하고 빈 리스트를 리턴한다.
@@ -1226,22 +1163,22 @@ def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
 - 응답 JSON의 items 배열을 순회하면서, title은 clean_text로, link는 originallink가 있으면
   그걸 쓰고 없으면 link를 쓴다. pubDate는 email.utils.parsedate_to_datetime 으로 파싱하고,
   타임존 정보가 없으면 KST를 붙여준다. source는 &quot;네이버뉴스&quot;로 Item을 만든다.</pre>
-      </div>
+    </div>
 
-      <div class="criteria-box">
-        <p class="criteria-label">성공 기준</p>
-        <ul>
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
           <li>pip install requests 를 실행했다 (RSS 단계에서 이미 깔았다면 생략)</li>
           <li>.env에 네이버 키를 비워두고 실행하면 에러 없이 &quot;건너뜀&quot; 메시지만 뜬다</li>
           <li>키를 채우고 실행하면 &quot;네이버뉴스 몇 건&quot; 이 0보다 크게 나온다</li>
-        </ul>
-      </div>
+      </ul>
+    </div>
 
-      <details class="answer-details">
-        <summary>안 되면? 정답 코드 보기</summary>
-        <div class="code-box">
-          <button class="copy-btn code-copy-btn" data-copy="code-s2">복사</button>
-          <pre class="code-block" id="code-s2">def collect_naver_news(display: int = 10) -&gt; list[Item]:
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s2">복사</button>
+        <pre class="code-block" id="code-s2">def collect_naver_news(display: int = 10) -&gt; list[Item]:
     if not (NAVER_CLIENT_ID and NAVER_CLIENT_SECRET):
         print(&quot;  - 네이버 키가 없어 건너뜀 (.env의 NAVER_CLIENT_ID / SECRET)&quot;)
         return []
@@ -1286,25 +1223,29 @@ def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
             ))
 
     return items</pre>
-        </div>
-      </details>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s3" id="s3">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 1 · 수집</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s3">
+        </label>
+        <h2>STEP 3 · DART 공시 API — 실무형 API 경험</h2>
+        <span class="step-time">15분</span>
+      </div>
+      <p class="step-desc">파라미터가 가장 많은 API. 페이지네이션과 &#x27;결과 없음&#x27;을 에러와 구분하는 처리까지 다룬다.</p>
     </div>
 
-    <div class="step-card" id="s3">
-      <label class="step-check-row">
-        <input type="checkbox" class="step-check" data-id="s3">
-        <span class="step-num">STEP 3</span>
-        <h3>DART 공시 API — 실무형 API 경험</h3>
-        <span class="step-time">15분</span>
-      </label>
-      <p class="step-desc">파라미터가 가장 많은 API. 페이지네이션과 &#x27;결과 없음&#x27;을 에러와 구분하는 처리까지 다룬다.</p>
-
-      <div class="prompt-box">
-        <div class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-          <button class="copy-btn" data-copy="prompt-s3">복사</button>
-        </div>
-        <pre class="prompt-text" id="prompt-s3">전자공시(DART) 목록을 가져오는 collect_dart(max_pages=5) 함수를 추가해줘.
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s3">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s3">전자공시(DART) 목록을 가져오는 collect_dart(max_pages=5) 함수를 추가해줘.
 
 - DART_API_KEY 가 없으면 &quot;- DART 키가 없어 건너뜀 (.env의 DART_API_KEY)&quot; 출력 후 빈 리스트.
 - 오늘 날짜(KST) 기준으로, DAYS_BACK 만큼 이전 날짜부터 오늘까지를 조회 범위로 잡는다.
@@ -1319,22 +1260,22 @@ def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
   rcept_dt(YYYYMMDD)를 KST 자정 기준 dt로 변환한다. source는 &quot;DART&quot;.
 - total_page 까지 페이지를 넘기며 반복하고, 다 돌면 멈춘다.
 - requests.RequestException 이 나면 &quot;! DART 연결 실패: ...&quot; 출력 후 멈춘다.</pre>
-      </div>
+    </div>
 
-      <div class="criteria-box">
-        <p class="criteria-label">성공 기준</p>
-        <ul>
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
           <li>DART_API_KEY 를 채우고 실행하면 에러 없이 &quot;DART 몇 건&quot; 이 찍힌다 (주말·공휴일엔 0건이 정상)</li>
           <li>[013] 이 콘솔에 에러처럼 빨갛게 뜨지 않고 조용히 지나간다</li>
           <li>DART_WATCH 에 회사명을 넣으면 그 회사 공시만 남는다</li>
-        </ul>
-      </div>
+      </ul>
+    </div>
 
-      <details class="answer-details">
-        <summary>안 되면? 정답 코드 보기</summary>
-        <div class="code-box">
-          <button class="copy-btn code-copy-btn" data-copy="code-s3">복사</button>
-          <pre class="code-block" id="code-s3">def collect_dart(max_pages: int = 5) -&gt; list[Item]:
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s3">복사</button>
+        <pre class="code-block" id="code-s3">def collect_dart(max_pages: int = 5) -&gt; list[Item]:
     if not DART_API_KEY:
         print(&quot;  - DART 키가 없어 건너뜀 (.env의 DART_API_KEY)&quot;)
         return []
@@ -1394,25 +1335,29 @@ def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
             break
 
     return items</pre>
-        </div>
-      </details>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s4" id="s4">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 1 · 수집</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s4">
+        </label>
+        <h2>STEP 4 · 정리 — 중복 제거 후 최신순</h2>
+        <span class="step-time">5분</span>
+      </div>
+      <p class="step-desc">같은 기사가 RSS와 네이버 양쪽에 다 걸리는 경우가 많다. 합치기 전에 정리하는 단계.</p>
     </div>
 
-    <div class="step-card" id="s4">
-      <label class="step-check-row">
-        <input type="checkbox" class="step-check" data-id="s4">
-        <span class="step-num">STEP 4</span>
-        <h3>정리 — 중복 제거 후 최신순</h3>
-        <span class="step-time">5분</span>
-      </label>
-      <p class="step-desc">같은 기사가 RSS와 네이버 양쪽에 다 걸리는 경우가 많다. 합치기 전에 정리하는 단계.</p>
-
-      <div class="prompt-box">
-        <div class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-          <button class="copy-btn" data-copy="prompt-s4">복사</button>
-        </div>
-        <pre class="prompt-text" id="prompt-s4">세 소스(RSS, 네이버, DART)에서 모은 Item 리스트를 하나로 합친 뒤 정리하는
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s4">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s4">세 소스(RSS, 네이버, DART)에서 모은 Item 리스트를 하나로 합친 뒤 정리하는
 dedupe_and_sort(items) 함수를 추가해줘.
 
 - 제목이 빈 항목은 버린다.
@@ -1420,21 +1365,21 @@ dedupe_and_sort(items) 함수를 추가해줘.
   (링크가 달라도) 먼저 나온 것만 남긴다.
 - 발행시각(dt) 기준 최신순으로 정렬한다. dt가 없는 항목은 맨 뒤로 보낸다.
 - 정리된 리스트를 리턴한다.</pre>
-      </div>
+    </div>
 
-      <div class="criteria-box">
-        <p class="criteria-label">성공 기준</p>
-        <ul>
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
           <li>같은 제목의 기사가 RSS와 네이버 양쪽에서 들어와도 결과에는 한 번만 남는다</li>
           <li>결과 리스트의 앞쪽이 더 최근 기사/공시다</li>
-        </ul>
-      </div>
+      </ul>
+    </div>
 
-      <details class="answer-details">
-        <summary>안 되면? 정답 코드 보기</summary>
-        <div class="code-box">
-          <button class="copy-btn code-copy-btn" data-copy="code-s4">복사</button>
-          <pre class="code-block" id="code-s4">FAR_PAST = datetime(1970, 1, 1, tzinfo=timezone.utc)
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s4">복사</button>
+        <pre class="code-block" id="code-s4">FAR_PAST = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 def dedupe_and_sort(items: list[Item]) -&gt; list[Item]:
@@ -1453,33 +1398,29 @@ def dedupe_and_sort(items: list[Item]) -&gt; list[Item]:
 
     unique.sort(key=lambda i: i.dt or FAR_PAST, reverse=True)
     return unique</pre>
-        </div>
-      </details>
-    </div>
+      </div>
+    </details>
   </section>
 
-  <section class="group" id="part2">
-    <div class="group-head">
-      <span class="num">2</span>
-      <h2>실습 2 · 메일 발송 (45분)</h2>
-    </div>
-    <p class="group-sub">수집한 결과를 HTML 메일로 조립하고, 로컬 아웃룩을 원격 조작해 발송한다. 가장 많이 막히는 구간이다.</p>
-
-    <div class="step-card" id="s5">
-      <label class="step-check-row">
-        <input type="checkbox" class="step-check" data-id="s5">
-        <span class="step-num">STEP 5</span>
-        <h3>메일 조립 — HTML 리포트 만들기</h3>
+  <section class="page" data-page="s5" id="s5">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 2 · 메일 발송</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s5">
+        </label>
+        <h2>STEP 5 · 메일 조립 — HTML 리포트 만들기</h2>
         <span class="step-time">10분</span>
-      </label>
+      </div>
       <p class="step-desc">정리된 항목을 사람이 읽기 좋은 HTML 메일 본문으로 바꾼다.</p>
+    </div>
 
-      <div class="prompt-box">
-        <div class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-          <button class="copy-btn" data-copy="prompt-s5">복사</button>
-        </div>
-        <pre class="prompt-text" id="prompt-s5">수집한 Item 리스트를 HTML 메일 본문으로 만드는 build_html(items) 함수를 추가해줘.
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s5">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s5">수집한 Item 리스트를 HTML 메일 본문으로 만드는 build_html(items) 함수를 추가해줘.
 
 - 상단에 &quot;오늘의 이슈 리포트&quot; 제목과, 오늘 날짜(한국어, 예: 2026년 09월 01일)와 수집 건수를 보여준다.
 - 그 아래 표: 각 행에 출처(source), 제목(원문 링크가 걸린 클릭 가능한 텍스트), 발행시각(item.when).
@@ -1487,21 +1428,21 @@ def dedupe_and_sort(items: list[Item]) -&gt; list[Item]:
 - 이메일 클라이언트는 외부 CSS를 못 읽으니까, 모든 스타일을 style=&quot;...&quot; 속성으로 인라인으로 쓴다.
 - 제목이나 링크에 &lt;, &gt;, &amp; 같은 문자가 섞여 있어도 깨지지 않도록 html.escape 를 사용한다.
 - 완성된 HTML 문자열을 리턴한다.</pre>
-      </div>
+    </div>
 
-      <div class="criteria-box">
-        <p class="criteria-label">성공 기준</p>
-        <ul>
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
           <li>build_html([]) 을 호출해도 에러 없이 완전한 HTML 문서 문자열이 나온다</li>
           <li>그 결과를 메모장에 붙여넣고 확장자를 .html로 저장해 열어보면 표 형태로 보인다</li>
-        </ul>
-      </div>
+      </ul>
+    </div>
 
-      <details class="answer-details">
-        <summary>안 되면? 정답 코드 보기</summary>
-        <div class="code-box">
-          <button class="copy-btn code-copy-btn" data-copy="code-s5">복사</button>
-          <pre class="code-block" id="code-s5">def build_html(items: list[Item]) -&gt; str:
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s5">복사</button>
+        <pre class="code-block" id="code-s5">def build_html(items: list[Item]) -&gt; str:
     rows = []
     for item in items[:MAX_ITEMS]:
         rows.append(f&quot;&quot;&quot;
@@ -1532,52 +1473,56 @@ def dedupe_and_sort(items: list[Item]) -&gt; list[Item]:
     &lt;/p&gt;
   &lt;/div&gt;
 &lt;/body&gt;&lt;/html&gt;&quot;&quot;&quot;</pre>
-        </div>
-      </details>
-    </div>
+      </div>
+    </details>
+  </section>
 
-    <div class="step-card" id="s6">
-      <label class="step-check-row">
-        <input type="checkbox" class="step-check" data-id="s6">
-        <span class="step-num">STEP 6</span>
-        <h3>아웃룩 자동 발송 — 가장 많이 막히는 구간</h3>
+  <section class="page" data-page="s6" id="s6">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 2 · 메일 발송</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s6">
+        </label>
+        <h2>STEP 6 · 아웃룩 자동 발송 — 가장 많이 막히는 구간</h2>
         <span class="step-time">15분</span>
-      </label>
+      </div>
       <p class="step-desc">클래식 아웃룩을 원격 조작해서 완전 자동으로 메일을 보낸다. 사내망이 SMTP를 막아둔 상황을 우회하는 핵심 부분.</p>
+    </div>
 
       <div class="cmd-box">
         <span class="cmd-label">터미널에 먼저 입력</span>
         <code class="cmd-text" id="cmd-s6">pip install pywin32   (윈도우에서만)</code>
         <button class="copy-btn" data-copy="cmd-s6">복사</button>
       </div>
-      <div class="prompt-box">
-        <div class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-          <button class="copy-btn" data-copy="prompt-s6">복사</button>
-        </div>
-        <pre class="prompt-text" id="prompt-s6">윈도우에 로그인된 클래식 아웃룩을 원격 조작해서 메일을 자동으로 보내는
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s6">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s6">윈도우에 로그인된 클래식 아웃룩을 원격 조작해서 메일을 자동으로 보내는
 _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
 
 - pywin32의 win32com.client.Dispatch(&quot;Outlook.Application&quot;) 으로 아웃룩 앱을 잡는다.
 - outlook.CreateItem(0) 으로 새 메일을 만든다 (0 = olMailItem).
 - Subject, To(MAIL_TO 여러 명을 세미콜론으로 이어붙이기), HTMLBody 를 채운 뒤 Send() 를 호출한다.
 - 이 함수 안에서는 예외를 잡지 말고 그대로 던지게 둬 — 호출하는 쪽에서 처리할 거야.</pre>
-      </div>
+    </div>
 
-      <div class="criteria-box">
-        <p class="criteria-label">성공 기준</p>
-        <ul>
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
           <li>윈도우 + 클래식 아웃룩 로그인 상태에서 pip install pywin32 를 실행했다</li>
           <li>이 함수를 본인 메일 주소로 직접 호출해보면 실제로 메일이 도착한다</li>
           <li>아웃룩이 꺼져 있으면 자동으로 켜지면서 발송된다 (로그인 창이 뜬다면 먼저 로그인)</li>
-        </ul>
-      </div>
+      </ul>
+    </div>
 
-      <details class="answer-details">
-        <summary>안 되면? 정답 코드 보기</summary>
-        <div class="code-box">
-          <button class="copy-btn code-copy-btn" data-copy="code-s6">복사</button>
-          <pre class="code-block" id="code-s6">def _send_via_classic_outlook(subject: str, html_body: str) -&gt; None:
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s6">복사</button>
+        <pre class="code-block" id="code-s6">def _send_via_classic_outlook(subject: str, html_body: str) -&gt; None:
     &quot;&quot;&quot;클래식 아웃룩을 COM으로 조작해 완전 자동으로 발송한다.
 
     &#x27;새 아웃룩(New Outlook)&#x27;은 애초에 이 COM 인터페이스 자체를 제공하지 않는
@@ -1593,25 +1538,29 @@ _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
     mail.To = &quot;; &quot;.join(MAIL_TO)  # 아웃룩은 세미콜론으로 여러 명을 구분한다
     mail.HTMLBody = html_body
     mail.Send()</pre>
-        </div>
-      </details>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s7" id="s7">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 2 · 메일 발송</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s7">
+        </label>
+        <h2>STEP 7 · 새 아웃룩 폴백 + 발송 함수 완성</h2>
+        <span class="step-time">10분</span>
+      </div>
+      <p class="step-desc">새 아웃룩(New Outlook)은 방금 만든 방식 자체를 지원하지 않는다. 그 경우를 감지해서 대신 처리해주는 안전망을 만든다.</p>
     </div>
 
-    <div class="step-card" id="s7">
-      <label class="step-check-row">
-        <input type="checkbox" class="step-check" data-id="s7">
-        <span class="step-num">STEP 7</span>
-        <h3>새 아웃룩 폴백 + 발송 함수 완성</h3>
-        <span class="step-time">10분</span>
-      </label>
-      <p class="step-desc">새 아웃룩(New Outlook)은 방금 만든 방식 자체를 지원하지 않는다. 그 경우를 감지해서 대신 처리해주는 안전망을 만든다.</p>
-
-      <div class="prompt-box">
-        <div class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-          <button class="copy-btn" data-copy="prompt-s7">복사</button>
-        </div>
-        <pre class="prompt-text" id="prompt-s7">새 아웃룩에서도 쓸 수 있도록 폴백과, 둘을 합치는 최종 발송 함수를 추가해줘.
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s7">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s7">새 아웃룩에서도 쓸 수 있도록 폴백과, 둘을 합치는 최종 발송 함수를 추가해줘.
 
 1. _open_draft_mail(subject, plain_body) 함수:
    - 제목·받는사람·본문이 채워진 새 메일 작성 창을 mailto: 링크로 열어준다
@@ -1629,22 +1578,22 @@ _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
    - 예외가 나면(새 아웃룩인 경우) &quot;! 클래식 아웃룩 자동 발송이 안 됩니다: ...&quot; 와
      &quot;새 아웃룩은 자동화를 지원하지 않습니다&quot; 를 출력한 뒤, _open_draft_mail 로 넘어가서
      초안을 열어주고 &quot;✓ 메일 초안 열기 완료 (수동 발송 필요)&quot; 를 출력한다.</pre>
-      </div>
+    </div>
 
-      <div class="criteria-box">
-        <p class="criteria-label">성공 기준</p>
-        <ul>
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
           <li>클래식 아웃룩 PC에서는 창 없이 바로 자동 발송된다</li>
           <li>새 아웃룩만 있는 PC에서는 예외 메시지가 뜨고, 내용이 채워진 메일 창이 자동으로 뜬다</li>
           <li>MAIL_TO 를 비워두고 실행하면 에러 없이 안내 메시지만 출력된다</li>
-        </ul>
-      </div>
+      </ul>
+    </div>
 
-      <details class="answer-details">
-        <summary>안 되면? 정답 코드 보기</summary>
-        <div class="code-box">
-          <button class="copy-btn code-copy-btn" data-copy="code-s7">복사</button>
-          <pre class="code-block" id="code-s7">def _open_draft_mail(subject: str, plain_body: str) -&gt; None:
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s7">복사</button>
+        <pre class="code-block" id="code-s7">def _open_draft_mail(subject: str, plain_body: str) -&gt; None:
     &quot;&quot;&quot;제목·받는사람·본문을 채운 새 메일 창을 기본 메일 앱으로 연다.
 
     새 아웃룩은 COM 자동화를 지원하지 않아 완전 자동 발송이 불가능하다.
@@ -1696,25 +1645,29 @@ def send_mail(subject: str, html_body: str, plain_body: str) -&gt; None:
         print(f&quot;  ✓ 메일 초안 열기 완료 (수동 발송 필요) → {&#x27;, &#x27;.join(MAIL_TO)}&quot;)
     except Exception as exc:
         print(f&quot;  ! 메일 초안도 열지 못했습니다: {exc}&quot;)</pre>
-        </div>
-      </details>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s8" id="s8">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 2 · 메일 발송</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s8">
+        </label>
+        <h2>STEP 8 · 전체 연결 — 완성</h2>
+        <span class="step-time">10분</span>
+      </div>
+      <p class="step-desc">지금까지 만든 함수들을 하나의 흐름으로 묶으면 완성이다.</p>
     </div>
 
-    <div class="step-card" id="s8">
-      <label class="step-check-row">
-        <input type="checkbox" class="step-check" data-id="s8">
-        <span class="step-num">STEP 8</span>
-        <h3>전체 연결 — 완성</h3>
-        <span class="step-time">10분</span>
-      </label>
-      <p class="step-desc">지금까지 만든 함수들을 하나의 흐름으로 묶으면 완성이다.</p>
-
-      <div class="prompt-box">
-        <div class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-          <button class="copy-btn" data-copy="prompt-s8">복사</button>
-        </div>
-        <pre class="prompt-text" id="prompt-s8">지금까지 만든 함수들을 하나로 묶는 main() 함수와 실행부를 추가해줘.
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s8">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s8">지금까지 만든 함수들을 하나로 묶는 main() 함수와 실행부를 추가해줘.
 
 - argparse로 --dry-run 옵션을 추가한다 (있으면 메일을 안 보내고 콘솔에만 출력).
 - KEYWORDS, RSS_FEEDS, DART_WATCH 가 전부 비어 있으면 안내 메시지를 출력하고 종료(return 1).
@@ -1724,22 +1677,22 @@ def send_mail(subject: str, html_body: str, plain_body: str) -&gt; None:
   각 항목을 &quot;- [출처] 제목\n  링크&quot; 형태로 이어붙인다. build_html 로 HTML 버전도 만든다.
 - [3/3] 발송: --dry-run 이면 콘솔에 제목과 본문 미리보기만 출력하고, 아니면 send_mail 을 호출한다.
 - 마지막에 if __name__ == &quot;__main__&quot;: sys.exit(main()) 을 추가한다.</pre>
-      </div>
+    </div>
 
-      <div class="criteria-box">
-        <p class="criteria-label">성공 기준</p>
-        <ul>
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
           <li>python main.py --dry-run 실행 시 [1/3] [2/3] [3/3] 순서로 출력되고, 마지막에 메일 미리보기가 콘솔에 나온다</li>
           <li>아웃룩이 켜져 있는 상태에서 python main.py 를 실행하면 실제로 메일함에 리포트가 도착한다</li>
           <li>여기까지 됐으면 완성이다 — 축하한다</li>
-        </ul>
-      </div>
+      </ul>
+    </div>
 
-      <details class="answer-details">
-        <summary>안 되면? 정답 코드 보기</summary>
-        <div class="code-box">
-          <button class="copy-btn code-copy-btn" data-copy="code-s8">복사</button>
-          <pre class="code-block" id="code-s8">def main() -&gt; int:
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s8">복사</button>
+        <pre class="code-block" id="code-s8">def main() -&gt; int:
     parser = argparse.ArgumentParser(description=&quot;사내 이슈 데일리 리포트 봇&quot;)
     parser.add_argument(&quot;--dry-run&quot;, action=&quot;store_true&quot;, help=&quot;메일을 보내지 않고 콘솔에만 출력&quot;)
     args = parser.parse_args()
@@ -1784,12 +1737,18 @@ def send_mail(subject: str, html_body: str, plain_body: str) -&gt; None:
 
 if __name__ == &quot;__main__&quot;:
     sys.exit(main())</pre>
-        </div>
-      </details>
-    </div>
+      </div>
+    </details>
   </section>
 
-  <div class="callout">
+    <div class="page-nav">
+      <button class="page-nav-btn" id="pageNavPrev">← 이전</button>
+      <span class="page-nav-pos" id="pageNavPos">1 / 10</span>
+      <button class="page-nav-btn next" id="pageNavNext">다음 →</button>
+    </div>
+
+
+  <div class="callout" style="margin-top: 30px;">
     <strong>그래도 안 되면?</strong> 에러 메시지 전문을 그대로 복사해서 AI에게 붙여넣는 것이 가장 빠르다.
     단계별 정답 코드를 다 모은 <a href="https://github.com/hong-seok-young/vibe-coding-education/blob/claude/vibe-coding-education-program-lgtqes/news-report-bot/main.py" target="_blank" rel="noopener">완성본 main.py 전체 보기</a>도 참고할 것.
   </div>
@@ -1798,33 +1757,43 @@ if __name__ == &quot;__main__&quot;:
     바이브 코딩 실습 · 이슈봇 만들기 · <code>.env</code> 파일은 절대 공유하지 마세요 (키·인증 정보가 들어갑니다) ·
     프롬프트는 예시입니다, 표현을 바꿔서 시도해봐도 좋습니다
   </footer>
-
+  </div>
 </div>
 
 <script>
 (function () {
+  var PAGE_IDS = ["prep", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"];
   var STORAGE_KEY = "issuebot-checklist";
-  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check, .step-check"));
+  var STATE_KEY = "issuebot-current-page";
+
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check, .page-check"));
+  var pages = Array.prototype.slice.call(document.querySelectorAll(".page"));
+  var tocLinks = Array.prototype.slice.call(document.querySelectorAll(".toc-link"));
   var doneCountEl = document.getElementById("doneCount");
   var totalCountEl = document.getElementById("totalCount");
   var fillEl = document.getElementById("progressFill");
   var noteEl = document.getElementById("progressNote");
   var itemCountWordEl = document.getElementById("itemCountWord");
+  var tocDoneEl = document.getElementById("tocDone");
+  var tocTotalEl = document.getElementById("tocTotal");
+  var tocFillEl = document.getElementById("tocFill");
+  var navPrevBtn = document.getElementById("pageNavPrev");
+  var navNextBtn = document.getElementById("pageNavNext");
+  var navPosEl = document.getElementById("pageNavPos");
+
+  var toc = document.getElementById("toc");
+  var tocToggle = document.getElementById("tocToggle");
+  var tocClose = document.getElementById("tocClose");
+  var tocBackdrop = document.getElementById("tocBackdrop");
 
   function loadState() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    } catch (e) {
-      return {};
-    }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+    catch (e) { return {}; }
   }
 
   function saveState(state) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-      /* 저장 안 되면 그냥 세션 동안만 체크 상태 유지 */
-    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) { /* 저장 안 되면 세션 동안만 유지 */ }
   }
 
   function render() {
@@ -1832,13 +1801,27 @@ if __name__ == &quot;__main__&quot;:
     var done = boxes.filter(function (b) { return b.checked; }).length;
     totalCountEl.textContent = String(total);
     doneCountEl.textContent = String(done);
+    tocTotalEl.textContent = String(total);
+    tocDoneEl.textContent = String(done);
+    var pct = total ? (done / total) * 100 : 0;
+    fillEl.style.width = pct + "%";
+    tocFillEl.style.width = pct + "%";
     if (itemCountWordEl) itemCountWordEl.textContent = "6가지";
-    fillEl.style.width = (total ? (done / total) * 100 : 0) + "%";
     noteEl.textContent = done === 0
       ? "체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전"
       : done === total
         ? "체크박스는 이 브라우저에만 저장됩니다 · 전부 완료, 수고했다"
         : "체크박스는 이 브라우저에만 저장됩니다 · 진행 중";
+
+    tocLinks.forEach(function (link) {
+      var pageId = link.dataset.page;
+      var pageEl = document.getElementById(pageId);
+      if (!pageEl) return;
+      var pageBoxes = pageEl.querySelectorAll(".check, .page-check");
+      var allDone = pageBoxes.length > 0 &&
+        Array.prototype.every.call(pageBoxes, function (b) { return b.checked; });
+      link.classList.toggle("done", allDone);
+    });
   }
 
   var state = loadState();
@@ -1853,10 +1836,94 @@ if __name__ == &quot;__main__&quot;:
     box.addEventListener("click", function (e) { e.stopPropagation(); });
   });
 
+  /* ── 페이지 전환 ── */
+
+  function currentIndex() {
+    var active = document.querySelector(".page.active");
+    if (!active) return 0;
+    var idx = PAGE_IDS.indexOf(active.dataset.page);
+    return idx === -1 ? 0 : idx;
+  }
+
+  function goTo(pageId, opts) {
+    opts = opts || {};
+    if (PAGE_IDS.indexOf(pageId) === -1) pageId = PAGE_IDS[0];
+
+    pages.forEach(function (p) { p.classList.toggle("active", p.dataset.page === pageId); });
+    tocLinks.forEach(function (l) { l.classList.toggle("current", l.dataset.page === pageId); });
+
+    var idx = PAGE_IDS.indexOf(pageId);
+    navPrevBtn.disabled = idx <= 0;
+    navNextBtn.disabled = idx >= PAGE_IDS.length - 1;
+    navNextBtn.textContent = idx >= PAGE_IDS.length - 1 ? "완료" : "다음 →";
+    navPosEl.textContent = (idx + 1) + " / " + PAGE_IDS.length;
+
+    if (!opts.skipHash) {
+      if (history.replaceState) history.replaceState(null, "", "#" + pageId);
+      else location.hash = pageId;
+    }
+    try { sessionStorage.setItem(STATE_KEY, pageId); } catch (e) {}
+
+    if (!opts.skipScroll) window.scrollTo(0, 0);
+    closeToc();
+  }
+
+  tocLinks.forEach(function (link) {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      goTo(link.dataset.page);
+    });
+  });
+
+  navPrevBtn.addEventListener("click", function () {
+    var idx = currentIndex();
+    if (idx > 0) goTo(PAGE_IDS[idx - 1]);
+  });
+
+  navNextBtn.addEventListener("click", function () {
+    var idx = currentIndex();
+    if (idx < PAGE_IDS.length - 1) goTo(PAGE_IDS[idx + 1]);
+  });
+
+  window.addEventListener("hashchange", function () {
+    var id = location.hash.replace("#", "");
+    if (id) goTo(id, { skipHash: true });
+  });
+
+  /* ── 목차 열기/닫기 (좁은 화면) ── */
+
+  function openToc() {
+    toc.classList.add("open");
+    tocBackdrop.classList.add("show");
+    tocToggle.setAttribute("aria-expanded", "true");
+  }
+  function closeToc() {
+    toc.classList.remove("open");
+    tocBackdrop.classList.remove("show");
+    tocToggle.setAttribute("aria-expanded", "false");
+  }
+  tocToggle.addEventListener("click", function () {
+    toc.classList.contains("open") ? closeToc() : openToc();
+  });
+  tocClose.addEventListener("click", closeToc);
+  tocBackdrop.addEventListener("click", closeToc);
+
+  /* ── 초기 페이지 결정: URL 해시 > 이전 세션 > 첫 페이지 ── */
+
+  var initial = location.hash.replace("#", "");
+  if (!initial) {
+    try { initial = sessionStorage.getItem(STATE_KEY) || ""; } catch (e) { initial = ""; }
+  }
   render();
+  goTo(initial || PAGE_IDS[0], { skipHash: !initial, skipScroll: true });
+
+  /* ── 복사 버튼 ── */
 
   function copyText(text, btn) {
+    var settled = false;
     var done = function () {
+      if (settled) return;
+      settled = true;
       var original = btn.textContent;
       btn.textContent = "복사됨!";
       btn.classList.add("copied");
@@ -1866,9 +1933,17 @@ if __name__ == &quot;__main__&quot;:
       }, 1500);
     };
 
+    /* 클립보드 API가 권한 프롬프트 등으로 응답 없이 멈추는 경우를 대비해
+       일정 시간 안에 안 끝나면 execCommand 방식으로 바로 넘어간다. */
+    var timeoutId = setTimeout(function () { fallbackCopy(text, done); }, 600);
+
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+      navigator.clipboard.writeText(text).then(
+        function () { clearTimeout(timeoutId); done(); },
+        function () { clearTimeout(timeoutId); fallbackCopy(text, done); }
+      );
     } else {
+      clearTimeout(timeoutId);
       fallbackCopy(text, done);
     }
   }
@@ -1885,15 +1960,12 @@ if __name__ == &quot;__main__&quot;:
       document.execCommand("copy");
       document.body.removeChild(ta);
       done();
-    } catch (e) {
-      /* 복사 실패 시 그냥 무시 — 사용자가 직접 드래그해서 복사하면 된다 */
-    }
+    } catch (e) { /* 복사 실패 시 그냥 무시 */ }
   }
 
   Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
     btn.addEventListener("click", function () {
-      var targetId = btn.dataset.copy;
-      var target = document.getElementById(targetId);
+      var target = document.getElementById(btn.dataset.copy);
       if (!target) return;
       copyText(target.textContent, btn);
     });

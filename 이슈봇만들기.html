@@ -470,21 +470,6 @@
 
   .btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .btn.big { font-size: 14.5px; padding: 12px 22px; }
-  .btn .arrow { font-size: 15px; line-height: 1; }
-
-  .download-card {
-    background: var(--surface);
-    border: 1px solid var(--line-strong);
-    border-radius: 14px;
-    padding: 20px 22px;
-    box-shadow: var(--shadow);
-    margin-bottom: 14px;
-  }
-
-  .download-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-  .download-head h3 { margin: 0; font-size: 16px; font-weight: 700; }
-  .download-card > p { margin: 0 0 4px; font-size: 13.5px; color: var(--ink-soft); }
 
   .tiny { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
 
@@ -799,35 +784,7 @@
       <span class="num">A</span>
       <h2>파이썬 설치 — 더블클릭 한 번이면 끝</h2>
     </div>
-    <p class="group-sub">파이썬을 몰라도 된다. 여기서 받아서, 더블클릭 한 번이면 딱 파이썬만 깔린다 — 나머지는 실습에서 직접 만든다.</p>
-
-    <div class="download-card">
-      <div class="download-head">
-        <span class="tag required">1단계</span>
-        <h3>실습 파일 내려받기</h3>
-      </div>
-      <p>버튼을 누르면 설치 파일과 실습 코드가 통째로 담긴 zip이 바로 받아진다.</p>
-      <div class="actions">
-        <a class="btn primary big"
-           href="https://github.com/hong-seok-young/vibe-coding-education/archive/refs/heads/claude/vibe-coding-education-program-lgtqes.zip">
-          <span class="arrow">⬇</span> 전체 파일 받기 (ZIP)
-        </a>
-      </div>
-      <p class="tiny">압축을 풀면 <code>파이썬 설치.bat</code> 파일이 보인다. 그걸 더블클릭하면 된다.</p>
-
-      <details class="install-details">
-        <summary>이 버튼 하나로 뭐가 설치되나요?</summary>
-        <ul class="install-list">
-          <li><strong>파이썬(Python)</strong> — 이 프로그램을 돌리는 실행 엔진. 딱 이것만 확인한다 —
-            없으면 새로 깔고, 있으면 최신 버전인지 봐서 오래됐으면 업데이트한다.</li>
-        </ul>
-        <p class="tiny" style="margin-top: 10px;">
-          <strong>requests · feedparser · python-dotenv · pywin32</strong> 같은 라이브러리는 여기서
-          안 깐다. 그건 코드를 직접 짜는 과정의 일부라서, 실습 단계마다 필요할 때
-          <code>pip install</code> 명령을 직접 입력한다 (각 단계에 어떤 명령인지 나와 있다).
-        </p>
-      </details>
-    </div>
+    <p class="group-sub">교육 전에 꼭 미리 깔아둬야 하는 프로그램이다. 파이썬을 몰라도 된다.</p>
 
     <div class="items">
 
@@ -835,13 +792,30 @@
         <span class="check-col"><input type="checkbox" class="check" data-id="install"></span>
         <span>
           <span class="item-title">
-            설치 파일 실행
+            <code>파이썬 설치.bat</code> 더블클릭
             <span class="tag required">필수</span>
           </span>
-          <p>압축을 푼 폴더에서 <code>파이썬 설치.bat</code>을 더블클릭한다. 파이썬이 없으면 공식 배포판을
-            받아 설치하고, 이미 있으면 최신 버전인지 확인해서 오래됐으면 업데이트한다.
+          <p>이 페이지와 같은 폴더 안에 있다. 파이썬이 없으면 공식 배포판을 받아 설치하고,
+            이미 있으면 최신 버전인지 확인해서 오래됐으면 업데이트한다.
             딱 파이썬만 다룬다 — 1~2분이면 끝난다.</p>
           <p class="warn">검은 창이 뜨고 글자가 올라가는 동안 절대 닫지 말 것 — 끝나면 저절로 안내가 나온다.</p>
+
+          <details class="install-details">
+            <summary>이 파일 하나로 뭐가 설치되나요?</summary>
+            <ul class="install-list">
+              <li><strong>파이썬(Python)</strong> — 이 프로그램을 돌리는 실행 엔진. 딱 이것만 확인한다 —
+                없으면 새로 깔고, 있으면 최신 버전인지 봐서 오래됐으면 업데이트한다.</li>
+            </ul>
+            <p class="tiny" style="margin-top: 10px;">
+              <strong>requests · feedparser · python-dotenv · pywin32</strong> 같은 라이브러리는 여기서
+              안 깐다. 그건 코드를 직접 짜는 과정의 일부라서, 실습 단계마다 필요할 때
+              <code>pip install</code> 명령을 직접 입력한다 (각 단계에 어떤 명령인지 나와 있다).
+            </p>
+          </details>
+
+          <p class="tiny" style="margin-top: 10px;">
+            파일이 안 보이면 <a href="https://github.com/hong-seok-young/vibe-coding-education/archive/refs/heads/claude/vibe-coding-education-program-lgtqes.zip" target="_blank" rel="noopener">저장소 전체를 다시 받아서</a> 압축을 풀 것.
+          </p>
         </span>
       </label>
 

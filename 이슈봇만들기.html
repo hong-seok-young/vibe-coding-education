@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+
   :root {
     --paper: #eef0ee;
     --surface: #ffffff;
@@ -74,26 +75,45 @@
   }
 
   .wrap {
-    max-width: 800px;
+    max-width: 760px;
     margin: 0 auto;
     padding: 40px 20px 80px;
   }
 
-  code, .mono {
+  code, .mono, .num, .stat-value {
     font-family: "IBM Plex Mono", ui-monospace, monospace;
   }
 
-  .back-link {
-    display: inline-flex;
-    align-items: center;
+  /* ── 헤더 ── */
+
+  .roadmap {
+    display: flex;
+    flex-wrap: wrap;
     gap: 6px;
-    font-size: 13px;
-    color: var(--muted);
-    text-decoration: none;
-    margin-bottom: 18px;
+    margin-bottom: 22px;
   }
 
-  .back-link:hover { color: var(--ink); }
+  .roadmap span, .roadmap a {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    background: var(--surface);
+    text-decoration: none;
+  }
+
+  .roadmap a:hover {
+    color: var(--ink);
+    border-color: var(--line-strong);
+  }
+
+  .roadmap span.current {
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    background: var(--accent);
+    font-weight: 600;
+  }
 
   h1 {
     font-size: clamp(26px, 4vw, 34px);
@@ -106,32 +126,13 @@
   .lede {
     color: var(--ink-soft);
     font-size: 15.5px;
-    max-width: 64ch;
-    margin: 0 0 20px;
+    max-width: 62ch;
+    margin: 0 0 28px;
   }
 
   .lede strong { color: var(--ink); }
 
-  .flow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 28px;
-    font-size: 12.5px;
-    color: var(--ink-soft);
-  }
-
-  .flow span.chip {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    padding: 5px 12px;
-  }
-
-  .flow span.arrow {
-    color: var(--line-strong);
-  }
+  /* ── 진행 바 ── */
 
   .progress-card {
     background: var(--surface);
@@ -140,9 +141,6 @@
     padding: 18px 20px;
     box-shadow: var(--shadow);
     margin-bottom: 34px;
-    position: sticky;
-    top: 12px;
-    z-index: 5;
   }
 
   .progress-top {
@@ -162,7 +160,6 @@
     font-size: 15px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
   }
 
   .progress-track {
@@ -190,7 +187,11 @@
     .progress-fill { transition: none; }
   }
 
-  section.group { margin-bottom: 40px; }
+  /* ── 섹션 ── */
+
+  section.group {
+    margin-bottom: 36px;
+  }
 
   .group-head {
     display: flex;
@@ -209,7 +210,7 @@
   }
 
   .group-head h2 {
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
     margin: 0;
   }
@@ -217,8 +218,315 @@
   .group-sub {
     color: var(--muted);
     font-size: 13.5px;
-    margin: 0 0 18px 0;
+    margin: 0 0 14px 0;
   }
+
+  .items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .item {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .item:has(.check:checked) {
+    border-color: var(--good);
+    background: var(--good-wash);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .item { transition: none; }
+  }
+
+  .check-col {
+    display: flex;
+    justify-content: center;
+    padding-top: 2px;
+  }
+
+  .check {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    flex-shrink: 0;
+  }
+
+  .check:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .check::after {
+    content: "";
+    width: 10px;
+    height: 6px;
+    border-left: 2px solid var(--accent-ink);
+    border-bottom: 2px solid var(--accent-ink);
+    transform: rotate(-45deg) translateY(-1px);
+    opacity: 0;
+  }
+
+  .check:checked {
+    background: var(--good);
+    border-color: var(--good);
+  }
+
+  .check:checked::after { opacity: 1; }
+
+  .item-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0 0 4px;
+  }
+
+  .tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+
+  .tag.required { background: var(--accent-wash); color: var(--accent); }
+  .tag.free { background: var(--good-wash); color: var(--good); }
+
+  .item p {
+    margin: 0 0 8px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+
+  .item p:last-child { margin-bottom: 0; }
+
+  .item .warn {
+    color: var(--accent);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 7px 13px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+    background: var(--surface);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .btn.big {
+    font-size: 14.5px;
+    padding: 12px 22px;
+  }
+
+  .btn .arrow { font-size: 15px; line-height: 1; }
+
+  /* ── 다운로드 카드 ── */
+
+  .download-card {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+  }
+
+  .download-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .download-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .download-card > p {
+    margin: 0 0 4px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+
+  .tiny {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 10px 0 0;
+  }
+
+  .filetable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+
+  .filetable th, .filetable td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .filetable th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .filetable td:last-child, .filetable th:last-child { text-align: right; }
+
+  .install-details {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .install-details summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .install-details summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .install-details[open] summary {
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .install-list {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .install-list strong {
+    color: var(--ink);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.95em;
+  }
+
+  .kv {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 12px;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+
+  code {
+    background: var(--surface-2);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+  }
+
+  /* ── 하단 ── */
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 16px 18px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+
+  .callout strong { color: var(--ink); }
+
+  footer {
+    margin-top: 44px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  /* ── 실습 섹션 (사전 준비 스타일 위에 얹는 추가분) ── */
+
+  .progress-card { position: sticky; top: 12px; z-index: 5; }
+
+  .phase-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 28px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .flow span.chip {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 12px;
+  }
+
+  .flow span.arrow { color: var(--line-strong); }
 
   .step-card {
     background: var(--surface);
@@ -230,9 +538,7 @@
     transition: border-color 0.15s ease;
   }
 
-  .step-card:has(.step-check:checked) {
-    border-color: var(--good);
-  }
+  .step-card:has(.step-check:checked) { border-color: var(--good); }
 
   @media (prefers-reduced-motion: reduce) {
     .step-card { transition: none; }
@@ -325,10 +631,7 @@
     flex-wrap: wrap;
   }
 
-  .cmd-label {
-    color: var(--muted);
-    flex-shrink: 0;
-  }
+  .cmd-label { color: var(--muted); flex-shrink: 0; }
 
   .cmd-text {
     font-family: "IBM Plex Mono", ui-monospace, monospace;
@@ -454,9 +757,7 @@
     margin-bottom: 10px;
   }
 
-  .code-box {
-    position: relative;
-  }
+  .code-box { position: relative; }
 
   .code-box .copy-btn {
     position: absolute;
@@ -477,36 +778,229 @@
     white-space: pre;
   }
 
-  .callout {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 12px 12px 0;
-    padding: 16px 18px;
-    font-size: 13.5px;
-    color: var(--ink-soft);
-    margin-top: 8px;
-  }
-
-  .callout strong { color: var(--ink); }
   .callout a { color: var(--accent); }
-
-  footer {
-    margin-top: 44px;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
-    font-size: 12px;
-    color: var(--muted);
-  }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <a class="back-link" href="사전준비.html" target="_blank" rel="noopener">← 사전 준비로 돌아가기</a>
+  <nav class="roadmap" aria-label="실습 진행 순서">
+    <a href="#prep">0 · 사전 준비</a>
+    <a href="#part1">1 · 수집</a>
+    <a href="#part2">2 · 메일 발송</a>
+  </nav>
 
   <h1>이슈봇 만들기</h1>
   <p class="lede">
+    키워드를 정해두면 <strong>매일 아침 내 메일함으로 리포트가 오는 봇</strong>을,
+    사전 준비부터 발송까지 이 페이지 하나로 직접 만든다. 체크박스와 진행률은
+    이 브라우저에 저장되니 나중에 다시 열어도 이어서 할 수 있다.
+  </p>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span class="label">전체 진행률</span>
+      <span class="stat-value"><span id="doneCount">0</span> / <span id="totalCount">0</span> 완료</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <p class="progress-note" id="progressNote">체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전</p>
+  </div>
+
+  <section id="prep">
+    <div class="group-head">
+      <span class="num">0</span>
+      <h2>시작 전에</h2>
+    </div>
+    <p class="group-sub">
+      당일 발급받으면 2시간 중 40분이 그냥 날아간다. 아래 <span id="itemCountWord">체크리스트</span>를
+      <strong>실습 전에 미리</strong> 끝내 두면 실습 시간에는 코드에만 집중할 수 있다. 항목당 5~10분.
+    </p>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">A</span>
+      <h2>설치 — 파일 하나만 누르면 끝</h2>
+    </div>
+    <p class="group-sub">파이썬을 몰라도 된다. 여기서 받아서, 더블클릭 한 번이면 필요한 게 전부 깔린다.</p>
+
+    <div class="download-card">
+      <div class="download-head">
+        <span class="tag required">1단계</span>
+        <h3>실습 파일 내려받기</h3>
+      </div>
+      <p>버튼을 누르면 설치 파일과 실습 코드가 통째로 담긴 zip이 바로 받아진다.</p>
+      <div class="actions">
+        <a class="btn primary big"
+           href="https://github.com/hong-seok-young/vibe-coding-education/archive/refs/heads/claude/vibe-coding-education-program-lgtqes.zip">
+          <span class="arrow">⬇</span> 전체 파일 받기 (ZIP)
+        </a>
+      </div>
+      <p class="tiny">압축을 풀면 <code>설치.bat</code> 파일이 보인다. 그걸 더블클릭하면 된다.</p>
+
+      <details class="install-details">
+        <summary>이 버튼 하나로 뭐가 설치되나요?</summary>
+        <ul class="install-list">
+          <li><strong>파이썬(Python)</strong> — 이 프로그램을 돌리는 실행 엔진. 없으면 자동으로 받아서 깐다.</li>
+          <li><strong>requests</strong> — 네이버·DART 서버에 데이터를 요청하는 라이브러리</li>
+          <li><strong>feedparser</strong> — 구글뉴스 RSS 피드를 읽는 라이브러리</li>
+          <li><strong>python-dotenv</strong> — 설정 파일(<code>.env</code>)에서 키를 읽어오는 라이브러리</li>
+          <li><strong>pywin32</strong> — 내 PC의 아웃룩을 원격 조작해 메일을 보내는 라이브러리</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="install"></span>
+        <span>
+          <span class="item-title">
+            설치 파일 실행
+            <span class="tag required">필수</span>
+          </span>
+          <p>압축을 푼 폴더에서 <code>설치.bat</code>을 더블클릭한다. 파이썬이 없으면 공식 배포판을
+            받아 설치하고, 위에 나온 라이브러리까지 자동으로 깐다. 3~5분 걸린다.</p>
+          <p class="warn">검은 창이 뜨고 글자가 올라가는 동안 절대 닫지 말 것 — 끝나면 저절로 안내가 나온다.</p>
+        </span>
+      </label>
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="path"></span>
+        <span>
+          <span class="item-title">
+            <code>py -3 --version</code> 확인
+          </span>
+          <p>명령 프롬프트에 위 명령을 쳤을 때 버전 번호가 나오면 정상이다.
+            "인식할 수 없는 명령"이 뜨면 설치 중 <code>Add python.exe to PATH</code> 체크를 놓친 것이다.</p>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">B</span>
+      <h2>키 2종 발급</h2>
+    </div>
+    <p class="group-sub">모두 무료고, 가입 즉시 발급된다. 심사 대기가 없으니 늦게 시작해도 늦지 않다.</p>
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="dart"></span>
+        <span>
+          <span class="item-title">
+            DART 인증키
+            <span class="tag required">필수</span>
+            <span class="tag free">무료</span>
+          </span>
+          <p>전자공시 원문을 긁어오는 데 쓴다. 회원가입 후 인증키 신청 메뉴에서 바로 나온다.</p>
+          <div class="kv">
+            <dt>발급처</dt><dd>opendart.fss.or.kr</dd>
+            <dt>한도</dt><dd>1일 20,000건</dd>
+          </div>
+          <div class="actions">
+            <a class="btn primary" href="https://opendart.fss.or.kr" target="_blank" rel="noopener">발급받으러 가기</a>
+          </div>
+        </span>
+      </label>
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="naver"></span>
+        <span>
+          <span class="item-title">
+            네이버 Client ID / Secret
+            <span class="tag required">필수</span>
+            <span class="tag free">무료</span>
+          </span>
+          <p>뉴스 검색 API 인증에 쓴다. 애플리케이션 등록 화면에서 <strong>검색</strong> API를 반드시 함께 추가해야
+            401 오류 없이 붙는다.</p>
+          <div class="kv">
+            <dt>발급처</dt><dd>developers.naver.com</dd>
+            <dt>한도</dt><dd>1일 25,000회</dd>
+          </div>
+          <div class="actions">
+            <a class="btn primary" href="https://developers.naver.com" target="_blank" rel="noopener">발급받으러 가기</a>
+          </div>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">C</span>
+      <h2>아웃룩 확인</h2>
+    </div>
+    <p class="group-sub">
+      사내망은 메일 서버로의 직접 발송(SMTP)을 막아둔다. 그래서 이 봇은 내 PC에 이미 로그인된
+      <strong>아웃룩을 원격으로 조작</strong>해서 보낸다 — 비밀번호를 따로 넣을 필요는 없다.
+      구버전(클래식)과 신버전(New Outlook) 둘 다 되지만, 동작이 조금 다르다.
+    </p>
+
+    <table class="filetable" style="margin: 0 0 16px;">
+      <thead><tr><th>아웃룩 버전</th><th>실행 결과</th></tr></thead>
+      <tbody>
+        <tr><td>클래식 (왼쪽 위에 <strong>파일</strong> 탭)</td><td>완전 자동 발송</td></tr>
+        <tr><td>새 아웃룩 (New Outlook)</td><td>메일 창을 열어줌 → [보내기]만 클릭</td></tr>
+      </tbody>
+    </table>
+
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="outlook-check"></span>
+        <span>
+          <span class="item-title">
+            아웃룩 로그인 확인
+            <span class="tag required">필수</span>
+          </span>
+          <p>어느 버전이든 실행 전에 아웃룩을 한 번 직접 켜서, 로그인 창 없이 바로 메일함이
+            뜨는지만 확인하면 된다. 어느 버전인지는 스크립트가 알아서 구분해서 처리한다.</p>
+          <p class="warn">완전 자동 발송을 꼭 쓰고 싶다면, 아웃룩 설정에서 "새 Outlook 사용해 보기"
+            토글을 꺼서 클래식으로 되돌리는 방법도 있다.</p>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">D</span>
+      <h2>모니터링 키워드 정하기</h2>
+    </div>
+    <p class="group-sub">우리 팀 업무와 맞닿은 단어로 3개를 미리 정해 온다. 당일 즉석에서 고르면 결과가 빈약하다.</p>
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="keywords"></span>
+        <span>
+          <span class="item-title">
+            키워드 3개
+            <span class="tag required">필수</span>
+          </span>
+          <p>너무 좁으면 수집 0건이 뜬다. 처음엔 넓은 단어로 시작해서 좁혀가는 편이 안전하다.</p>
+          <div class="kv">
+            <dt>예시</dt><dd><code>데이터센터</code>, <code>건설 수주</code>, <code>플랜트 입찰</code></dd>
+          </div>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <div class="callout">
+    <strong>막히면?</strong> 에러 메시지 전문을 그대로 복사해서 Claude에게 붙여넣는 것이 가장 빠릅니다.
+    DART <code>[013]</code>은 오류가 아니라 그 기간에 공시가 없다는 뜻이니 당황하지 않아도 됩니다.
+  </div>
+  </section>
+
+  <div class="phase-title" style="margin-top: 44px;">실습 — 프롬프트로 직접 만들기</div>
+  <p class="group-sub">
     아래 순서대로 <strong>AI에게 프롬프트를 주고, 성공 기준을 확인</strong>하면서 진행한다.
     막히면 그 단계의 <strong>정답 코드</strong>를 열어서 비교하거나 그대로 갈아 끼우면 된다.
   </p>
@@ -521,17 +1015,6 @@
     <span class="chip">④ 성공 기준 확인</span>
     <span class="arrow">→</span>
     <span class="chip">안 되면 정답 코드로 교체</span>
-  </div>
-
-  <div class="progress-card">
-    <div class="progress-top">
-      <span class="label">진행률</span>
-      <span class="stat-value"><span id="doneCount">0</span> / <span id="totalCount">9</span> 단계</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
-    <p class="progress-note" id="progressNote">체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전</p>
   </div>
 
   <section class="group" id="part1">
@@ -1312,19 +1795,21 @@ if __name__ == &quot;__main__&quot;:
   </div>
 
   <footer>
-    바이브 코딩 실습 · 이슈봇 만들기 · 프롬프트는 예시다. 표현을 바꿔서 시도해봐도 좋다.
+    바이브 코딩 실습 · 이슈봇 만들기 · <code>.env</code> 파일은 절대 공유하지 마세요 (키·인증 정보가 들어갑니다) ·
+    프롬프트는 예시입니다, 표현을 바꿔서 시도해봐도 좋습니다
   </footer>
 
 </div>
 
 <script>
 (function () {
-  var STORAGE_KEY = "issuebot-practice-checklist";
-  var boxes = Array.prototype.slice.call(document.querySelectorAll(".step-check"));
+  var STORAGE_KEY = "issuebot-checklist";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check, .step-check"));
   var doneCountEl = document.getElementById("doneCount");
   var totalCountEl = document.getElementById("totalCount");
   var fillEl = document.getElementById("progressFill");
   var noteEl = document.getElementById("progressNote");
+  var itemCountWordEl = document.getElementById("itemCountWord");
 
   function loadState() {
     try {
@@ -1338,7 +1823,7 @@ if __name__ == &quot;__main__&quot;:
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
-      /* 저장 안 되면 세션 동안만 체크 상태 유지 */
+      /* 저장 안 되면 그냥 세션 동안만 체크 상태 유지 */
     }
   }
 
@@ -1347,6 +1832,7 @@ if __name__ == &quot;__main__&quot;:
     var done = boxes.filter(function (b) { return b.checked; }).length;
     totalCountEl.textContent = String(total);
     doneCountEl.textContent = String(done);
+    if (itemCountWordEl) itemCountWordEl.textContent = "6가지";
     fillEl.style.width = (total ? (done / total) * 100 : 0) + "%";
     noteEl.textContent = done === 0
       ? "체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전"

@@ -101,12 +101,12 @@ if errorlevel 1 (
     goto :fail
 )
 
-%PY% -c "import anthropic, requests, feedparser, dotenv" >nul 2>&1
+%PY% -c "import requests, feedparser, dotenv" >nul 2>&1
 if errorlevel 1 (
     echo  [!] 설치는 됐는데 불러오기가 안 됩니다. 강사에게 문의하세요.
     goto :fail
 )
-echo        라이브러리 4개 확인 완료.
+echo        라이브러리 3개 확인 완료.
 
 %PY% -c "import win32com.client" >nul 2>&1
 if errorlevel 1 (

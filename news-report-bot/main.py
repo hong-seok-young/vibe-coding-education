@@ -1,7 +1,7 @@
 """사내 이슈 데일리 리포트 봇 — 바이브코딩 실습 완성본.
 
 파이프라인:
-    수집(RSS · 네이버 뉴스 · DART 공시) → Claude API 요약 → 아웃룩 발송
+    수집(RSS · 네이버 뉴스 · DART 공시) → 중복 제거·정리 → 아웃룩 발송
 
 사내 네트워크는 외부 SMTP(메일 서버 직접 연결)를 막아두는 경우가 많다.
 그래서 이 봇은 메일 서버에 직접 붙지 않고, 내 PC에 이미 로그인되어 켜져 있는
@@ -11,7 +11,6 @@
 
 실행:
     python main.py --dry-run     # 메일 없이 콘솔로만 확인 (처음엔 이걸로)
-    python main.py --no-ai       # AI 요약 없이 목록만
     python main.py               # 전체 실행 (메일 발송, 아웃룩이 켜져 있어야 함)
 
 설정은 모두 같은 폴더의 .env 파일에서 읽는다. (.env.example 참고)
@@ -52,7 +51,7 @@ KEYWORDS = _env_list("KEYWORDS")                # 모니터링할 키워드
 RSS_FEEDS = _env_list("RSS_FEEDS")              # 직접 지정한 RSS 주소
 DART_WATCH = _env_list("DART_WATCH")            # 공시를 지켜볼 회사명 (비우면 전체)
 DAYS_BACK = int(os.getenv("DAYS_BACK", "1"))    # 며칠치를 볼 것인가 (오늘 포함)
-MAX_ITEMS = int(os.getenv("MAX_ITEMS", "40"))   # AI에 넘길 최대 건수
+MAX_ITEMS = int(os.getenv("MAX_ITEMS", "40"))   # 메일에 담을 최대 건수
 
 DART_API_KEY = os.getenv("DART_API_KEY", "")
 NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "")
@@ -258,69 +257,13 @@ def dedupe_and_sort(items: list[Item]) -> list[Item]:
 
 
 # ─────────────────────────────────────────────────────────────
-# STEP 5. AI 요약 — Claude API 호출
-# ─────────────────────────────────────────────────────────────
-
-SYSTEM_PROMPT = """당신은 건설·엔지니어링 회사의 사내 이슈 리포트를 작성하는 담당자입니다.
-전달받은 뉴스 기사와 공시 목록을 읽고, 임원이 아침에 30초 만에 훑을 수 있는 리포트를 씁니다.
-
-출력 형식 (그 외 문장은 쓰지 마세요):
-[핵심 요약]
-- 오늘의 흐름을 3줄 이내로. 각 줄은 한 문장.
-
-[주목할 항목]
-1. 항목 제목 — 왜 중요한지 한 줄
-(최대 5개. 수주·입찰·계약·리스크·규제 관련을 우선합니다.)
-
-HTML 태그나 마크다운 기호(**, ##)는 쓰지 마세요."""
-
-
-def summarize_with_claude(items: list[Item]) -> str:
-    import anthropic  # 요약을 건너뛸 때는 불필요하므로 여기서 임포트
-
-    client = anthropic.Anthropic()  # 키는 .env의 ANTHROPIC_API_KEY 에서 자동으로 읽는다
-
-    lines = [
-        f"{n}. [{it.source}] {it.title} ({it.when})"
-        for n, it in enumerate(items[:MAX_ITEMS], start=1)
-    ]
-    user_prompt = (
-        f"오늘 수집한 항목 {len(lines)}건입니다. 리포트를 작성해 주세요.\n\n"
-        + "\n".join(lines)
-    )
-
-    try:
-        response = client.beta.messages.create(
-            model="claude-opus-5",
-            max_tokens=16000,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_prompt}],
-            # 안전 분류기가 요청을 거절할 경우 자동으로 다른 모델이 이어받게 한다
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
-        )
-    except anthropic.AuthenticationError:
-        return "(AI 요약 실패: ANTHROPIC_API_KEY가 올바르지 않습니다)"
-    except anthropic.RateLimitError:
-        return "(AI 요약 실패: 호출 한도를 초과했습니다. 잠시 후 다시 실행하세요)"
-    except anthropic.APIError as exc:
-        return f"(AI 요약 실패: {exc})"
-
-    if response.stop_reason == "refusal":
-        return "(AI가 이 내용에 대한 요약을 거절했습니다)"
-
-    # 응답에는 thinking 블록이 섞여 올 수 있으므로 text 블록만 모은다
-    return "".join(b.text for b in response.content if b.type == "text").strip()
-
-
-# ─────────────────────────────────────────────────────────────
-# STEP 6. 메일 발송 — 로컬 아웃룩(데스크톱 앱)을 원격 조작
+# STEP 5. 메일 발송 — 로컬 아웃룩(데스크톱 앱)을 원격 조작
 # ─────────────────────────────────────────────────────────────
 # SMTP(메일 서버 직접 발송)가 사내망에서 막혀 있어, 이미 로그인된 아웃룩 앱을
 # 대신 조작하는 방식을 쓴다. 아웃룩이 실행 중이어야 하고(꺼져 있으면 자동으로
 # 켜진다), "새 아웃룩"이 아니라 클래식 아웃룩이어야 한다. 윈도우 전용이다.
 
-def build_html(summary: str, items: list[Item]) -> str:
+def build_html(items: list[Item]) -> str:
     rows = []
     for item in items[:MAX_ITEMS]:
         rows.append(f"""
@@ -344,12 +287,6 @@ def build_html(summary: str, items: list[Item]) -> str:
       {datetime.now(KST).strftime('%Y년 %m월 %d일')} · 수집 {len(items)}건
     </p>
 
-    <div style="background:#f0f1ee;border-left:3px solid #e2871f;border-radius:6px;
-                padding:16px 18px;font-size:14px;line-height:1.7;white-space:pre-wrap;">
-{html.escape(summary)}
-    </div>
-
-    <h2 style="font-size:15px;margin:26px 0 6px;">수집 항목</h2>
     <table style="width:100%;border-collapse:collapse;">{''.join(rows)}</table>
 
     <p style="color:#aaa;font-size:11px;margin-top:24px;">
@@ -439,7 +376,6 @@ def send_mail(subject: str, html_body: str, plain_body: str) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="사내 이슈 데일리 리포트 봇")
     parser.add_argument("--dry-run", action="store_true", help="메일을 보내지 않고 콘솔에만 출력")
-    parser.add_argument("--no-ai", action="store_true", help="AI 요약을 건너뜀")
     args = parser.parse_args()
 
     if not KEYWORDS and not RSS_FEEDS and not DART_WATCH:
@@ -448,7 +384,7 @@ def main() -> int:
 
     print(f"키워드: {', '.join(KEYWORDS) or '(없음)'}")
 
-    print("\n[1/4] 수집 중...")
+    print("\n[1/3] 수집 중...")
     collected: list[Item] = []
     for label, collector in (("RSS", collect_rss),
                              ("네이버뉴스", collect_naver_news),
@@ -460,25 +396,14 @@ def main() -> int:
     items = dedupe_and_sort(collected)
     print(f"  → 중복 제거 후 {len(items)}건")
 
-    print("\n[2/4] 요약 중...")
-    if not items:
-        summary = "오늘 수집된 항목이 없습니다."
-        print("  - 수집 결과가 없어 AI 호출을 건너뜁니다")
-    elif args.no_ai:
-        summary = "(AI 요약 생략 — --no-ai 옵션)"
-        print("  - 건너뜀")
-    else:
-        summary = summarize_with_claude(items)
-        print("  ✓ 요약 완료")
-
-    print("\n[3/4] 메일 조립 중...")
+    print("\n[2/3] 메일 조립 중...")
     subject = f"[이슈 리포트] {datetime.now(KST).strftime('%m/%d')} · {len(items)}건"
-    plain_body = summary + "\n\n" + "\n".join(
+    plain_body = "\n".join(
         f"- [{i.source}] {i.title}\n  {i.link}" for i in items[:MAX_ITEMS]
-    )
-    html_body = build_html(summary, items)
+    ) or "오늘 수집된 항목이 없습니다."
+    html_body = build_html(items)
 
-    print("\n[4/4] 발송...")
+    print("\n[3/3] 발송...")
     if args.dry_run:
         print("  - --dry-run 이라 보내지 않습니다. 아래는 메일에 들어갈 내용입니다.\n")
         print("=" * 60)

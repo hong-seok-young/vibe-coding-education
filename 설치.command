@@ -88,11 +88,11 @@ if ! "$PY" -m pip install --user -r news-report-bot/requirements.txt --disable-p
   fi
 fi
 
-if ! "$PY" -c "import anthropic, requests, feedparser, dotenv" >/dev/null 2>&1; then
+if ! "$PY" -c "import requests, feedparser, dotenv" >/dev/null 2>&1; then
   echo " [!] 설치는 됐는데 불러오기가 안 됩니다. 강사에게 문의하세요."
   finish 1
 fi
-echo "        라이브러리 4개 확인 완료."
+echo "        라이브러리 3개 확인 완료."
 
 # ------------------------------------------------------------
 # 4단계 - 설정 파일 준비

@@ -359,7 +359,49 @@ def build_html(summary: str, items: list[Item]) -> str:
 </body></html>"""
 
 
-def send_mail(subject: str, html_body: str) -> None:
+def _send_via_classic_outlook(subject: str, html_body: str) -> None:
+    """클래식 아웃룩을 COM으로 조작해 완전 자동으로 발송한다.
+
+    '새 아웃룩(New Outlook)'은 애초에 이 COM 인터페이스 자체를 제공하지 않는
+    별도 구조의 앱이라, 새 아웃룩만 설치돼 있으면 Dispatch 단계에서 예외가 난다.
+    그건 이 함수의 버그가 아니라 새 아웃룩의 설계상 한계이므로, 호출한 쪽에서
+    잡아서 _open_draft_mail() 로 넘어간다.
+    """
+    import win32com.client  # pywin32 — Windows에만 설치된다 (requirements.txt 참고)
+
+    outlook = win32com.client.Dispatch("Outlook.Application")
+    mail = outlook.CreateItem(0)  # 0 = olMailItem
+    mail.Subject = subject
+    mail.To = "; ".join(MAIL_TO)  # 아웃룩은 세미콜론으로 여러 명을 구분한다
+    mail.HTMLBody = html_body
+    mail.Send()
+
+
+def _open_draft_mail(subject: str, plain_body: str) -> None:
+    """제목·받는사람·본문을 채운 새 메일 창을 기본 메일 앱으로 연다.
+
+    새 아웃룩은 COM 자동화를 지원하지 않아 완전 자동 발송이 불가능하다.
+    대신 mailto: 링크로 초안을 미리 채워서 열어주고, 사람이 [보내기]만
+    누르면 되게 한다. (윈도우의 새 아웃룩·구버전 아웃룩 모두 mailto: 의
+    기본 처리기로 잡을 수 있다.) mailto 는 길이 제한이 있어 본문은 앞부분만 담는다.
+    """
+    import webbrowser
+    from urllib.parse import quote
+
+    body_limit = 1500
+    body = plain_body[:body_limit]
+    if len(plain_body) > body_limit:
+        body += "\n\n(내용이 길어 일부만 담았습니다. 전체 내용은 위 콘솔 출력을 참고하세요.)"
+
+    mailto = (
+        "mailto:" + quote(",".join(MAIL_TO))
+        + "?subject=" + quote(subject)
+        + "&body=" + quote(body)
+    )
+    webbrowser.open(mailto)
+
+
+def send_mail(subject: str, html_body: str, plain_body: str) -> None:
     if not MAIL_TO:
         print("  ! 받는 사람이 없습니다 (.env의 MAIL_TO)")
         return
@@ -369,25 +411,25 @@ def send_mail(subject: str, html_body: str) -> None:
         return
 
     try:
-        import win32com.client  # pywin32 — Windows에만 설치된다 (requirements.txt 참고)
+        import win32com.client  # noqa: F401  — 없으면 아래에서 ImportError로 잡는다
     except ImportError:
         print("  ! pywin32 가 설치되어 있지 않습니다. `pip install pywin32` 로 설치하세요.")
         return
 
     try:
-        outlook = win32com.client.Dispatch("Outlook.Application")
-        mail = outlook.CreateItem(0)  # 0 = olMailItem
-        mail.Subject = subject
-        mail.To = "; ".join(MAIL_TO)  # 아웃룩은 세미콜론으로 여러 명을 구분한다
-        mail.HTMLBody = html_body
-        mail.Send()
-    except Exception as exc:
-        print(f"  ! 아웃룩 발송 실패: {exc}")
-        print("    아웃룩(클래식)이 설치되어 있고, 계정에 로그인되어 있는지 확인하세요.")
-        print("    '새 아웃룩(New Outlook)'만 켜져 있으면 이 방식이 동작하지 않습니다.")
+        _send_via_classic_outlook(subject, html_body)
+        print(f"  ✓ 메일 발송 완료 (클래식 아웃룩, 자동 발송) → {', '.join(MAIL_TO)}")
         return
+    except Exception as exc:
+        print(f"  ! 클래식 아웃룩 자동 발송이 안 됩니다: {exc}")
+        print("    '새 아웃룩(New Outlook)'만 설치돼 있으면 원래 이렇습니다 — 새 아웃룩은 자동화 자체를 지원하지 않습니다.")
 
-    print(f"  ✓ 메일 발송 완료 → {', '.join(MAIL_TO)}")
+    print("  → 대신 제목·받는사람·내용을 채운 새 메일 창을 엽니다. 뜨는 창에서 [보내기]만 눌러주세요.")
+    try:
+        _open_draft_mail(subject, plain_body)
+        print(f"  ✓ 메일 초안 열기 완료 (수동 발송 필요) → {', '.join(MAIL_TO)}")
+    except Exception as exc:
+        print(f"  ! 메일 초안도 열지 못했습니다: {exc}")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -444,7 +486,7 @@ def main() -> int:
         print("=" * 60)
         print(plain_body[:2000])
     else:
-        send_mail(subject, html_body)
+        send_mail(subject, html_body, plain_body)
 
     return 0
 

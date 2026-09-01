@@ -7,7 +7,8 @@ echo " ============================================================"
 echo "   바이브 코딩 실습 - 환경 설치 (macOS)"
 echo " ============================================================"
 echo ""
-echo "   파이썬과 실습에 필요한 라이브러리를 한 번에 설치합니다."
+echo "   이 실습은 파이썬만 미리 깔아두고, 나머지 코드는 여러분이 AI와"
+echo "   함께 하나하나 만들어 갑니다. 그래서 이 설치 파일은 파이썬만 준비합니다."
 echo "   끝날 때까지 이 창을 닫지 마세요."
 echo ""
 
@@ -21,7 +22,7 @@ finish() {
 # ------------------------------------------------------------
 # 1단계 - 파이썬 확인
 # ------------------------------------------------------------
-echo " [1/4] 파이썬이 이미 있는지 확인합니다..."
+echo " [1/2] 파이썬이 이미 있는지 확인합니다..."
 PY=""
 for c in python3.14 python3.13 python3; do
   if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/null; then
@@ -35,7 +36,7 @@ if [ -n "$PY" ]; then
 else
   echo "        없습니다. 지금 설치합니다."
   echo ""
-  echo " [2/4] 파이썬을 설치합니다..."
+  echo " [1/2] 파이썬을 설치합니다..."
   if command -v brew >/dev/null 2>&1; then
     brew install python@3.14 || brew install python3
   else
@@ -66,39 +67,10 @@ else
 fi
 
 # ------------------------------------------------------------
-# 3단계 - 실습 라이브러리 설치
+# 2단계 - 설정 파일 준비 (라이브러리는 실습하면서 직접 pip install 한다)
 # ------------------------------------------------------------
 echo ""
-echo " [3/4] 실습에 필요한 라이브러리를 설치합니다..."
-if [ ! -f "news-report-bot/requirements.txt" ]; then
-  echo " [!] news-report-bot/requirements.txt 를 찾을 수 없습니다."
-  echo "     이 파일이 저장소 폴더 안에 그대로 있어야 합니다."
-  finish 1
-fi
-
-if ! "$PY" -m pip install --user -r news-report-bot/requirements.txt --disable-pip-version-check; then
-  # 최신 맥에서는 시스템 파이썬을 보호하느라 위 명령이 막힌다. 그때만 아래로 넘어간다.
-  echo ""
-  echo "        시스템 파이썬 보호 설정에 막혔습니다. 사용자 영역에만 설치를 다시 시도합니다..."
-  if ! "$PY" -m pip install --user --break-system-packages -r news-report-bot/requirements.txt --disable-pip-version-check; then
-    echo ""
-    echo " [!] 라이브러리 설치에 실패했습니다."
-    echo "     위에 나온 에러 메시지를 그대로 복사해서 강사에게 보여주세요."
-    finish 1
-  fi
-fi
-
-if ! "$PY" -c "import requests, feedparser, dotenv" >/dev/null 2>&1; then
-  echo " [!] 설치는 됐는데 불러오기가 안 됩니다. 강사에게 문의하세요."
-  finish 1
-fi
-echo "        라이브러리 3개 확인 완료."
-
-# ------------------------------------------------------------
-# 4단계 - 설정 파일 준비
-# ------------------------------------------------------------
-echo ""
-echo " [4/4] 설정 파일(.env)을 준비합니다..."
+echo " [2/2] 설정 파일(.env)을 준비합니다..."
 if [ -f "news-report-bot/.env" ]; then
   echo "        .env 가 이미 있습니다. 덮어쓰지 않고 그대로 둡니다."
 elif [ -f "news-report-bot/.env.example" ]; then
@@ -110,12 +82,12 @@ fi
 
 echo ""
 echo " ============================================================"
-echo "   설치 끝. 준비 완료입니다."
+echo "   설치 끝. 파이썬 준비 완료입니다."
 echo " ============================================================"
 echo ""
 echo "   다음에 할 일"
-echo "     1) 열리는 편집기에 발급받은 키 4종을 채우고 저장"
-echo "     2) 이 폴더에서 실행:  $PY news-report-bot/main.py --dry-run"
+echo "     1) 열리는 편집기에 발급받은 키를 채우고 저장"
+echo "     2) 실습 페이지의 안내대로 pip install 과 코드 작성을 직접 진행"
 echo ""
 [ -f "news-report-bot/.env" ] && open -e "news-report-bot/.env"
 finish 0

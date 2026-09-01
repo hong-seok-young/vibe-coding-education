@@ -9,27 +9,28 @@ echo  ============================================================
 echo    바이브 코딩 실습 - 환경 설치
 echo  ============================================================
 echo.
-echo    파이썬과 실습에 필요한 라이브러리를 한 번에 설치합니다.
-echo    3~5분 걸립니다. 끝날 때까지 이 창을 닫지 마세요.
+echo    이 실습은 파이썬만 미리 깔아두고, 나머지 코드는 여러분이 AI와
+echo    함께 하나하나 만들어 갑니다. 그래서 이 설치 파일은 파이썬만 준비합니다.
+echo    1~2분 걸립니다. 끝날 때까지 이 창을 닫지 마세요.
 echo.
 
 rem ============================================================
 rem  1단계 - 파이썬이 이미 있는지 확인
 rem ============================================================
-echo  [1/4] 파이썬이 이미 있는지 확인합니다...
+echo  [1/2] 파이썬이 이미 있는지 확인합니다...
 call :find_python
 if defined PY (
     for /f "tokens=*" %%V in ('%PY% --version 2^>^&1') do echo        이미 있습니다 - %%V
     echo        설치를 건너뜁니다.
-    goto :install_packages
+    goto :prep_env
 )
 echo        없습니다. 지금 설치합니다.
 echo.
 
 rem ============================================================
-rem  2단계 - winget 으로 공식 배포판 설치
+rem  1단계 계속 - winget 으로 공식 배포판 설치
 rem ============================================================
-echo  [2/4] 파이썬을 내려받아 설치합니다 (python.org 공식 배포판)...
+echo  [1/2] 파이썬을 내려받아 설치합니다 (python.org 공식 배포판)...
 echo.
 where winget >nul 2>&1
 if errorlevel 1 (
@@ -81,46 +82,11 @@ goto :fail
 for /f "tokens=*" %%V in ('%PY% --version 2^>^&1') do echo        설치 완료 - %%V
 
 rem ============================================================
-rem  3단계 - 실습 라이브러리 설치
+rem  2단계 - 설정 파일 준비 (라이브러리는 실습하면서 직접 pip install 한다)
 rem ============================================================
-:install_packages
+:prep_env
 echo.
-echo  [3/4] 실습에 필요한 라이브러리를 설치합니다...
-if not exist "news-report-bot\requirements.txt" (
-    echo  [!] news-report-bot\requirements.txt 를 찾을 수 없습니다.
-    echo      이 배치 파일이 저장소 폴더 안에 그대로 있어야 합니다.
-    goto :fail
-)
-%PY% -m pip install --upgrade pip --quiet --disable-pip-version-check
-%PY% -m pip install -r "news-report-bot\requirements.txt" --disable-pip-version-check
-if errorlevel 1 (
-    echo.
-    echo  [!] 라이브러리 설치에 실패했습니다.
-    echo      회사 네트워크가 pypi.org 를 막고 있을 수 있습니다.
-    echo      위에 빨간 글씨로 나온 에러 메시지를 그대로 복사해서 강사에게 보여주세요.
-    goto :fail
-)
-
-%PY% -c "import requests, feedparser, dotenv" >nul 2>&1
-if errorlevel 1 (
-    echo  [!] 설치는 됐는데 불러오기가 안 됩니다. 강사에게 문의하세요.
-    goto :fail
-)
-echo        라이브러리 3개 확인 완료.
-
-%PY% -c "import win32com.client" >nul 2>&1
-if errorlevel 1 (
-    echo  [!] 메일 발송용 pywin32 가 확인되지 않습니다. 아웃룩 발송이 안 될 수 있습니다.
-    echo      pip install pywin32 로 직접 설치해 보세요.
-) else (
-    echo        아웃룩 연동(pywin32) 확인 완료.
-)
-
-rem ============================================================
-rem  4단계 - 설정 파일 준비
-rem ============================================================
-echo.
-echo  [4/4] 설정 파일(.env)을 준비합니다...
+echo  [2/2] 설정 파일(.env)을 준비합니다...
 if exist "news-report-bot\.env" (
     echo        .env 가 이미 있습니다. 덮어쓰지 않고 그대로 둡니다.
 ) else (
@@ -137,12 +103,12 @@ rem  끝
 rem ============================================================
 echo.
 echo  ============================================================
-echo    설치 끝. 준비 완료입니다.
+echo    설치 끝. 파이썬 준비 완료입니다.
 echo  ============================================================
 echo.
 echo    다음에 할 일
-echo      1) 열리는 메모장에 발급받은 키 4종을 채우고 저장
-echo      2) 이 폴더에서 실행:  py -3 news-report-bot\main.py --dry-run
+echo      1) 열리는 메모장에 발급받은 키를 채우고 저장
+echo      2) 실습 페이지의 안내대로 pip install 과 코드 작성을 직접 진행
 echo.
 if exist "news-report-bot\.env" start "" notepad "news-report-bot\.env"
 echo    창을 닫으려면 아무 키나 누르세요...

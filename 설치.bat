@@ -11,6 +11,7 @@ echo  ============================================================
 echo.
 echo    이 실습은 파이썬만 미리 깔아두고, 나머지 코드는 여러분이 AI와
 echo    함께 하나하나 만들어 갑니다. 그래서 이 설치 파일은 파이썬만 준비합니다.
+echo    이미 깔려 있으면 최신 버전인지도 같이 확인합니다.
 echo    1~2분 걸립니다. 끝날 때까지 이 창을 닫지 마세요.
 echo.
 
@@ -20,24 +21,46 @@ rem ============================================================
 echo  [1/2] 파이썬이 이미 있는지 확인합니다...
 call :find_python
 if defined PY (
-    for /f "tokens=*" %%V in ('%PY% --version 2^>^&1') do echo        이미 있습니다 - %%V
-    echo        설치를 건너뜁니다.
-    goto :prep_env
+    for /f "tokens=*" %%V in ('%PY% --version 2^>^&1') do (
+        echo        이미 있습니다 - %%V
+        set "PY_BEFORE=%%V"
+    )
+) else (
+    echo        없습니다.
+    set "PY_BEFORE="
 )
-echo        없습니다. 지금 설치합니다.
 echo.
 
-rem ============================================================
-rem  1단계 계속 - winget 으로 공식 배포판 설치
-rem ============================================================
-echo  [1/2] 파이썬을 내려받아 설치합니다 (python.org 공식 배포판)...
-echo.
 where winget >nul 2>&1
 if errorlevel 1 (
-    echo        이 PC에는 winget 이 없습니다. 직접 받는 방법으로 넘어갑니다.
+    if defined PY (
+        echo        winget 이 없어 최신 버전인지는 확인하지 못합니다. 있는 그대로 사용합니다.
+        goto :prep_env
+    )
+    echo        winget 도 없어서 직접 받는 방법으로 넘어갑니다.
     goto :manual_download
 )
 
+rem ============================================================
+rem  1단계 계속 - winget 으로 최신 버전 확인 (이미 있어도 실행)
+rem ============================================================
+echo  [1/2] winget 으로 최신 버전인지 확인합니다 (몇 초 걸립니다)...
+winget upgrade --id Python.Python.3.14 -e --accept-package-agreements --accept-source-agreements --include-unknown >nul 2>&1
+winget upgrade --id Python.Python.3.13 -e --accept-package-agreements --accept-source-agreements --include-unknown >nul 2>&1
+
+call :find_python
+if defined PY (
+    for /f "tokens=*" %%V in ('%PY% --version 2^>^&1') do (
+        if "%PY_BEFORE%"=="%%V" (
+            echo        이미 최신 버전입니다 - %%V
+        ) else (
+            echo        최신 버전으로 업데이트했습니다 - %%V
+        )
+    )
+    goto :prep_env
+)
+
+echo        설치되어 있지 않아 새로 설치합니다 (python.org 공식 배포판)...
 winget install --id Python.Python.3.14 -e --source winget --scope user --accept-package-agreements --accept-source-agreements
 call :find_python
 if defined PY goto :installed_ok

@@ -9,6 +9,7 @@ echo " ============================================================"
 echo ""
 echo "   이 실습은 파이썬만 미리 깔아두고, 나머지 코드는 여러분이 AI와"
 echo "   함께 하나하나 만들어 갑니다. 그래서 이 설치 파일은 파이썬만 준비합니다."
+echo "   이미 깔려 있으면 최신 버전인지도 같이 확인합니다."
 echo "   끝날 때까지 이 창을 닫지 마세요."
 echo ""
 
@@ -20,7 +21,7 @@ finish() {
 }
 
 # ------------------------------------------------------------
-# 1단계 - 파이썬 확인
+# 1단계 - 파이썬 확인 (이미 있으면 최신 버전인지도 같이 확인)
 # ------------------------------------------------------------
 echo " [1/2] 파이썬이 이미 있는지 확인합니다..."
 PY=""
@@ -31,29 +32,61 @@ for c in python3.14 python3.13 python3; do
   fi
 done
 
+PY_BEFORE=""
 if [ -n "$PY" ]; then
-  echo "        이미 있습니다 - $($PY --version 2>&1)"
+  PY_BEFORE="$($PY --version 2>&1)"
+  echo "        이미 있습니다 - $PY_BEFORE"
 else
-  echo "        없습니다. 지금 설치합니다."
+  echo "        없습니다."
+fi
+
+if command -v brew >/dev/null 2>&1; then
   echo ""
-  echo " [1/2] 파이썬을 설치합니다..."
-  if command -v brew >/dev/null 2>&1; then
-    brew install python@3.14 || brew install python3
+  echo " [1/2] brew 로 최신 버전인지 확인합니다 (몇 초 걸립니다)..."
+  brew upgrade python@3.14 >/dev/null 2>&1
+  brew upgrade python@3.13 >/dev/null 2>&1
+  brew upgrade python3 >/dev/null 2>&1
+
+  PY=""
+  for c in python3.14 python3.13 python3; do
+    if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
+  done
+
+  if [ -n "$PY" ]; then
+    PY_AFTER="$($PY --version 2>&1)"
+    if [ "$PY_BEFORE" = "$PY_AFTER" ]; then
+      echo "        이미 최신 버전입니다 - $PY_AFTER"
+    else
+      echo "        최신 버전으로 업데이트했습니다 - $PY_AFTER"
+    fi
   else
     echo ""
-    echo "  ------------------------------------------------------------"
-    echo "    Homebrew 가 없어 자동 설치를 못 합니다."
-    echo "    브라우저를 열어드릴 테니 아래대로 해주세요."
-    echo ""
-    echo "      1) 노란색 [Download Python 3.x.x] 버튼 클릭"
-    echo "      2) 받아진 .pkg 파일을 열어 계속 눌러 설치"
-    echo "      3) 설치가 끝나면 이 창으로 돌아오세요"
-    echo "  ------------------------------------------------------------"
-    echo ""
-    open "https://www.python.org/downloads/"
-    echo "    설치를 마쳤으면 아무 키나 누르세요..."
-    read -r -n 1 -s
+    echo " [1/2] 파이썬을 설치합니다..."
+    brew install python@3.14 || brew install python3
+    for c in python3.14 python3.13 python3; do
+      if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
+    done
+    if [ -z "$PY" ]; then
+      echo ""
+      echo " [!] 아직 파이썬을 찾지 못했습니다. 강사에게 문의하세요."
+      finish 1
+    fi
+    echo "        설치 완료 - $($PY --version 2>&1)"
   fi
+elif [ -z "$PY" ]; then
+  echo ""
+  echo "  ------------------------------------------------------------"
+  echo "    Homebrew 가 없어 자동 설치를 못 합니다."
+  echo "    브라우저를 열어드릴 테니 아래대로 해주세요."
+  echo ""
+  echo "      1) 노란색 [Download Python 3.x.x] 버튼 클릭"
+  echo "      2) 받아진 .pkg 파일을 열어 계속 눌러 설치"
+  echo "      3) 설치가 끝나면 이 창으로 돌아오세요"
+  echo "  ------------------------------------------------------------"
+  echo ""
+  open "https://www.python.org/downloads/"
+  echo "    설치를 마쳤으면 아무 키나 누르세요..."
+  read -r -n 1 -s
 
   for c in python3.14 python3.13 python3; do
     if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
@@ -64,6 +97,8 @@ else
     finish 1
   fi
   echo "        설치 완료 - $($PY --version 2>&1)"
+else
+  echo "        Homebrew 가 없어 최신 버전인지는 확인하지 못합니다. 있는 그대로 사용합니다."
 fi
 
 # ------------------------------------------------------------

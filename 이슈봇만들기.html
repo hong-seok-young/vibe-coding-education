@@ -1,0 +1,1418 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>이슈봇 만들기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef0ee;
+    --surface: #ffffff;
+    --surface-2: #e6e9e6;
+    --ink: #1c2321;
+    --ink-soft: #454e4b;
+    --muted: #6b7570;
+    --line: #d5d9d4;
+    --line-strong: #b9c0ba;
+    --accent: #c96a1a;
+    --accent-ink: #ffffff;
+    --accent-wash: #fbe9d7;
+    --good: #3f7a52;
+    --good-wash: #e3f0e6;
+    --focus: #2f6fb0;
+    --shadow: 0 1px 2px rgba(20, 24, 22, 0.06), 0 6px 20px -8px rgba(20, 24, 22, 0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14181a;
+      --surface: #1b2022;
+      --surface-2: #222829;
+      --ink: #e9ece9;
+      --ink-soft: #c2c9c4;
+      --muted: #92a09a;
+      --line: #2c3436;
+      --line-strong: #3a4345;
+      --accent: #e69a4e;
+      --accent-ink: #201002;
+      --accent-wash: #3a2712;
+      --good: #7ec293;
+      --good-wash: #1c2c20;
+      --focus: #7db3e8;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #14181a;
+    --surface: #1b2022;
+    --surface-2: #222829;
+    --ink: #e9ece9;
+    --ink-soft: #c2c9c4;
+    --muted: #92a09a;
+    --line: #2c3436;
+    --line-strong: #3a4345;
+    --accent: #e69a4e;
+    --accent-ink: #201002;
+    --accent-wash: #3a2712;
+    --good: #7ec293;
+    --good-wash: #1c2c20;
+    --focus: #7db3e8;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    margin-bottom: 18px;
+  }
+
+  .back-link:hover { color: var(--ink); }
+
+  h1 {
+    font-size: clamp(26px, 4vw, 34px);
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .lede {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 64ch;
+    margin: 0 0 20px;
+  }
+
+  .lede strong { color: var(--ink); }
+
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 28px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .flow span.chip {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 12px;
+  }
+
+  .flow span.arrow {
+    color: var(--line-strong);
+  }
+
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 34px;
+    position: sticky;
+    top: 12px;
+    z-index: 5;
+  }
+
+  .progress-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .progress-top .label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .progress-top .stat-value {
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  .progress-track {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: inherit;
+    transition: width 0.35s ease;
+  }
+
+  .progress-note {
+    margin: 12px 0 0;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-fill { transition: none; }
+  }
+
+  section.group { margin-bottom: 40px; }
+
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .group-head .num {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-wash);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+
+  .group-head h2 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .group-sub {
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 18px 0;
+  }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s ease;
+  }
+
+  .step-card:has(.step-check:checked) {
+    border-color: var(--good);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .step-card { transition: none; }
+  }
+
+  .step-check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+
+  .step-check {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-check:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .step-check::after {
+    content: "";
+    width: 10px;
+    height: 6px;
+    border-left: 2px solid var(--accent-ink);
+    border-bottom: 2px solid var(--accent-ink);
+    transform: rotate(-45deg) translateY(-1px);
+    opacity: 0;
+  }
+
+  .step-check:checked {
+    background: var(--good);
+    border-color: var(--good);
+  }
+
+  .step-check:checked::after { opacity: 1; }
+
+  .step-num {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-wash);
+    border-radius: 999px;
+    padding: 3px 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .step-check-row h3 {
+    flex: 1;
+    min-width: 140px;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .step-time {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  .step-desc {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+
+  .cmd-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 12.5px;
+    flex-wrap: wrap;
+  }
+
+  .cmd-label {
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .cmd-text {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    color: var(--ink);
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .prompt-box {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .prompt-box-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--surface-2);
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .prompt-text {
+    margin: 0;
+    padding: 14px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12.5px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--ink);
+  }
+
+  .copy-btn {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover { color: var(--ink); }
+
+  .copy-btn:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .copy-btn.copied {
+    color: var(--good);
+    border-color: var(--good);
+  }
+
+  .criteria-box {
+    background: var(--good-wash);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 4px;
+  }
+
+  .criteria-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--good);
+    margin: 0 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .criteria-box ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .criteria-box li {
+    font-size: 13px;
+    color: var(--ink-soft);
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .criteria-box li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--good);
+    font-weight: 700;
+  }
+
+  .answer-details {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .answer-details summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .answer-details summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .answer-details[open] summary {
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .code-box {
+    position: relative;
+  }
+
+  .code-box .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+
+  .code-block {
+    margin: 0;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 14px;
+    overflow-x: auto;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--ink);
+    white-space: pre;
+  }
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 16px 18px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+
+  .callout strong { color: var(--ink); }
+  .callout a { color: var(--accent); }
+
+  footer {
+    margin-top: 44px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back-link" href="사전준비.html" target="_blank" rel="noopener">← 사전 준비로 돌아가기</a>
+
+  <h1>이슈봇 만들기</h1>
+  <p class="lede">
+    아래 순서대로 <strong>AI에게 프롬프트를 주고, 성공 기준을 확인</strong>하면서 진행한다.
+    막히면 그 단계의 <strong>정답 코드</strong>를 열어서 비교하거나 그대로 갈아 끼우면 된다.
+  </p>
+
+  <div class="flow">
+    <span class="chip">① 프롬프트 복사</span>
+    <span class="arrow">→</span>
+    <span class="chip">② AI에게 붙여넣기</span>
+    <span class="arrow">→</span>
+    <span class="chip">③ 저장하고 실행</span>
+    <span class="arrow">→</span>
+    <span class="chip">④ 성공 기준 확인</span>
+    <span class="arrow">→</span>
+    <span class="chip">안 되면 정답 코드로 교체</span>
+  </div>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span class="label">진행률</span>
+      <span class="stat-value"><span id="doneCount">0</span> / <span id="totalCount">9</span> 단계</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <p class="progress-note" id="progressNote">체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전</p>
+  </div>
+
+  <section class="group" id="part1">
+    <div class="group-head">
+      <span class="num">1</span>
+      <h2>실습 1 · 수집 (45분)</h2>
+    </div>
+    <p class="group-sub">RSS → 네이버 → DART 순서로 붙인다. 키가 없어도 되는 RSS부터 시작해서 첫 성공을 빨리 본다.</p>
+
+    <div class="step-card" id="s0">
+      <label class="step-check-row">
+        <input type="checkbox" class="step-check" data-id="s0">
+        <span class="step-num">STEP 0</span>
+        <h3>프로젝트 뼈대 — 설정 읽어오기</h3>
+        <span class="step-time">5분</span>
+      </label>
+      <p class="step-desc">main.py 파일을 만들고, .env에 적어둔 키워드·키를 코드에서 읽어오는 부분부터 시작한다. 여기서부터는 화면에 뭔가 찍히면 다음 단계로 넘어가도 된다.</p>
+
+      <div class="prompt-box">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+          <button class="copy-btn" data-copy="prompt-s0">복사</button>
+        </div>
+        <pre class="prompt-text" id="prompt-s0">news-report-bot 폴더에 main.py 파일을 만들어줘. 다음을 포함해야 해:
+
+1. python-dotenv로 .env 파일을 읽어온다 (load_dotenv() 호출).
+2. .env의 값을 쉼표로 구분해 리스트로 만드는 _env_list(name) 함수를 만들고,
+   이걸로 KEYWORDS, RSS_FEEDS, DART_WATCH 를 만들어줘. 값이 없으면 빈 리스트.
+3. DAYS_BACK(기본값 1), MAX_ITEMS(기본값 40)은 .env에서 정수로 읽어와줘.
+4. DART_API_KEY, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET 도 .env에서 읽어와줘.
+5. MAIL_TO 는 쉼표로 구분된 받는 사람 리스트로 읽어와줘.
+6. 수집한 기사/공시 하나를 표현하는 Item 이라는 dataclass를 만들어줘.
+   필드: source(문자열), title, link, dt(datetime 또는 None, 기본 None), note(기본 빈 문자열).
+   dt를 &quot;MM/DD HH:MM&quot; 형식(한국시간 KST = UTC+9)으로 보여주는 when 이라는 property도 추가해줘.
+   dt가 없으면 &quot;-&quot; 를 리턴.
+7. HTML 태그와 엔티티를 제거하는 clean_text(raw) 함수도 추가해줘
+   (정규식으로 &lt;...&gt; 태그 제거한 뒤 html.unescape 적용).
+8. 맨 아래에 KEYWORDS를 출력하는 코드를 넣어서 잘 읽히는지 확인할 수 있게 해줘.</pre>
+      </div>
+
+      <div class="criteria-box">
+        <p class="criteria-label">성공 기준</p>
+        <ul>
+          <li>pip install python-dotenv 로 라이브러리를 먼저 설치했다</li>
+          <li>python main.py 를 실행하면 .env에 적은 키워드가 그대로 출력된다</li>
+          <li>Item(source=&quot;RSS&quot;, title=&quot;테스트&quot;, link=&quot;x&quot;) 를 만들어 item.when 을 출력하면 &quot;-&quot; 가 나온다</li>
+        </ul>
+      </div>
+
+      <details class="answer-details">
+        <summary>안 되면? 정답 코드 보기</summary>
+        <div class="code-box">
+          <button class="copy-btn code-copy-btn" data-copy="code-s0">복사</button>
+          <pre class="code-block" id="code-s0">def _env_list(name: str) -&gt; list[str]:
+    &quot;&quot;&quot;쉼표로 구분된 환경변수를 리스트로. 빈 값은 버린다.&quot;&quot;&quot;
+    return [v.strip() for v in os.getenv(name, &quot;&quot;).split(&quot;,&quot;) if v.strip()]
+
+
+KEYWORDS = _env_list(&quot;KEYWORDS&quot;)                # 모니터링할 키워드
+RSS_FEEDS = _env_list(&quot;RSS_FEEDS&quot;)              # 직접 지정한 RSS 주소
+DART_WATCH = _env_list(&quot;DART_WATCH&quot;)            # 공시를 지켜볼 회사명 (비우면 전체)
+DAYS_BACK = int(os.getenv(&quot;DAYS_BACK&quot;, &quot;1&quot;))    # 며칠치를 볼 것인가 (오늘 포함)
+MAX_ITEMS = int(os.getenv(&quot;MAX_ITEMS&quot;, &quot;40&quot;))   # 메일에 담을 최대 건수
+
+DART_API_KEY = os.getenv(&quot;DART_API_KEY&quot;, &quot;&quot;)
+NAVER_CLIENT_ID = os.getenv(&quot;NAVER_CLIENT_ID&quot;, &quot;&quot;)
+NAVER_CLIENT_SECRET = os.getenv(&quot;NAVER_CLIENT_SECRET&quot;, &quot;&quot;)
+
+MAIL_TO = _env_list(&quot;MAIL_TO&quot;)   # 받는 사람 (쉼표로 여러 명)
+
+
+@dataclass
+class Item:
+    &quot;&quot;&quot;수집한 항목 하나 (뉴스 기사든 공시든 같은 모양으로 다룬다).&quot;&quot;&quot;
+
+    source: str                       # &quot;RSS&quot; | &quot;네이버뉴스&quot; | &quot;DART&quot;
+    title: str
+    link: str
+    dt: datetime | None = None        # 발행 시각 (timezone 포함)
+    note: str = field(default=&quot;&quot;)     # 공시 제출인 등 부가 정보
+
+    @property
+    def when(self) -&gt; str:
+        return self.dt.astimezone(KST).strftime(&quot;%m/%d %H:%M&quot;) if self.dt else &quot;-&quot;
+
+
+def clean_text(raw: str) -&gt; str:
+    &quot;&quot;&quot;HTML 태그와 엔티티를 걷어낸다. (네이버 API 응답은 &lt;b&gt; 태그가 섞여 온다)&quot;&quot;&quot;
+    return html.unescape(re.sub(r&quot;&lt;[^&gt;]+&gt;&quot;, &quot;&quot;, raw)).strip()</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="step-card" id="s1">
+      <label class="step-check-row">
+        <input type="checkbox" class="step-check" data-id="s1">
+        <span class="step-num">STEP 1</span>
+        <h3>RSS 수집 — 키 없이 첫 성공</h3>
+        <span class="step-time">10분</span>
+      </label>
+      <p class="step-desc">구글 뉴스는 키워드 검색 결과를 RSS로 내준다. API 키가 전혀 필요 없어서, 여기서 가장 먼저 결과물을 본다.</p>
+
+      <div class="cmd-box">
+        <span class="cmd-label">터미널에 먼저 입력</span>
+        <code class="cmd-text" id="cmd-s1">pip install feedparser</code>
+        <button class="copy-btn" data-copy="cmd-s1">복사</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+          <button class="copy-btn" data-copy="prompt-s1">복사</button>
+        </div>
+        <pre class="prompt-text" id="prompt-s1">이어서, 구글 뉴스 RSS로 기사를 모으는 기능을 추가해줘.
+
+1. google_news_rss(keyword) 함수: 아래 형태의 URL 문자열을 리턴해줘 (keyword는 URL 인코딩).
+   https://news.google.com/rss/search?q={keyword}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko
+
+2. collect_rss(limit_per_feed=10) 함수:
+   - RSS_FEEDS 목록 + KEYWORDS 각각으로 만든 구글뉴스 RSS 주소들을 모두 대상으로 한다.
+   - feedparser로 각 주소를 읽는다. feedparser는 네트워크가 막혀도 예외를 던지지 않고
+     조용히 빈 결과를 주니까, parsed.bozo 이면서 entries가 비어 있으면
+     &quot;! RSS 실패 (...)&quot; 를 출력하고 그 피드는 건너뛴다.
+   - 각 피드에서 최대 limit_per_feed개까지만 가져온다.
+   - title은 clean_text로 정리하고, link, 발행시각(entry.published_parsed가 있으면
+     UTC datetime으로 변환)을 채워서 Item으로 만든다. source는 &quot;RSS&quot;.
+   - 모은 Item 리스트를 리턴한다.
+
+3. 맨 아래 확인용 코드에 collect_rss() 결과 개수를 출력하는 줄을 추가해줘.</pre>
+      </div>
+
+      <div class="criteria-box">
+        <p class="criteria-label">성공 기준</p>
+        <ul>
+          <li>pip install feedparser 를 실행했다</li>
+          <li>python main.py 를 실행하면 에러 없이 &quot;RSS 몇 건&quot; 형태로 개수가 찍힌다</li>
+          <li>.env의 KEYWORDS에 흔한 단어(예: 삼성전자)를 넣으면 0건보다 많이 나온다</li>
+        </ul>
+      </div>
+
+      <details class="answer-details">
+        <summary>안 되면? 정답 코드 보기</summary>
+        <div class="code-box">
+          <button class="copy-btn code-copy-btn" data-copy="code-s1">복사</button>
+          <pre class="code-block" id="code-s1">def google_news_rss(keyword: str) -&gt; str:
+    &quot;&quot;&quot;구글 뉴스는 키워드 검색 결과를 RSS로 내준다. 키가 필요 없어 실습 시작용으로 좋다.&quot;&quot;&quot;
+    return f&quot;https://news.google.com/rss/search?q={quote(keyword)}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko&quot;
+
+
+def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
+    feeds = list(RSS_FEEDS) + [google_news_rss(kw) for kw in KEYWORDS]
+    items: list[Item] = []
+
+    for url in feeds:
+        parsed = feedparser.parse(url)
+
+        # feedparser는 네트워크가 막혀도 예외를 던지지 않고 조용히 빈 결과를 준다.
+        # 왜 0건인지 알 수 있도록 여기서 직접 확인한다.
+        if parsed.bozo and not parsed.entries:
+            print(f&quot;  ! RSS 실패 ({url[:60]}...): {parsed.bozo_exception}&quot;)
+            continue
+
+        for entry in parsed.entries[:limit_per_feed]:
+            dt = None
+            if getattr(entry, &quot;published_parsed&quot;, None):
+                dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+
+            items.append(Item(
+                source=&quot;RSS&quot;,
+                title=clean_text(entry.get(&quot;title&quot;, &quot;&quot;)),
+                link=entry.get(&quot;link&quot;, &quot;&quot;),
+                dt=dt,
+            ))
+
+    return items</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="step-card" id="s2">
+      <label class="step-check-row">
+        <input type="checkbox" class="step-check" data-id="s2">
+        <span class="step-num">STEP 2</span>
+        <h3>네이버 뉴스 API — 헤더로 인증하기</h3>
+        <span class="step-time">10분</span>
+      </label>
+      <p class="step-desc">처음으로 인증 키가 필요한 API. 요청 헤더에 키를 실어 보내는 방식을 경험한다.</p>
+
+      <div class="cmd-box">
+        <span class="cmd-label">터미널에 먼저 입력</span>
+        <code class="cmd-text" id="cmd-s2">pip install requests</code>
+        <button class="copy-btn" data-copy="cmd-s2">복사</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+          <button class="copy-btn" data-copy="prompt-s2">복사</button>
+        </div>
+        <pre class="prompt-text" id="prompt-s2">네이버 뉴스 검색 API로 기사를 모으는 collect_naver_news(display=10) 함수를 추가해줘.
+
+- NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 가 하나라도 없으면
+  &quot;- 네이버 키가 없어 건너뜀 (.env의 NAVER_CLIENT_ID / SECRET)&quot; 을 출력하고 빈 리스트를 리턴한다.
+- 있으면 KEYWORDS 각각에 대해 https://openapi.naver.com/v1/search/news.json 에 GET 요청을 보낸다.
+  - 헤더: X-Naver-Client-Id, X-Naver-Client-Secret
+  - 파라미터: query(키워드), display, sort=&quot;date&quot;
+  - timeout=10
+- requests.HTTPError 가 나면 &quot;! 네이버 검색 실패 (&#x27;키워드&#x27;): ...&quot; 를 출력하고 그 키워드는 건너뛴다
+  (401이면 키가 틀린 것, 429면 하루 호출량 초과라는 뜻).
+- requests.RequestException 이면 &quot;! 네이버 연결 실패: ...&quot; 를 출력하고 건너뛴다.
+- 응답 JSON의 items 배열을 순회하면서, title은 clean_text로, link는 originallink가 있으면
+  그걸 쓰고 없으면 link를 쓴다. pubDate는 email.utils.parsedate_to_datetime 으로 파싱하고,
+  타임존 정보가 없으면 KST를 붙여준다. source는 &quot;네이버뉴스&quot;로 Item을 만든다.</pre>
+      </div>
+
+      <div class="criteria-box">
+        <p class="criteria-label">성공 기준</p>
+        <ul>
+          <li>pip install requests 를 실행했다 (RSS 단계에서 이미 깔았다면 생략)</li>
+          <li>.env에 네이버 키를 비워두고 실행하면 에러 없이 &quot;건너뜀&quot; 메시지만 뜬다</li>
+          <li>키를 채우고 실행하면 &quot;네이버뉴스 몇 건&quot; 이 0보다 크게 나온다</li>
+        </ul>
+      </div>
+
+      <details class="answer-details">
+        <summary>안 되면? 정답 코드 보기</summary>
+        <div class="code-box">
+          <button class="copy-btn code-copy-btn" data-copy="code-s2">복사</button>
+          <pre class="code-block" id="code-s2">def collect_naver_news(display: int = 10) -&gt; list[Item]:
+    if not (NAVER_CLIENT_ID and NAVER_CLIENT_SECRET):
+        print(&quot;  - 네이버 키가 없어 건너뜀 (.env의 NAVER_CLIENT_ID / SECRET)&quot;)
+        return []
+
+    headers = {
+        &quot;X-Naver-Client-Id&quot;: NAVER_CLIENT_ID,
+        &quot;X-Naver-Client-Secret&quot;: NAVER_CLIENT_SECRET,
+    }
+    items: list[Item] = []
+
+    for keyword in KEYWORDS:
+        try:
+            resp = requests.get(
+                &quot;https://openapi.naver.com/v1/search/news.json&quot;,
+                headers=headers,
+                params={&quot;query&quot;: keyword, &quot;display&quot;: display, &quot;sort&quot;: &quot;date&quot;},
+                timeout=10,
+            )
+            resp.raise_for_status()
+        except requests.HTTPError as exc:
+            # 401이면 키가 틀린 것, 429면 하루 호출량(25,000회) 초과
+            print(f&quot;  ! 네이버 검색 실패 (&#x27;{keyword}&#x27;): {exc}&quot;)
+            continue
+        except requests.RequestException as exc:
+            print(f&quot;  ! 네이버 연결 실패 (&#x27;{keyword}&#x27;): {exc}&quot;)
+            continue
+
+        for row in resp.json().get(&quot;items&quot;, []):
+            dt = None
+            try:
+                dt = parsedate_to_datetime(row.get(&quot;pubDate&quot;, &quot;&quot;))
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=KST)
+            except (TypeError, ValueError):
+                pass
+
+            items.append(Item(
+                source=&quot;네이버뉴스&quot;,
+                title=clean_text(row.get(&quot;title&quot;, &quot;&quot;)),
+                link=row.get(&quot;originallink&quot;) or row.get(&quot;link&quot;, &quot;&quot;),
+                dt=dt,
+            ))
+
+    return items</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="step-card" id="s3">
+      <label class="step-check-row">
+        <input type="checkbox" class="step-check" data-id="s3">
+        <span class="step-num">STEP 3</span>
+        <h3>DART 공시 API — 실무형 API 경험</h3>
+        <span class="step-time">15분</span>
+      </label>
+      <p class="step-desc">파라미터가 가장 많은 API. 페이지네이션과 &#x27;결과 없음&#x27;을 에러와 구분하는 처리까지 다룬다.</p>
+
+      <div class="prompt-box">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+          <button class="copy-btn" data-copy="prompt-s3">복사</button>
+        </div>
+        <pre class="prompt-text" id="prompt-s3">전자공시(DART) 목록을 가져오는 collect_dart(max_pages=5) 함수를 추가해줘.
+
+- DART_API_KEY 가 없으면 &quot;- DART 키가 없어 건너뜀 (.env의 DART_API_KEY)&quot; 출력 후 빈 리스트.
+- 오늘 날짜(KST) 기준으로, DAYS_BACK 만큼 이전 날짜부터 오늘까지를 조회 범위로 잡는다.
+- https://opendart.fss.or.kr/api/list.json 에 GET 요청:
+  파라미터는 crtfc_key, bgn_de(YYYYMMDD), end_de(YYYYMMDD), page_no, page_count=100.
+- 응답 JSON의 status 값에 따라:
+  - &quot;013&quot; 이면 그 기간에 공시가 없다는 뜻이니 에러가 아니라 조용히 조회를 멈춘다.
+  - &quot;000&quot; 이 아닌 다른 값이면 &quot;! DART 응답 오류 [코드] 메시지&quot; 를 출력하고 멈춘다.
+- DART_WATCH 에 회사명이 지정돼 있으면 그 회사들만 남기고, 비어 있으면 전부 포함한다.
+- 제목은 &quot;[회사명] 보고서명&quot; 형식, 링크는
+  https://dart.fss.or.kr/dsaf001/main.do?rcpNo=접수번호, note에는 제출인(flr_nm)을 넣는다.
+  rcept_dt(YYYYMMDD)를 KST 자정 기준 dt로 변환한다. source는 &quot;DART&quot;.
+- total_page 까지 페이지를 넘기며 반복하고, 다 돌면 멈춘다.
+- requests.RequestException 이 나면 &quot;! DART 연결 실패: ...&quot; 출력 후 멈춘다.</pre>
+      </div>
+
+      <div class="criteria-box">
+        <p class="criteria-label">성공 기준</p>
+        <ul>
+          <li>DART_API_KEY 를 채우고 실행하면 에러 없이 &quot;DART 몇 건&quot; 이 찍힌다 (주말·공휴일엔 0건이 정상)</li>
+          <li>[013] 이 콘솔에 에러처럼 빨갛게 뜨지 않고 조용히 지나간다</li>
+          <li>DART_WATCH 에 회사명을 넣으면 그 회사 공시만 남는다</li>
+        </ul>
+      </div>
+
+      <details class="answer-details">
+        <summary>안 되면? 정답 코드 보기</summary>
+        <div class="code-box">
+          <button class="copy-btn code-copy-btn" data-copy="code-s3">복사</button>
+          <pre class="code-block" id="code-s3">def collect_dart(max_pages: int = 5) -&gt; list[Item]:
+    if not DART_API_KEY:
+        print(&quot;  - DART 키가 없어 건너뜀 (.env의 DART_API_KEY)&quot;)
+        return []
+
+    today = datetime.now(KST).date()
+    begin = today - timedelta(days=max(DAYS_BACK - 1, 0))
+    items: list[Item] = []
+
+    for page in range(1, max_pages + 1):
+        try:
+            resp = requests.get(
+                &quot;https://opendart.fss.or.kr/api/list.json&quot;,
+                params={
+                    &quot;crtfc_key&quot;: DART_API_KEY,
+                    &quot;bgn_de&quot;: begin.strftime(&quot;%Y%m%d&quot;),
+                    &quot;end_de&quot;: today.strftime(&quot;%Y%m%d&quot;),
+                    &quot;page_no&quot;: page,
+                    &quot;page_count&quot;: 100,   # 한 페이지 최대 100건
+                },
+                timeout=10,
+            )
+            resp.raise_for_status()
+        except requests.RequestException as exc:
+            print(f&quot;  ! DART 연결 실패: {exc}&quot;)
+            break
+
+        payload = resp.json()
+        status = payload.get(&quot;status&quot;)
+
+        if status == &quot;013&quot;:          # 조회된 데이터 없음 (주말·공휴일이면 정상)
+            break
+        if status != &quot;000&quot;:
+            print(f&quot;  ! DART 응답 오류 [{status}] {payload.get(&#x27;message&#x27;, &#x27;&#x27;)}&quot;)
+            break
+
+        for row in payload.get(&quot;list&quot;, []):
+            corp = row.get(&quot;corp_name&quot;, &quot;&quot;)
+            # 지켜볼 회사를 지정했으면 그 회사 공시만 남긴다
+            if DART_WATCH and not any(name in corp for name in DART_WATCH):
+                continue
+
+            dt = None
+            try:
+                dt = datetime.strptime(row[&quot;rcept_dt&quot;], &quot;%Y%m%d&quot;).replace(tzinfo=KST)
+            except (KeyError, ValueError):
+                pass
+
+            items.append(Item(
+                source=&quot;DART&quot;,
+                title=f&quot;[{corp}] {row.get(&#x27;report_nm&#x27;, &#x27;&#x27;)}&quot;.strip(),
+                link=f&quot;https://dart.fss.or.kr/dsaf001/main.do?rcpNo={row.get(&#x27;rcept_no&#x27;, &#x27;&#x27;)}&quot;,
+                dt=dt,
+                note=row.get(&quot;flr_nm&quot;, &quot;&quot;),
+            ))
+
+        if page &gt;= int(payload.get(&quot;total_page&quot;, 1)):
+            break
+
+    return items</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="step-card" id="s4">
+      <label class="step-check-row">
+        <input type="checkbox" class="step-check" data-id="s4">
+        <span class="step-num">STEP 4</span>
+        <h3>정리 — 중복 제거 후 최신순</h3>
+        <span class="step-time">5분</span>
+      </label>
+      <p class="step-desc">같은 기사가 RSS와 네이버 양쪽에 다 걸리는 경우가 많다. 합치기 전에 정리하는 단계.</p>
+
+      <div class="prompt-box">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+          <button class="copy-btn" data-copy="prompt-s4">복사</button>
+        </div>
+        <pre class="prompt-text" id="prompt-s4">세 소스(RSS, 네이버, DART)에서 모은 Item 리스트를 하나로 합친 뒤 정리하는
+dedupe_and_sort(items) 함수를 추가해줘.
+
+- 제목이 빈 항목은 버린다.
+- 제목에서 한글·영문·숫자만 남기고 소문자로 바꿔서 비교했을 때 같으면 중복으로 보고
+  (링크가 달라도) 먼저 나온 것만 남긴다.
+- 발행시각(dt) 기준 최신순으로 정렬한다. dt가 없는 항목은 맨 뒤로 보낸다.
+- 정리된 리스트를 리턴한다.</pre>
+      </div>
+
+      <div class="criteria-box">
+        <p class="criteria-label">성공 기준</p>
+        <ul>
+          <li>같은 제목의 기사가 RSS와 네이버 양쪽에서 들어와도 결과에는 한 번만 남는다</li>
+          <li>결과 리스트의 앞쪽이 더 최근 기사/공시다</li>
+        </ul>
+      </div>
+
+      <details class="answer-details">
+        <summary>안 되면? 정답 코드 보기</summary>
+        <div class="code-box">
+          <button class="copy-btn code-copy-btn" data-copy="code-s4">복사</button>
+          <pre class="code-block" id="code-s4">FAR_PAST = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+
+def dedupe_and_sort(items: list[Item]) -&gt; list[Item]:
+    seen: set[str] = set()
+    unique: list[Item] = []
+
+    for item in items:
+        if not item.title:
+            continue
+        # 링크가 달라도 제목이 같으면 같은 기사로 본다 (공백·기호 제거 후 비교)
+        key = re.sub(r&quot;[^0-9a-z가-힣]&quot;, &quot;&quot;, item.title.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(item)
+
+    unique.sort(key=lambda i: i.dt or FAR_PAST, reverse=True)
+    return unique</pre>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section class="group" id="part2">
+    <div class="group-head">
+      <span class="num">2</span>
+      <h2>실습 2 · 메일 발송 (45분)</h2>
+    </div>
+    <p class="group-sub">수집한 결과를 HTML 메일로 조립하고, 로컬 아웃룩을 원격 조작해 발송한다. 가장 많이 막히는 구간이다.</p>
+
+    <div class="step-card" id="s5">
+      <label class="step-check-row">
+        <input type="checkbox" class="step-check" data-id="s5">
+        <span class="step-num">STEP 5</span>
+        <h3>메일 조립 — HTML 리포트 만들기</h3>
+        <span class="step-time">10분</span>
+      </label>
+      <p class="step-desc">정리된 항목을 사람이 읽기 좋은 HTML 메일 본문으로 바꾼다.</p>
+
+      <div class="prompt-box">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+          <button class="copy-btn" data-copy="prompt-s5">복사</button>
+        </div>
+        <pre class="prompt-text" id="prompt-s5">수집한 Item 리스트를 HTML 메일 본문으로 만드는 build_html(items) 함수를 추가해줘.
+
+- 상단에 &quot;오늘의 이슈 리포트&quot; 제목과, 오늘 날짜(한국어, 예: 2026년 09월 01일)와 수집 건수를 보여준다.
+- 그 아래 표: 각 행에 출처(source), 제목(원문 링크가 걸린 클릭 가능한 텍스트), 발행시각(item.when).
+- MAX_ITEMS 개까지만 표시한다.
+- 이메일 클라이언트는 외부 CSS를 못 읽으니까, 모든 스타일을 style=&quot;...&quot; 속성으로 인라인으로 쓴다.
+- 제목이나 링크에 &lt;, &gt;, &amp; 같은 문자가 섞여 있어도 깨지지 않도록 html.escape 를 사용한다.
+- 완성된 HTML 문자열을 리턴한다.</pre>
+      </div>
+
+      <div class="criteria-box">
+        <p class="criteria-label">성공 기준</p>
+        <ul>
+          <li>build_html([]) 을 호출해도 에러 없이 완전한 HTML 문서 문자열이 나온다</li>
+          <li>그 결과를 메모장에 붙여넣고 확장자를 .html로 저장해 열어보면 표 형태로 보인다</li>
+        </ul>
+      </div>
+
+      <details class="answer-details">
+        <summary>안 되면? 정답 코드 보기</summary>
+        <div class="code-box">
+          <button class="copy-btn code-copy-btn" data-copy="code-s5">복사</button>
+          <pre class="code-block" id="code-s5">def build_html(items: list[Item]) -&gt; str:
+    rows = []
+    for item in items[:MAX_ITEMS]:
+        rows.append(f&quot;&quot;&quot;
+        &lt;tr&gt;
+          &lt;td style=&quot;padding:10px 8px;border-bottom:1px solid #eee;white-space:nowrap;
+                     color:#888;font-size:12px;vertical-align:top;&quot;&gt;{html.escape(item.source)}&lt;/td&gt;
+          &lt;td style=&quot;padding:10px 8px;border-bottom:1px solid #eee;font-size:14px;&quot;&gt;
+            &lt;a href=&quot;{html.escape(item.link)}&quot;
+               style=&quot;color:#1a1a1a;text-decoration:none;&quot;&gt;{html.escape(item.title)}&lt;/a&gt;
+          &lt;/td&gt;
+          &lt;td style=&quot;padding:10px 8px;border-bottom:1px solid #eee;white-space:nowrap;
+                     color:#aaa;font-size:12px;vertical-align:top;&quot;&gt;{item.when}&lt;/td&gt;
+        &lt;/tr&gt;&quot;&quot;&quot;)
+
+    return f&quot;&quot;&quot;&lt;!doctype html&gt;
+&lt;html&gt;&lt;body style=&quot;margin:0;padding:24px;background:#f5f6f4;
+                   font-family:&#x27;Malgun Gothic&#x27;,&#x27;Apple SD Gothic Neo&#x27;,sans-serif;color:#1a2233;&quot;&gt;
+  &lt;div style=&quot;max-width:720px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;&quot;&gt;
+    &lt;h1 style=&quot;font-size:20px;margin:0 0 4px;&quot;&gt;오늘의 이슈 리포트&lt;/h1&gt;
+    &lt;p style=&quot;color:#8993a3;font-size:13px;margin:0 0 20px;&quot;&gt;
+      {datetime.now(KST).strftime(&#x27;%Y년 %m월 %d일&#x27;)} · 수집 {len(items)}건
+    &lt;/p&gt;
+
+    &lt;table style=&quot;width:100%;border-collapse:collapse;&quot;&gt;{&#x27;&#x27;.join(rows)}&lt;/table&gt;
+
+    &lt;p style=&quot;color:#aaa;font-size:11px;margin-top:24px;&quot;&gt;
+      바이브코딩 실습 · 내 PC에서 실행된 자동 리포트
+    &lt;/p&gt;
+  &lt;/div&gt;
+&lt;/body&gt;&lt;/html&gt;&quot;&quot;&quot;</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="step-card" id="s6">
+      <label class="step-check-row">
+        <input type="checkbox" class="step-check" data-id="s6">
+        <span class="step-num">STEP 6</span>
+        <h3>아웃룩 자동 발송 — 가장 많이 막히는 구간</h3>
+        <span class="step-time">15분</span>
+      </label>
+      <p class="step-desc">클래식 아웃룩을 원격 조작해서 완전 자동으로 메일을 보낸다. 사내망이 SMTP를 막아둔 상황을 우회하는 핵심 부분.</p>
+
+      <div class="cmd-box">
+        <span class="cmd-label">터미널에 먼저 입력</span>
+        <code class="cmd-text" id="cmd-s6">pip install pywin32   (윈도우에서만)</code>
+        <button class="copy-btn" data-copy="cmd-s6">복사</button>
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+          <button class="copy-btn" data-copy="prompt-s6">복사</button>
+        </div>
+        <pre class="prompt-text" id="prompt-s6">윈도우에 로그인된 클래식 아웃룩을 원격 조작해서 메일을 자동으로 보내는
+_send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
+
+- pywin32의 win32com.client.Dispatch(&quot;Outlook.Application&quot;) 으로 아웃룩 앱을 잡는다.
+- outlook.CreateItem(0) 으로 새 메일을 만든다 (0 = olMailItem).
+- Subject, To(MAIL_TO 여러 명을 세미콜론으로 이어붙이기), HTMLBody 를 채운 뒤 Send() 를 호출한다.
+- 이 함수 안에서는 예외를 잡지 말고 그대로 던지게 둬 — 호출하는 쪽에서 처리할 거야.</pre>
+      </div>
+
+      <div class="criteria-box">
+        <p class="criteria-label">성공 기준</p>
+        <ul>
+          <li>윈도우 + 클래식 아웃룩 로그인 상태에서 pip install pywin32 를 실행했다</li>
+          <li>이 함수를 본인 메일 주소로 직접 호출해보면 실제로 메일이 도착한다</li>
+          <li>아웃룩이 꺼져 있으면 자동으로 켜지면서 발송된다 (로그인 창이 뜬다면 먼저 로그인)</li>
+        </ul>
+      </div>
+
+      <details class="answer-details">
+        <summary>안 되면? 정답 코드 보기</summary>
+        <div class="code-box">
+          <button class="copy-btn code-copy-btn" data-copy="code-s6">복사</button>
+          <pre class="code-block" id="code-s6">def _send_via_classic_outlook(subject: str, html_body: str) -&gt; None:
+    &quot;&quot;&quot;클래식 아웃룩을 COM으로 조작해 완전 자동으로 발송한다.
+
+    &#x27;새 아웃룩(New Outlook)&#x27;은 애초에 이 COM 인터페이스 자체를 제공하지 않는
+    별도 구조의 앱이라, 새 아웃룩만 설치돼 있으면 Dispatch 단계에서 예외가 난다.
+    그건 이 함수의 버그가 아니라 새 아웃룩의 설계상 한계이므로, 호출한 쪽에서
+    잡아서 _open_draft_mail() 로 넘어간다.
+    &quot;&quot;&quot;
+    import win32com.client  # pywin32 — Windows에만 설치된다
+
+    outlook = win32com.client.Dispatch(&quot;Outlook.Application&quot;)
+    mail = outlook.CreateItem(0)  # 0 = olMailItem
+    mail.Subject = subject
+    mail.To = &quot;; &quot;.join(MAIL_TO)  # 아웃룩은 세미콜론으로 여러 명을 구분한다
+    mail.HTMLBody = html_body
+    mail.Send()</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="step-card" id="s7">
+      <label class="step-check-row">
+        <input type="checkbox" class="step-check" data-id="s7">
+        <span class="step-num">STEP 7</span>
+        <h3>새 아웃룩 폴백 + 발송 함수 완성</h3>
+        <span class="step-time">10분</span>
+      </label>
+      <p class="step-desc">새 아웃룩(New Outlook)은 방금 만든 방식 자체를 지원하지 않는다. 그 경우를 감지해서 대신 처리해주는 안전망을 만든다.</p>
+
+      <div class="prompt-box">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+          <button class="copy-btn" data-copy="prompt-s7">복사</button>
+        </div>
+        <pre class="prompt-text" id="prompt-s7">새 아웃룩에서도 쓸 수 있도록 폴백과, 둘을 합치는 최종 발송 함수를 추가해줘.
+
+1. _open_draft_mail(subject, plain_body) 함수:
+   - 제목·받는사람·본문이 채워진 새 메일 작성 창을 mailto: 링크로 열어준다
+     (webbrowser.open 사용). 사람이 [보내기]만 누르면 되는 방식이다.
+   - mailto 는 길이 제한이 있으니 본문은 앞 1500자까지만 담고, 넘치면
+     &quot;(내용이 길어 일부만 담았습니다...)&quot; 안내를 덧붙인다.
+   - 받는사람은 콤마로 이어붙인 뒤 URL 인코딩한다.
+
+2. send_mail(subject, html_body, plain_body) 함수:
+   - MAIL_TO 가 비어 있으면 &quot;! 받는 사람이 없습니다&quot; 출력 후 종료.
+   - sys.platform 이 &quot;win32&quot; 가 아니면 &quot;! 아웃룩 발송은 윈도우에서만 됩니다&quot; 출력 후 종료.
+   - win32com.client 를 import 시도. ImportError 면 pywin32 설치 안내 후 종료.
+   - _send_via_classic_outlook 을 시도한다. 성공하면 &quot;✓ 메일 발송 완료 (클래식 아웃룩, 자동 발송)&quot;
+     을 출력하고 끝낸다.
+   - 예외가 나면(새 아웃룩인 경우) &quot;! 클래식 아웃룩 자동 발송이 안 됩니다: ...&quot; 와
+     &quot;새 아웃룩은 자동화를 지원하지 않습니다&quot; 를 출력한 뒤, _open_draft_mail 로 넘어가서
+     초안을 열어주고 &quot;✓ 메일 초안 열기 완료 (수동 발송 필요)&quot; 를 출력한다.</pre>
+      </div>
+
+      <div class="criteria-box">
+        <p class="criteria-label">성공 기준</p>
+        <ul>
+          <li>클래식 아웃룩 PC에서는 창 없이 바로 자동 발송된다</li>
+          <li>새 아웃룩만 있는 PC에서는 예외 메시지가 뜨고, 내용이 채워진 메일 창이 자동으로 뜬다</li>
+          <li>MAIL_TO 를 비워두고 실행하면 에러 없이 안내 메시지만 출력된다</li>
+        </ul>
+      </div>
+
+      <details class="answer-details">
+        <summary>안 되면? 정답 코드 보기</summary>
+        <div class="code-box">
+          <button class="copy-btn code-copy-btn" data-copy="code-s7">복사</button>
+          <pre class="code-block" id="code-s7">def _open_draft_mail(subject: str, plain_body: str) -&gt; None:
+    &quot;&quot;&quot;제목·받는사람·본문을 채운 새 메일 창을 기본 메일 앱으로 연다.
+
+    새 아웃룩은 COM 자동화를 지원하지 않아 완전 자동 발송이 불가능하다.
+    대신 mailto: 링크로 초안을 미리 채워서 열어주고, 사람이 [보내기]만
+    누르면 되게 한다.
+    &quot;&quot;&quot;
+    import webbrowser
+    from urllib.parse import quote
+
+    body_limit = 1500
+    body = plain_body[:body_limit]
+    if len(plain_body) &gt; body_limit:
+        body += &quot;\n\n(내용이 길어 일부만 담았습니다. 전체 내용은 위 콘솔 출력을 참고하세요.)&quot;
+
+    mailto = (
+        &quot;mailto:&quot; + quote(&quot;,&quot;.join(MAIL_TO))
+        + &quot;?subject=&quot; + quote(subject)
+        + &quot;&amp;body=&quot; + quote(body)
+    )
+    webbrowser.open(mailto)
+
+
+def send_mail(subject: str, html_body: str, plain_body: str) -&gt; None:
+    if not MAIL_TO:
+        print(&quot;  ! 받는 사람이 없습니다 (.env의 MAIL_TO)&quot;)
+        return
+
+    if sys.platform != &quot;win32&quot;:
+        print(&quot;  ! 아웃룩 발송은 윈도우에서만 됩니다 (이 스크립트가 로컬 아웃룩 앱을 조작하는 방식이라서).&quot;)
+        return
+
+    try:
+        import win32com.client  # noqa: F401  — 없으면 아래에서 ImportError로 잡는다
+    except ImportError:
+        print(&quot;  ! pywin32 가 설치되어 있지 않습니다. `pip install pywin32` 로 설치하세요.&quot;)
+        return
+
+    try:
+        _send_via_classic_outlook(subject, html_body)
+        print(f&quot;  ✓ 메일 발송 완료 (클래식 아웃룩, 자동 발송) → {&#x27;, &#x27;.join(MAIL_TO)}&quot;)
+        return
+    except Exception as exc:
+        print(f&quot;  ! 클래식 아웃룩 자동 발송이 안 됩니다: {exc}&quot;)
+        print(&quot;    &#x27;새 아웃룩(New Outlook)&#x27;만 설치돼 있으면 원래 이렇습니다 — 새 아웃룩은 자동화 자체를 지원하지 않습니다.&quot;)
+
+    print(&quot;  → 대신 제목·받는사람·내용을 채운 새 메일 창을 엽니다. 뜨는 창에서 [보내기]만 눌러주세요.&quot;)
+    try:
+        _open_draft_mail(subject, plain_body)
+        print(f&quot;  ✓ 메일 초안 열기 완료 (수동 발송 필요) → {&#x27;, &#x27;.join(MAIL_TO)}&quot;)
+    except Exception as exc:
+        print(f&quot;  ! 메일 초안도 열지 못했습니다: {exc}&quot;)</pre>
+        </div>
+      </details>
+    </div>
+
+    <div class="step-card" id="s8">
+      <label class="step-check-row">
+        <input type="checkbox" class="step-check" data-id="s8">
+        <span class="step-num">STEP 8</span>
+        <h3>전체 연결 — 완성</h3>
+        <span class="step-time">10분</span>
+      </label>
+      <p class="step-desc">지금까지 만든 함수들을 하나의 흐름으로 묶으면 완성이다.</p>
+
+      <div class="prompt-box">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+          <button class="copy-btn" data-copy="prompt-s8">복사</button>
+        </div>
+        <pre class="prompt-text" id="prompt-s8">지금까지 만든 함수들을 하나로 묶는 main() 함수와 실행부를 추가해줘.
+
+- argparse로 --dry-run 옵션을 추가한다 (있으면 메일을 안 보내고 콘솔에만 출력).
+- KEYWORDS, RSS_FEEDS, DART_WATCH 가 전부 비어 있으면 안내 메시지를 출력하고 종료(return 1).
+- [1/3] 수집: RSS → 네이버 → DART 순서로 각각 호출해서 건수를 출력하고, 다 합친 뒤
+  dedupe_and_sort 로 정리한다.
+- [2/3] 메일 조립: 제목은 &quot;[이슈 리포트] MM/DD · N건&quot; 형식으로, 본문(텍스트 버전)은
+  각 항목을 &quot;- [출처] 제목\n  링크&quot; 형태로 이어붙인다. build_html 로 HTML 버전도 만든다.
+- [3/3] 발송: --dry-run 이면 콘솔에 제목과 본문 미리보기만 출력하고, 아니면 send_mail 을 호출한다.
+- 마지막에 if __name__ == &quot;__main__&quot;: sys.exit(main()) 을 추가한다.</pre>
+      </div>
+
+      <div class="criteria-box">
+        <p class="criteria-label">성공 기준</p>
+        <ul>
+          <li>python main.py --dry-run 실행 시 [1/3] [2/3] [3/3] 순서로 출력되고, 마지막에 메일 미리보기가 콘솔에 나온다</li>
+          <li>아웃룩이 켜져 있는 상태에서 python main.py 를 실행하면 실제로 메일함에 리포트가 도착한다</li>
+          <li>여기까지 됐으면 완성이다 — 축하한다</li>
+        </ul>
+      </div>
+
+      <details class="answer-details">
+        <summary>안 되면? 정답 코드 보기</summary>
+        <div class="code-box">
+          <button class="copy-btn code-copy-btn" data-copy="code-s8">복사</button>
+          <pre class="code-block" id="code-s8">def main() -&gt; int:
+    parser = argparse.ArgumentParser(description=&quot;사내 이슈 데일리 리포트 봇&quot;)
+    parser.add_argument(&quot;--dry-run&quot;, action=&quot;store_true&quot;, help=&quot;메일을 보내지 않고 콘솔에만 출력&quot;)
+    args = parser.parse_args()
+
+    if not KEYWORDS and not RSS_FEEDS and not DART_WATCH:
+        print(&quot;설정된 키워드가 없습니다. .env 파일의 KEYWORDS를 채워주세요.&quot;)
+        return 1
+
+    print(f&quot;키워드: {&#x27;, &#x27;.join(KEYWORDS) or &#x27;(없음)&#x27;}&quot;)
+
+    print(&quot;\n[1/3] 수집 중...&quot;)
+    collected: list[Item] = []
+    for label, collector in ((&quot;RSS&quot;, collect_rss),
+                             (&quot;네이버뉴스&quot;, collect_naver_news),
+                             (&quot;DART&quot;, collect_dart)):
+        found = collector()
+        print(f&quot;  · {label}: {len(found)}건&quot;)
+        collected.extend(found)
+
+    items = dedupe_and_sort(collected)
+    print(f&quot;  → 중복 제거 후 {len(items)}건&quot;)
+
+    print(&quot;\n[2/3] 메일 조립 중...&quot;)
+    subject = f&quot;[이슈 리포트] {datetime.now(KST).strftime(&#x27;%m/%d&#x27;)} · {len(items)}건&quot;
+    plain_body = &quot;\n&quot;.join(
+        f&quot;- [{i.source}] {i.title}\n  {i.link}&quot; for i in items[:MAX_ITEMS]
+    ) or &quot;오늘 수집된 항목이 없습니다.&quot;
+    html_body = build_html(items)
+
+    print(&quot;\n[3/3] 발송...&quot;)
+    if args.dry_run:
+        print(&quot;  - --dry-run 이라 보내지 않습니다. 아래는 메일에 들어갈 내용입니다.\n&quot;)
+        print(&quot;=&quot; * 60)
+        print(subject)
+        print(&quot;=&quot; * 60)
+        print(plain_body[:2000])
+    else:
+        send_mail(subject, html_body, plain_body)
+
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())</pre>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <div class="callout">
+    <strong>그래도 안 되면?</strong> 에러 메시지 전문을 그대로 복사해서 AI에게 붙여넣는 것이 가장 빠르다.
+    단계별 정답 코드를 다 모은 <a href="https://github.com/hong-seok-young/vibe-coding-education/blob/claude/vibe-coding-education-program-lgtqes/news-report-bot/main.py" target="_blank" rel="noopener">완성본 main.py 전체 보기</a>도 참고할 것.
+  </div>
+
+  <footer>
+    바이브 코딩 실습 · 이슈봇 만들기 · 프롬프트는 예시다. 표현을 바꿔서 시도해봐도 좋다.
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var STORAGE_KEY = "issuebot-practice-checklist";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".step-check"));
+  var doneCountEl = document.getElementById("doneCount");
+  var totalCountEl = document.getElementById("totalCount");
+  var fillEl = document.getElementById("progressFill");
+  var noteEl = document.getElementById("progressNote");
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      /* 저장 안 되면 세션 동안만 체크 상태 유지 */
+    }
+  }
+
+  function render() {
+    var total = boxes.length;
+    var done = boxes.filter(function (b) { return b.checked; }).length;
+    totalCountEl.textContent = String(total);
+    doneCountEl.textContent = String(done);
+    fillEl.style.width = (total ? (done / total) * 100 : 0) + "%";
+    noteEl.textContent = done === 0
+      ? "체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전"
+      : done === total
+        ? "체크박스는 이 브라우저에만 저장됩니다 · 전부 완료, 수고했다"
+        : "체크박스는 이 브라우저에만 저장됩니다 · 진행 중";
+  }
+
+  var state = loadState();
+  boxes.forEach(function (box) {
+    var id = box.dataset.id;
+    if (state[id]) box.checked = true;
+    box.addEventListener("change", function () {
+      state[id] = box.checked;
+      saveState(state);
+      render();
+    });
+    box.addEventListener("click", function (e) { e.stopPropagation(); });
+  });
+
+  render();
+
+  function copyText(text, btn) {
+    var done = function () {
+      var original = btn.textContent;
+      btn.textContent = "복사됨!";
+      btn.classList.add("copied");
+      setTimeout(function () {
+        btn.textContent = original;
+        btn.classList.remove("copied");
+      }, 1500);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+
+  function fallbackCopy(text, done) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      done();
+    } catch (e) {
+      /* 복사 실패 시 그냥 무시 — 사용자가 직접 드래그해서 복사하면 된다 */
+    }
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var targetId = btn.dataset.copy;
+      var target = document.getElementById(targetId);
+      if (!target) return;
+      copyText(target.textContent, btn);
+    });
+  });
+})();
+</script>
+</body>
+</html>

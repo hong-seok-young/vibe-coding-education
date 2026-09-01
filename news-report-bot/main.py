@@ -1,12 +1,18 @@
 """사내 이슈 데일리 리포트 봇 — 바이브코딩 실습 완성본.
 
 파이프라인:
-    수집(RSS · 네이버 뉴스 · DART 공시) → Claude API 요약 → Gmail 발송
+    수집(RSS · 네이버 뉴스 · DART 공시) → Claude API 요약 → 아웃룩 발송
+
+사내 네트워크는 외부 SMTP(메일 서버 직접 연결)를 막아두는 경우가 많다.
+그래서 이 봇은 메일 서버에 직접 붙지 않고, 내 PC에 이미 로그인되어 켜져 있는
+**아웃룩(데스크톱 앱)을 원격 조작**해서 보낸다 — 사람이 아웃룩에서 새 메일을
+쓰고 보내기를 누르는 것과 같은 동작을 스크립트가 대신 눌러주는 방식이다.
+그래서 비밀번호를 따로 저장할 필요가 없고, 윈도우 + 클래식 아웃룩에서만 된다.
 
 실행:
     python main.py --dry-run     # 메일 없이 콘솔로만 확인 (처음엔 이걸로)
     python main.py --no-ai       # AI 요약 없이 목록만
-    python main.py               # 전체 실행 (메일 발송)
+    python main.py               # 전체 실행 (메일 발송, 아웃룩이 켜져 있어야 함)
 
 설정은 모두 같은 폴더의 .env 파일에서 읽는다. (.env.example 참고)
 """
@@ -17,11 +23,9 @@ import argparse
 import html
 import os
 import re
-import smtplib
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from email.message import EmailMessage
 from email.utils import parsedate_to_datetime
 from urllib.parse import quote
 
@@ -54,10 +58,7 @@ DART_API_KEY = os.getenv("DART_API_KEY", "")
 NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "")
 NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET", "")
 
-GMAIL_ADDRESS = os.getenv("GMAIL_ADDRESS", "")
-# 앱 비밀번호는 구글이 "abcd efgh ijkl mnop" 처럼 띄어쓰기와 함께 보여준다. 붙여서 쓴다.
-GMAIL_APP_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", "").replace(" ", "")
-MAIL_TO = _env_list("MAIL_TO") or ([GMAIL_ADDRESS] if GMAIL_ADDRESS else [])
+MAIL_TO = _env_list("MAIL_TO")   # 받는 사람 (쉼표로 여러 명). 아웃룩 자동화라 반드시 채워야 한다
 
 
 @dataclass
@@ -313,8 +314,11 @@ def summarize_with_claude(items: list[Item]) -> str:
 
 
 # ─────────────────────────────────────────────────────────────
-# STEP 6. 메일 발송
+# STEP 6. 메일 발송 — 로컬 아웃룩(데스크톱 앱)을 원격 조작
 # ─────────────────────────────────────────────────────────────
+# SMTP(메일 서버 직접 발송)가 사내망에서 막혀 있어, 이미 로그인된 아웃룩 앱을
+# 대신 조작하는 방식을 쓴다. 아웃룩이 실행 중이어야 하고(꺼져 있으면 자동으로
+# 켜진다), "새 아웃룩"이 아니라 클래식 아웃룩이어야 한다. 윈도우 전용이다.
 
 def build_html(summary: str, items: list[Item]) -> str:
     rows = []
@@ -355,28 +359,32 @@ def build_html(summary: str, items: list[Item]) -> str:
 </body></html>"""
 
 
-def send_mail(subject: str, html_body: str, plain_body: str) -> None:
-    if not (GMAIL_ADDRESS and GMAIL_APP_PASSWORD):
-        print("  ! 메일 설정이 없습니다 (.env의 GMAIL_ADDRESS / GMAIL_APP_PASSWORD)")
-        return
+def send_mail(subject: str, html_body: str) -> None:
     if not MAIL_TO:
         print("  ! 받는 사람이 없습니다 (.env의 MAIL_TO)")
         return
 
-    message = EmailMessage()
-    message["Subject"] = subject
-    message["From"] = GMAIL_ADDRESS
-    message["To"] = ", ".join(MAIL_TO)
-    message.set_content(plain_body)                       # 텍스트만 보는 메일 앱을 위한 대체본
-    message.add_alternative(html_body, subtype="html")
+    if sys.platform != "win32":
+        print("  ! 아웃룩 발송은 윈도우에서만 됩니다 (이 스크립트가 로컬 아웃룩 앱을 조작하는 방식이라서).")
+        return
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as smtp:
-            smtp.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
-            smtp.send_message(message)
-    except smtplib.SMTPAuthenticationError:
-        print("  ! 로그인 실패 — 구글 계정에 2단계 인증을 켜고 '앱 비밀번호'를 발급받아 쓰세요.")
-        print("    (평소 쓰는 구글 비밀번호로는 로그인되지 않습니다)")
+        import win32com.client  # pywin32 — Windows에만 설치된다 (requirements.txt 참고)
+    except ImportError:
+        print("  ! pywin32 가 설치되어 있지 않습니다. `pip install pywin32` 로 설치하세요.")
+        return
+
+    try:
+        outlook = win32com.client.Dispatch("Outlook.Application")
+        mail = outlook.CreateItem(0)  # 0 = olMailItem
+        mail.Subject = subject
+        mail.To = "; ".join(MAIL_TO)  # 아웃룩은 세미콜론으로 여러 명을 구분한다
+        mail.HTMLBody = html_body
+        mail.Send()
+    except Exception as exc:
+        print(f"  ! 아웃룩 발송 실패: {exc}")
+        print("    아웃룩(클래식)이 설치되어 있고, 계정에 로그인되어 있는지 확인하세요.")
+        print("    '새 아웃룩(New Outlook)'만 켜져 있으면 이 방식이 동작하지 않습니다.")
         return
 
     print(f"  ✓ 메일 발송 완료 → {', '.join(MAIL_TO)}")
@@ -436,7 +444,7 @@ def main() -> int:
         print("=" * 60)
         print(plain_body[:2000])
     else:
-        send_mail(subject, html_body, plain_body)
+        send_mail(subject, html_body)
 
     return 0
 

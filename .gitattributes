@@ -1,0 +1,7 @@
+# 윈도우 배치 파일은 CRLF 로 유지해야 cmd 가 제대로 읽는다
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 맥/리눅스 스크립트는 LF
+*.command text eol=lf
+*.sh text eol=lf

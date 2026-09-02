@@ -1,7 +1,7 @@
 """사내 이슈 데일리 리포트 봇 — 바이브코딩 실습 완성본.
 
 파이프라인:
-    수집(RSS · 네이버 뉴스 · DART 공시) → 중복 제거·정리 → 아웃룩 발송
+    수집(RSS · 뉴스 검색 API · DART 공시) → 중복 제거·정리 → 아웃룩 발송
 
 사내 네트워크는 외부 SMTP(메일 서버 직접 연결)를 막아두는 경우가 많다.
 그래서 이 봇은 메일 서버에 직접 붙지 않고, 내 PC에 이미 로그인되어 켜져 있는
@@ -25,7 +25,6 @@ import re
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from email.utils import parsedate_to_datetime
 from urllib.parse import quote
 
 import feedparser
@@ -54,8 +53,7 @@ DAYS_BACK = int(os.getenv("DAYS_BACK", "1"))    # 며칠치를 볼 것인가 (�
 MAX_ITEMS = int(os.getenv("MAX_ITEMS", "40"))   # 메일에 담을 최대 건수
 
 DART_API_KEY = os.getenv("DART_API_KEY", "")
-NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "")
-NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET", "")
+NEWSAPI_KEY = os.getenv("NEWSAPI_KEY", "")
 
 MAIL_TO = _env_list("MAIL_TO")   # 받는 사람 (쉼표로 여러 명). 아웃룩 자동화라 반드시 채워야 한다
 
@@ -64,7 +62,7 @@ MAIL_TO = _env_list("MAIL_TO")   # 받는 사람 (쉼표로 여러 명). 아웃�
 class Item:
     """수집한 항목 하나 (뉴스 기사든 공시든 같은 모양으로 다룬다)."""
 
-    source: str                       # "RSS" | "네이버뉴스" | "DART"
+    source: str                       # "RSS" | "NewsAPI" | "DART"
     title: str
     link: str
     dt: datetime | None = None        # 발행 시각 (timezone 포함)
@@ -76,7 +74,7 @@ class Item:
 
 
 def clean_text(raw: str) -> str:
-    """HTML 태그와 엔티티를 걷어낸다. (네이버 API 응답은 <b> 태그가 섞여 온다)"""
+    """HTML 태그와 엔티티를 걷어낸다. (RSS 항목에 간혹 HTML 태그가 섞여 온다)"""
     return html.unescape(re.sub(r"<[^>]+>", "", raw)).strip()
 
 
@@ -118,50 +116,47 @@ def collect_rss(limit_per_feed: int = 10) -> list[Item]:
 
 
 # ─────────────────────────────────────────────────────────────
-# STEP 2. 수집 ② 네이버 뉴스 검색 API — 헤더로 인증하는 첫 경험
+# STEP 2. 수집 ② 뉴스 검색 API(NewsAPI.org) — 헤더로 인증하는 첫 경험
 # ─────────────────────────────────────────────────────────────
+# 무료 개발자 플랜은 호출 한도가 있고 최근 한 달 기사만 검색된다. 개발/테스트
+# 용도로만 허용되니, 실습이 끝나면 실제 운영에는 다른 유료 플랜이 필요하다.
 
-def collect_naver_news(display: int = 10) -> list[Item]:
-    if not (NAVER_CLIENT_ID and NAVER_CLIENT_SECRET):
-        print("  - 네이버 키가 없어 건너뜀 (.env의 NAVER_CLIENT_ID / SECRET)")
+def collect_newsapi(page_size: int = 10) -> list[Item]:
+    if not NEWSAPI_KEY:
+        print("  - 뉴스 API 키가 없어 건너뜀 (.env의 NEWSAPI_KEY)")
         return []
 
-    headers = {
-        "X-Naver-Client-Id": NAVER_CLIENT_ID,
-        "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
-    }
+    headers = {"X-Api-Key": NEWSAPI_KEY}
     items: list[Item] = []
 
     for keyword in KEYWORDS:
         try:
             resp = requests.get(
-                "https://openapi.naver.com/v1/search/news.json",
+                "https://newsapi.org/v2/everything",
                 headers=headers,
-                params={"query": keyword, "display": display, "sort": "date"},
+                params={"q": keyword, "language": "ko", "sortBy": "publishedAt", "pageSize": page_size},
                 timeout=10,
             )
             resp.raise_for_status()
         except requests.HTTPError as exc:
-            # 401이면 키가 틀린 것, 429면 하루 호출량(25,000회) 초과
-            print(f"  ! 네이버 검색 실패 ('{keyword}'): {exc}")
+            # 401이면 키가 틀린 것, 429면 하루 호출 한도 초과
+            print(f"  ! 뉴스 API 검색 실패 ('{keyword}'): {exc}")
             continue
         except requests.RequestException as exc:
-            print(f"  ! 네이버 연결 실패 ('{keyword}'): {exc}")
+            print(f"  ! 뉴스 API 연결 실패: {exc}")
             continue
 
-        for row in resp.json().get("items", []):
+        for row in resp.json().get("articles", []):
             dt = None
             try:
-                dt = parsedate_to_datetime(row.get("pubDate", ""))
-                if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=KST)
+                dt = datetime.fromisoformat(row.get("publishedAt", "").replace("Z", "+00:00"))
             except (TypeError, ValueError):
                 pass
 
             items.append(Item(
-                source="네이버뉴스",
-                title=clean_text(row.get("title", "")),
-                link=row.get("originallink") or row.get("link", ""),
+                source="NewsAPI",
+                title=clean_text(row.get("title") or ""),
+                link=row.get("url", ""),
                 dt=dt,
             ))
 
@@ -387,7 +382,7 @@ def main() -> int:
     print("\n[1/3] 수집 중...")
     collected: list[Item] = []
     for label, collector in (("RSS", collect_rss),
-                             ("네이버뉴스", collect_naver_news),
+                             ("NewsAPI", collect_newsapi),
                              ("DART", collect_dart)):
         found = collector()
         print(f"  · {label}: {len(found)}건")

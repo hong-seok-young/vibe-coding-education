@@ -798,18 +798,31 @@
             파이썬 설치.bat 받아서 실행
             <span class="tag required">필수</span>
           </span>
-          <p>아래 링크를 누르면 깃허브에서 파일이 열린다. 오른쪽 위 <strong>다운로드(⬇)
-            아이콘</strong>을 눌러서 받은 뒤 더블클릭한다. 파이썬이 없으면 공식 배포판을
-            받아 설치하고, 이미 있으면 최신 버전인지 확인해서 오래됐으면 업데이트한다.
-            딱 파이썬만 다룬다 — 1~2분이면 끝난다.</p>
-
-          <div class="actions">
-            <a class="btn primary" href="https://github.com/hong-seok-young/vibe-coding-education/blob/claude/vibe-coding-education-program-lgtqes/%ED%8C%8C%EC%9D%B4%EC%8D%AC%20%EC%84%A4%EC%B9%98.bat" target="_blank" rel="noopener">
-              <span class="arrow">⬇</span> 파이썬 설치.bat 열기
-            </a>
-          </div>
+          <p>이 페이지(html 파일)와 같은 폴더 안에 <code>파이썬 설치.bat</code> 파일이
+            이미 들어있다. 그 파일을 <strong>더블클릭</strong>하면, 파이썬이 없으면 공식
+            배포판을 받아 설치하고, 이미 있으면 최신 버전인지 확인해서 오래됐으면
+            업데이트한다. 딱 파이썬만 다룬다 — 1~2분이면 끝난다.</p>
 
           <p class="warn">검은 창이 뜨고 글자가 올라가는 동안 절대 닫지 말 것 — 끝나면 저절로 안내가 나온다.</p>
+
+          <details class="install-details">
+            <summary>파일이 안 보이거나, 이 페이지만 따로 받았다면?</summary>
+            <p class="tiny" style="margin-top: 4px;">
+              전체 실습 폴더가 아니라 이 html 파일 하나만 따로 받은 경우다. 이럴 땐
+              파이썬 공식 사이트에서 바로 받아 설치하면 된다.
+            </p>
+            <div class="actions" style="margin-top: 8px;">
+              <a class="btn primary" href="https://www.python.org/downloads/" target="_blank" rel="noopener">
+                <span class="arrow">⬇</span> python.org에서 받기
+              </a>
+            </div>
+            <p class="tiny" style="margin-top: 8px;">
+              설치 화면 맨 아래 <code>Add python.exe to PATH</code> 체크는 <strong>필수</strong>다.
+              빠뜨리면 나중에 실행이 안 된다. (이 경우 <code>.env</code> 파일은 직접 만들어야
+              한다 — <code>news-report-bot/.env.example</code>을 복사해서 이름을
+              <code>.env</code>로 바꾸면 된다.)
+            </p>
+          </details>
 
           <details class="install-details">
             <summary>실행할 때 "파일을 복사할 수 없음" 창이 뜬다면?</summary>

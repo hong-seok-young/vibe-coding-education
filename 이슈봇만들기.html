@@ -740,7 +740,6 @@
 
   <div class="toc-group-label">실습 1 · 수집</div>
       <a class="toc-link" data-page="s0" href="#s0"><span class="toc-badge">0</span>뼈대</a>
-      <a class="toc-link" data-page="s1" href="#s1"><span class="toc-badge">1</span>RSS</a>
       <a class="toc-link" data-page="s2" href="#s2"><span class="toc-badge">2</span>뉴스 API</a>
       <a class="toc-link" data-page="s3" href="#s3"><span class="toc-badge">3</span>DART</a>
       <a class="toc-link" data-page="s4" href="#s4"><span class="toc-badge">4</span>정리</a>
@@ -750,6 +749,9 @@
       <a class="toc-link" data-page="s6" href="#s6"><span class="toc-badge">6</span>아웃룩 발송</a>
       <a class="toc-link" data-page="s7" href="#s7"><span class="toc-badge">7</span>새 아웃룩</a>
       <a class="toc-link" data-page="s8" href="#s8"><span class="toc-badge">8</span>완성</a>
+
+  <div class="toc-group-label">추가실습</div>
+      <a class="toc-link" data-page="s1" href="#s1"><span class="toc-badge">9</span>RSS</a>
 </nav>
 
 <div class="content-outer">
@@ -1002,97 +1004,6 @@ def clean_text(raw: str) -&gt; str:
     </details>
   </section>
 
-  <section class="page" data-page="s1" id="s1">
-    <div class="page-head">
-      <span class="page-eyebrow">실습 1 · 수집</span>
-      <div class="page-title-row">
-        <label class="page-check-wrap">
-          <input type="checkbox" class="check page-check" data-id="s1">
-        </label>
-        <h2>STEP 1 · RSS 수집 — 키 없이 첫 성공</h2>
-        <span class="step-time">10분</span>
-      </div>
-      <p class="step-desc">구글 뉴스는 키워드 검색 결과를 RSS로 내준다. API 키가 전혀 필요 없어서, 여기서 가장 먼저 결과물을 본다. 연합뉴스·한국경제·매일경제처럼 특정 언론사만 보고 싶으면 .env의 RSS_FEEDS에 그 언론사 RSS 주소를 추가하면 된다.</p>
-    </div>
-
-      <div class="cmd-box">
-        <span class="cmd-label">터미널에 먼저 입력</span>
-        <code class="cmd-text" id="cmd-s1">pip install feedparser</code>
-        <button class="copy-btn" data-copy="cmd-s1">복사</button>
-      </div>
-    <div class="prompt-box">
-      <div class="prompt-box-head">
-        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
-        <button class="copy-btn" data-copy="prompt-s1">복사</button>
-      </div>
-      <pre class="prompt-text" id="prompt-s1">이어서, 구글 뉴스 RSS로 기사를 모으는 기능을 추가해줘.
-
-1. google_news_rss(keyword) 함수: 아래 형태의 URL 문자열을 리턴해줘 (keyword는 URL 인코딩).
-   https://news.google.com/rss/search?q={keyword}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko
-
-2. collect_rss(limit_per_feed=10) 함수:
-   - RSS_FEEDS 목록 + KEYWORDS 각각으로 만든 구글뉴스 RSS 주소들을 모두 대상으로 한다.
-   - feedparser로 각 주소를 읽는다. feedparser는 네트워크가 막혀도 예외를 던지지 않고
-     조용히 빈 결과를 주니까, parsed.bozo 이면서 entries가 비어 있으면
-     &quot;! RSS 실패 (...)&quot; 를 출력하고 그 피드는 건너뛴다.
-   - 각 피드에서 최대 limit_per_feed개까지만 가져온다.
-   - title은 clean_text로 정리하고, link, 발행시각(entry.published_parsed가 있으면
-     UTC datetime으로 변환)을 채워서 Item으로 만든다. source는 &quot;RSS&quot;.
-   - 모은 Item 리스트를 리턴한다.
-
-3. 맨 아래 확인용 코드에 collect_rss() 결과 개수를 출력하는 줄을 추가해줘.
-
-지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 파일로 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
-    </div>
-
-    <div class="criteria-box">
-      <p class="criteria-label">성공 기준</p>
-      <ul>
-          <li>pip install feedparser 를 실행했다</li>
-          <li>python main.py 를 실행하면 에러 없이 &quot;RSS 몇 건&quot; 형태로 개수가 찍힌다</li>
-          <li>.env의 KEYWORDS에 흔한 단어(예: 삼성전자)를 넣으면 0건보다 많이 나온다</li>
-      </ul>
-    </div>
-
-    <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s1">복사</button>
-        <pre class="code-block" id="code-s1">def google_news_rss(keyword: str) -&gt; str:
-    &quot;&quot;&quot;구글 뉴스는 키워드 검색 결과를 RSS로 내준다. 키가 필요 없어 실습 시작용으로 좋다.&quot;&quot;&quot;
-    return f&quot;https://news.google.com/rss/search?q={quote(keyword)}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko&quot;
-
-
-def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
-    feeds = list(RSS_FEEDS) + [google_news_rss(kw) for kw in KEYWORDS]
-    items: list[Item] = []
-
-    for url in feeds:
-        parsed = feedparser.parse(url)
-
-        # feedparser는 네트워크가 막혀도 예외를 던지지 않고 조용히 빈 결과를 준다.
-        # 왜 0건인지 알 수 있도록 여기서 직접 확인한다.
-        if parsed.bozo and not parsed.entries:
-            print(f&quot;  ! RSS 실패 ({url[:60]}...): {parsed.bozo_exception}&quot;)
-            continue
-
-        for entry in parsed.entries[:limit_per_feed]:
-            dt = None
-            if getattr(entry, &quot;published_parsed&quot;, None):
-                dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-
-            items.append(Item(
-                source=&quot;RSS&quot;,
-                title=clean_text(entry.get(&quot;title&quot;, &quot;&quot;)),
-                link=entry.get(&quot;link&quot;, &quot;&quot;),
-                dt=dt,
-            ))
-
-    return items</pre>
-      </div>
-    </details>
-  </section>
-
   <section class="page" data-page="s2" id="s2">
     <div class="page-head">
       <span class="page-eyebrow">실습 1 · 수집</span>
@@ -1314,7 +1225,7 @@ def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
         <h2>STEP 4 · 정리 — 중복 제거 후 최신순</h2>
         <span class="step-time">5분</span>
       </div>
-      <p class="step-desc">같은 기사가 RSS와 뉴스 API 양쪽에 다 걸리는 경우가 많다. 합치기 전에 정리하는 단계.</p>
+      <p class="step-desc">여러 소스에서 모은 항목을 합치기 전에 정리하는 단계. 나중에 RSS 등 소스를 더 추가해도 이 함수가 그대로 중복을 걸러준다.</p>
     </div>
 
     <div class="prompt-box">
@@ -1322,7 +1233,7 @@ def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s4">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s4">세 소스(RSS, 뉴스 API, DART)에서 모은 Item 리스트를 하나로 합친 뒤 정리하는
+      <pre class="prompt-text" id="prompt-s4">지금까지 모은 소스(뉴스 API, DART)에서 모은 Item 리스트를 하나로 합친 뒤 정리하는
 dedupe_and_sort(items) 함수를 추가해줘.
 
 - 제목이 빈 항목은 버린다.
@@ -1337,7 +1248,7 @@ dedupe_and_sort(items) 함수를 추가해줘.
     <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
       <ul>
-          <li>같은 제목의 기사가 RSS와 뉴스 API 양쪽에서 들어와도 결과에는 한 번만 남는다</li>
+          <li>같은 제목의 항목이 여러 소스에서 들어와도 결과에는 한 번만 남는다</li>
           <li>결과 리스트의 앞쪽이 더 최근 기사/공시다</li>
       </ul>
     </div>
@@ -1644,7 +1555,7 @@ def send_mail(subject: str, html_body: str, plain_body: str) -&gt; None:
 
 - argparse로 --dry-run 옵션을 추가한다 (있으면 메일을 안 보내고 콘솔에만 출력).
 - KEYWORDS, RSS_FEEDS, DART_WATCH 가 전부 비어 있으면 안내 메시지를 출력하고 종료(return 1).
-- [1/3] 수집: RSS → 뉴스 API → DART 순서로 각각 호출해서 건수를 출력하고, 다 합친 뒤
+- [1/3] 수집: 뉴스 API → DART 순서로 각각 호출해서 건수를 출력하고, 다 합친 뒤
   dedupe_and_sort 로 정리한다.
 - [2/3] 메일 조립: 제목은 &quot;[이슈 리포트] MM/DD · N건&quot; 형식으로, 본문(텍스트 버전)은
   각 항목을 &quot;- [출처] 제목\n  링크&quot; 형태로 이어붙인다. build_html 로 HTML 버전도 만든다.
@@ -1680,8 +1591,7 @@ def send_mail(subject: str, html_body: str, plain_body: str) -&gt; None:
 
     print(&quot;\n[1/3] 수집 중...&quot;)
     collected: list[Item] = []
-    for label, collector in ((&quot;RSS&quot;, collect_rss),
-                             (&quot;NewsAPI&quot;, collect_newsapi),
+    for label, collector in ((&quot;NewsAPI&quot;, collect_newsapi),
                              (&quot;DART&quot;, collect_dart)):
         found = collector()
         print(f&quot;  · {label}: {len(found)}건&quot;)
@@ -1716,6 +1626,104 @@ if __name__ == &quot;__main__&quot;:
     </details>
   </section>
 
+  <section class="page" data-page="s1" id="s1">
+    <div class="page-head">
+      <span class="page-eyebrow">추가실습</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s1">
+        </label>
+        <h2>STEP 9 · RSS 수집 추가하기 (보너스)</h2>
+        <span class="step-time">10분</span>
+      </div>
+      <p class="step-desc">시간이 남으면 해보는 추가 실습. 구글 뉴스는 키워드 검색 결과를 RSS로 내준다 — API 키 없이 돌아가는 소스를 하나 더 붙여본다. 연합뉴스·한국경제·매일경제처럼 특정 언론사만 보고 싶으면 .env의 RSS_FEEDS에 그 언론사 RSS 주소를 추가하면 된다.</p>
+    </div>
+
+      <div class="cmd-box">
+        <span class="cmd-label">터미널에 먼저 입력</span>
+        <code class="cmd-text" id="cmd-s1">pip install feedparser</code>
+        <button class="copy-btn" data-copy="cmd-s1">복사</button>
+      </div>
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s1">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s1">지금 완성된 프로그램에 RSS 수집 기능을 추가로 붙여줘.
+
+1. google_news_rss(keyword) 함수: 아래 형태의 URL 문자열을 리턴해줘 (keyword는 URL 인코딩).
+   https://news.google.com/rss/search?q={keyword}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko
+
+2. collect_rss(limit_per_feed=10) 함수:
+   - RSS_FEEDS 목록 + KEYWORDS 각각으로 만든 구글뉴스 RSS 주소들을 모두 대상으로 한다.
+   - feedparser로 각 주소를 읽는다. feedparser는 네트워크가 막혀도 예외를 던지지 않고
+     조용히 빈 결과를 주니까, parsed.bozo 이면서 entries가 비어 있으면
+     &quot;! RSS 실패 (...)&quot; 를 출력하고 그 피드는 건너뛴다.
+   - 각 피드에서 최대 limit_per_feed개까지만 가져온다.
+   - title은 clean_text로 정리하고, link, 발행시각(entry.published_parsed가 있으면
+     UTC datetime으로 변환)을 채워서 Item으로 만든다. source는 &quot;RSS&quot;.
+   - 모은 Item 리스트를 리턴한다.
+
+3. main() 함수의 수집 목록 맨 앞에 (&quot;RSS&quot;, collect_rss) 를 추가해서, RSS → 뉴스 API → DART
+   순서로 호출되게 해줘.
+
+지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 파일로 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
+          <li>pip install feedparser 를 실행했다</li>
+          <li>python main.py --dry-run 을 실행하면 [1/3] 수집 결과에 &quot;RSS 몇 건&quot;이 함께 찍힌다</li>
+          <li>.env의 KEYWORDS에 흔한 단어(예: 삼성전자)를 넣으면 0건보다 많이 나온다</li>
+      </ul>
+    </div>
+
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 보기</summary>
+      <div class="code-box">
+        <button class="copy-btn code-copy-btn" data-copy="code-s1">복사</button>
+        <pre class="code-block" id="code-s1">def google_news_rss(keyword: str) -&gt; str:
+    &quot;&quot;&quot;구글 뉴스는 키워드 검색 결과를 RSS로 내준다. 키가 필요 없어 실습 시작용으로 좋다.&quot;&quot;&quot;
+    return f&quot;https://news.google.com/rss/search?q={quote(keyword)}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko&quot;
+
+
+def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
+    feeds = list(RSS_FEEDS) + [google_news_rss(kw) for kw in KEYWORDS]
+    items: list[Item] = []
+
+    for url in feeds:
+        parsed = feedparser.parse(url)
+
+        # feedparser는 네트워크가 막혀도 예외를 던지지 않고 조용히 빈 결과를 준다.
+        # 왜 0건인지 알 수 있도록 여기서 직접 확인한다.
+        if parsed.bozo and not parsed.entries:
+            print(f&quot;  ! RSS 실패 ({url[:60]}...): {parsed.bozo_exception}&quot;)
+            continue
+
+        for entry in parsed.entries[:limit_per_feed]:
+            dt = None
+            if getattr(entry, &quot;published_parsed&quot;, None):
+                dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+
+            items.append(Item(
+                source=&quot;RSS&quot;,
+                title=clean_text(entry.get(&quot;title&quot;, &quot;&quot;)),
+                link=entry.get(&quot;link&quot;, &quot;&quot;),
+                dt=dt,
+            ))
+
+    return items
+
+
+# main() 의 수집 목록도 이렇게 바뀐다 (RSS가 맨 앞에 추가된다):
+#     for label, collector in ((&quot;RSS&quot;, collect_rss),
+#                              (&quot;NewsAPI&quot;, collect_newsapi),
+#                              (&quot;DART&quot;, collect_dart)):</pre>
+      </div>
+    </details>
+  </section>
+
     <div class="page-nav">
       <button class="page-nav-btn" id="pageNavPrev">← 이전</button>
       <span class="page-nav-pos" id="pageNavPos">1 / 10</span>
@@ -1732,7 +1740,7 @@ if __name__ == &quot;__main__&quot;:
 
 <script>
 (function () {
-  var PAGE_IDS = ["prep", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"];
+  var PAGE_IDS = ["prep", "s0", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s1"];
   var STORAGE_KEY = "issuebot-checklist";
   var STATE_KEY = "issuebot-current-page";
 

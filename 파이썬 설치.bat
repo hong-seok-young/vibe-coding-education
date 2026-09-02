@@ -2,6 +2,13 @@
 chcp 65001 >nul 2>&1
 setlocal enabledelayedexpansion
 title 바이브 코딩 실습 - 환경 설치
+
+rem 브라우저로 받은 파일에는 Windows가 "인터넷에서 받음" 표시(Mark of the Web)를
+rem 자동으로 붙인다. 보안 정책이 엄격한 PC에서는 이 표시 때문에 파일 복사·실행이
+rem 막힐 수 있어, 실행하자마자 스스로 그 표시를 지운다 (관리자 권한 불필요, 실패해도
+rem 무시하고 계속 진행 — 지워지지 않았다면 뒤에서 다른 오류로 드러난다).
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Unblock-File -LiteralPath '%~f0'" >nul 2>&1
+
 cd /d "%~dp0"
 
 echo.

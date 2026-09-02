@@ -1,5 +1,10 @@
 #!/bin/bash
 # 바이브 코딩 실습 - 맥용 환경 설치 (더블클릭해서 실행)
+
+# 브라우저로 받은 파일에는 macOS가 "격리(quarantine)" 표시를 자동으로 붙인다.
+# 실행되자마자 스스로 그 표시를 지운다 (실패해도 무시하고 계속 진행).
+xattr -d com.apple.quarantine "$0" 2>/dev/null
+
 cd "$(dirname "$0")" || exit 1
 
 echo ""

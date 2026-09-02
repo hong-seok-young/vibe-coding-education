@@ -962,44 +962,13 @@
     </div>
 
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s0">복사</button>
-        <pre class="code-block" id="code-s0">def _env_list(name: str) -&gt; list[str]:
-    &quot;&quot;&quot;쉼표로 구분된 환경변수를 리스트로. 빈 값은 버린다.&quot;&quot;&quot;
-    return [v.strip() for v in os.getenv(name, &quot;&quot;).split(&quot;,&quot;) if v.strip()]
-
-
-KEYWORDS = _env_list(&quot;KEYWORDS&quot;)                # 모니터링할 키워드
-RSS_FEEDS = _env_list(&quot;RSS_FEEDS&quot;)              # 직접 지정한 RSS 주소
-DART_WATCH = _env_list(&quot;DART_WATCH&quot;)            # 공시를 지켜볼 회사명 (비우면 전체)
-DAYS_BACK = int(os.getenv(&quot;DAYS_BACK&quot;, &quot;1&quot;))    # 며칠치를 볼 것인가 (오늘 포함)
-MAX_ITEMS = int(os.getenv(&quot;MAX_ITEMS&quot;, &quot;40&quot;))   # 메일에 담을 최대 건수
-
-DART_API_KEY = os.getenv(&quot;DART_API_KEY&quot;, &quot;&quot;)
-NEWSAPI_KEY = os.getenv(&quot;NEWSAPI_KEY&quot;, &quot;&quot;)
-
-MAIL_TO = _env_list(&quot;MAIL_TO&quot;)   # 받는 사람 (쉼표로 여러 명)
-
-
-@dataclass
-class Item:
-    &quot;&quot;&quot;수집한 항목 하나 (뉴스 기사든 공시든 같은 모양으로 다룬다).&quot;&quot;&quot;
-
-    source: str                       # &quot;RSS&quot; | &quot;NewsAPI&quot; | &quot;DART&quot;
-    title: str
-    link: str
-    dt: datetime | None = None        # 발행 시각 (timezone 포함)
-    note: str = field(default=&quot;&quot;)     # 공시 제출인 등 부가 정보
-
-    @property
-    def when(self) -&gt; str:
-        return self.dt.astimezone(KST).strftime(&quot;%m/%d %H:%M&quot;) if self.dt else &quot;-&quot;
-
-
-def clean_text(raw: str) -&gt; str:
-    &quot;&quot;&quot;HTML 태그와 엔티티를 걷어낸다. (RSS 항목에 간혹 HTML 태그가 섞여 온다)&quot;&quot;&quot;
-    return html.unescape(re.sub(r&quot;&lt;[^&gt;]+&gt;&quot;, &quot;&quot;, raw)).strip()</pre>
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 0.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
       </div>
     </details>
   </section>
@@ -1054,49 +1023,13 @@ def clean_text(raw: str) -&gt; str:
     </div>
 
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s2">복사</button>
-        <pre class="code-block" id="code-s2">def collect_newsapi(page_size: int = 10) -&gt; list[Item]:
-    if not NEWSAPI_KEY:
-        print(&quot;  - 뉴스 API 키가 없어 건너뜀 (.env의 NEWSAPI_KEY)&quot;)
-        return []
-
-    headers = {&quot;X-Api-Key&quot;: NEWSAPI_KEY}
-    items: list[Item] = []
-
-    for keyword in KEYWORDS:
-        try:
-            resp = requests.get(
-                &quot;https://newsapi.org/v2/everything&quot;,
-                headers=headers,
-                params={&quot;q&quot;: keyword, &quot;language&quot;: &quot;ko&quot;, &quot;sortBy&quot;: &quot;publishedAt&quot;, &quot;pageSize&quot;: page_size},
-                timeout=10,
-            )
-            resp.raise_for_status()
-        except requests.HTTPError as exc:
-            # 401이면 키가 틀린 것, 429면 하루 호출 한도 초과
-            print(f&quot;  ! 뉴스 API 검색 실패 (&#x27;{keyword}&#x27;): {exc}&quot;)
-            continue
-        except requests.RequestException as exc:
-            print(f&quot;  ! 뉴스 API 연결 실패: {exc}&quot;)
-            continue
-
-        for row in resp.json().get(&quot;articles&quot;, []):
-            dt = None
-            try:
-                dt = datetime.fromisoformat(row.get(&quot;publishedAt&quot;, &quot;&quot;).replace(&quot;Z&quot;, &quot;+00:00&quot;))
-            except (TypeError, ValueError):
-                pass
-
-            items.append(Item(
-                source=&quot;NewsAPI&quot;,
-                title=clean_text(row.get(&quot;title&quot;) or &quot;&quot;),
-                link=row.get(&quot;url&quot;, &quot;&quot;),
-                dt=dt,
-            ))
-
-    return items</pre>
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 2.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
       </div>
     </details>
   </section>
@@ -1148,69 +1081,13 @@ def clean_text(raw: str) -&gt; str:
     </div>
 
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s3">복사</button>
-        <pre class="code-block" id="code-s3">def collect_dart(max_pages: int = 5) -&gt; list[Item]:
-    if not DART_API_KEY:
-        print(&quot;  - DART 키가 없어 건너뜀 (.env의 DART_API_KEY)&quot;)
-        return []
-
-    today = datetime.now(KST).date()
-    begin = today - timedelta(days=max(DAYS_BACK - 1, 0))
-    items: list[Item] = []
-
-    for page in range(1, max_pages + 1):
-        try:
-            resp = requests.get(
-                &quot;https://opendart.fss.or.kr/api/list.json&quot;,
-                params={
-                    &quot;crtfc_key&quot;: DART_API_KEY,
-                    &quot;bgn_de&quot;: begin.strftime(&quot;%Y%m%d&quot;),
-                    &quot;end_de&quot;: today.strftime(&quot;%Y%m%d&quot;),
-                    &quot;page_no&quot;: page,
-                    &quot;page_count&quot;: 100,   # 한 페이지 최대 100건
-                },
-                timeout=10,
-            )
-            resp.raise_for_status()
-        except requests.RequestException as exc:
-            print(f&quot;  ! DART 연결 실패: {exc}&quot;)
-            break
-
-        payload = resp.json()
-        status = payload.get(&quot;status&quot;)
-
-        if status == &quot;013&quot;:          # 조회된 데이터 없음 (주말·공휴일이면 정상)
-            break
-        if status != &quot;000&quot;:
-            print(f&quot;  ! DART 응답 오류 [{status}] {payload.get(&#x27;message&#x27;, &#x27;&#x27;)}&quot;)
-            break
-
-        for row in payload.get(&quot;list&quot;, []):
-            corp = row.get(&quot;corp_name&quot;, &quot;&quot;)
-            # 지켜볼 회사를 지정했으면 그 회사 공시만 남긴다
-            if DART_WATCH and not any(name in corp for name in DART_WATCH):
-                continue
-
-            dt = None
-            try:
-                dt = datetime.strptime(row[&quot;rcept_dt&quot;], &quot;%Y%m%d&quot;).replace(tzinfo=KST)
-            except (KeyError, ValueError):
-                pass
-
-            items.append(Item(
-                source=&quot;DART&quot;,
-                title=f&quot;[{corp}] {row.get(&#x27;report_nm&#x27;, &#x27;&#x27;)}&quot;.strip(),
-                link=f&quot;https://dart.fss.or.kr/dsaf001/main.do?rcpNo={row.get(&#x27;rcept_no&#x27;, &#x27;&#x27;)}&quot;,
-                dt=dt,
-                note=row.get(&quot;flr_nm&quot;, &quot;&quot;),
-            ))
-
-        if page &gt;= int(payload.get(&quot;total_page&quot;, 1)):
-            break
-
-    return items</pre>
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 3.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
       </div>
     </details>
   </section>
@@ -1254,28 +1131,13 @@ dedupe_and_sort(items) 함수를 추가해줘.
     </div>
 
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s4">복사</button>
-        <pre class="code-block" id="code-s4">FAR_PAST = datetime(1970, 1, 1, tzinfo=timezone.utc)
-
-
-def dedupe_and_sort(items: list[Item]) -&gt; list[Item]:
-    seen: set[str] = set()
-    unique: list[Item] = []
-
-    for item in items:
-        if not item.title:
-            continue
-        # 링크가 달라도 제목이 같으면 같은 기사로 본다 (공백·기호 제거 후 비교)
-        key = re.sub(r&quot;[^0-9a-z가-힣]&quot;, &quot;&quot;, item.title.lower())
-        if key in seen:
-            continue
-        seen.add(key)
-        unique.append(item)
-
-    unique.sort(key=lambda i: i.dt or FAR_PAST, reverse=True)
-    return unique</pre>
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 4.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
       </div>
     </details>
   </section>
@@ -1319,40 +1181,13 @@ def dedupe_and_sort(items: list[Item]) -&gt; list[Item]:
     </div>
 
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s5">복사</button>
-        <pre class="code-block" id="code-s5">def build_html(items: list[Item]) -&gt; str:
-    rows = []
-    for item in items[:MAX_ITEMS]:
-        rows.append(f&quot;&quot;&quot;
-        &lt;tr&gt;
-          &lt;td style=&quot;padding:10px 8px;border-bottom:1px solid #eee;white-space:nowrap;
-                     color:#888;font-size:12px;vertical-align:top;&quot;&gt;{html.escape(item.source)}&lt;/td&gt;
-          &lt;td style=&quot;padding:10px 8px;border-bottom:1px solid #eee;font-size:14px;&quot;&gt;
-            &lt;a href=&quot;{html.escape(item.link)}&quot;
-               style=&quot;color:#1a1a1a;text-decoration:none;&quot;&gt;{html.escape(item.title)}&lt;/a&gt;
-          &lt;/td&gt;
-          &lt;td style=&quot;padding:10px 8px;border-bottom:1px solid #eee;white-space:nowrap;
-                     color:#aaa;font-size:12px;vertical-align:top;&quot;&gt;{item.when}&lt;/td&gt;
-        &lt;/tr&gt;&quot;&quot;&quot;)
-
-    return f&quot;&quot;&quot;&lt;!doctype html&gt;
-&lt;html&gt;&lt;body style=&quot;margin:0;padding:24px;background:#f5f6f4;
-                   font-family:&#x27;Malgun Gothic&#x27;,&#x27;Apple SD Gothic Neo&#x27;,sans-serif;color:#1a2233;&quot;&gt;
-  &lt;div style=&quot;max-width:720px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;&quot;&gt;
-    &lt;h1 style=&quot;font-size:20px;margin:0 0 4px;&quot;&gt;오늘의 이슈 리포트&lt;/h1&gt;
-    &lt;p style=&quot;color:#8993a3;font-size:13px;margin:0 0 20px;&quot;&gt;
-      {datetime.now(KST).strftime(&#x27;%Y년 %m월 %d일&#x27;)} · 수집 {len(items)}건
-    &lt;/p&gt;
-
-    &lt;table style=&quot;width:100%;border-collapse:collapse;&quot;&gt;{&#x27;&#x27;.join(rows)}&lt;/table&gt;
-
-    &lt;p style=&quot;color:#aaa;font-size:11px;margin-top:24px;&quot;&gt;
-      바이브코딩 실습 · 내 PC에서 실행된 자동 리포트
-    &lt;/p&gt;
-  &lt;/div&gt;
-&lt;/body&gt;&lt;/html&gt;&quot;&quot;&quot;</pre>
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 5.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
       </div>
     </details>
   </section>
@@ -1401,25 +1236,13 @@ _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
     </div>
 
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s6">복사</button>
-        <pre class="code-block" id="code-s6">def _send_via_classic_outlook(subject: str, html_body: str) -&gt; None:
-    &quot;&quot;&quot;클래식 아웃룩을 COM으로 조작해 완전 자동으로 발송한다.
-
-    &#x27;새 아웃룩(New Outlook)&#x27;은 애초에 이 COM 인터페이스 자체를 제공하지 않는
-    별도 구조의 앱이라, 새 아웃룩만 설치돼 있으면 Dispatch 단계에서 예외가 난다.
-    그건 이 함수의 버그가 아니라 새 아웃룩의 설계상 한계이므로, 호출한 쪽에서
-    잡아서 _open_draft_mail() 로 넘어간다.
-    &quot;&quot;&quot;
-    import win32com.client  # pywin32 — Windows에만 설치된다
-
-    outlook = win32com.client.Dispatch(&quot;Outlook.Application&quot;)
-    mail = outlook.CreateItem(0)  # 0 = olMailItem
-    mail.Subject = subject
-    mail.To = &quot;; &quot;.join(MAIL_TO)  # 아웃룩은 세미콜론으로 여러 명을 구분한다
-    mail.HTMLBody = html_body
-    mail.Send()</pre>
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 6.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
       </div>
     </details>
   </section>
@@ -1474,61 +1297,13 @@ _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
     </div>
 
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s7">복사</button>
-        <pre class="code-block" id="code-s7">def _open_draft_mail(subject: str, plain_body: str) -&gt; None:
-    &quot;&quot;&quot;제목·받는사람·본문을 채운 새 메일 창을 기본 메일 앱으로 연다.
-
-    새 아웃룩은 COM 자동화를 지원하지 않아 완전 자동 발송이 불가능하다.
-    대신 mailto: 링크로 초안을 미리 채워서 열어주고, 사람이 [보내기]만
-    누르면 되게 한다.
-    &quot;&quot;&quot;
-    import webbrowser
-    from urllib.parse import quote
-
-    body_limit = 1500
-    body = plain_body[:body_limit]
-    if len(plain_body) &gt; body_limit:
-        body += &quot;\n\n(내용이 길어 일부만 담았습니다. 전체 내용은 위 콘솔 출력을 참고하세요.)&quot;
-
-    mailto = (
-        &quot;mailto:&quot; + quote(&quot;,&quot;.join(MAIL_TO))
-        + &quot;?subject=&quot; + quote(subject)
-        + &quot;&amp;body=&quot; + quote(body)
-    )
-    webbrowser.open(mailto)
-
-
-def send_mail(subject: str, html_body: str, plain_body: str) -&gt; None:
-    if not MAIL_TO:
-        print(&quot;  ! 받는 사람이 없습니다 (.env의 MAIL_TO)&quot;)
-        return
-
-    if sys.platform != &quot;win32&quot;:
-        print(&quot;  ! 아웃룩 발송은 윈도우에서만 됩니다 (이 스크립트가 로컬 아웃룩 앱을 조작하는 방식이라서).&quot;)
-        return
-
-    try:
-        import win32com.client  # noqa: F401  — 없으면 아래에서 ImportError로 잡는다
-    except ImportError:
-        print(&quot;  ! pywin32 가 설치되어 있지 않습니다. `pip install pywin32` 로 설치하세요.&quot;)
-        return
-
-    try:
-        _send_via_classic_outlook(subject, html_body)
-        print(f&quot;  ✓ 메일 발송 완료 (클래식 아웃룩, 자동 발송) → {&#x27;, &#x27;.join(MAIL_TO)}&quot;)
-        return
-    except Exception as exc:
-        print(f&quot;  ! 클래식 아웃룩 자동 발송이 안 됩니다: {exc}&quot;)
-        print(&quot;    &#x27;새 아웃룩(New Outlook)&#x27;만 설치돼 있으면 원래 이렇습니다 — 새 아웃룩은 자동화 자체를 지원하지 않습니다.&quot;)
-
-    print(&quot;  → 대신 제목·받는사람·내용을 채운 새 메일 창을 엽니다. 뜨는 창에서 [보내기]만 눌러주세요.&quot;)
-    try:
-        _open_draft_mail(subject, plain_body)
-        print(f&quot;  ✓ 메일 초안 열기 완료 (수동 발송 필요) → {&#x27;, &#x27;.join(MAIL_TO)}&quot;)
-    except Exception as exc:
-        print(f&quot;  ! 메일 초안도 열지 못했습니다: {exc}&quot;)</pre>
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 7.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
       </div>
     </details>
   </section>
@@ -1575,53 +1350,13 @@ def send_mail(subject: str, html_body: str, plain_body: str) -&gt; None:
     </div>
 
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s8">복사</button>
-        <pre class="code-block" id="code-s8">def main() -&gt; int:
-    parser = argparse.ArgumentParser(description=&quot;사내 이슈 데일리 리포트 봇&quot;)
-    parser.add_argument(&quot;--dry-run&quot;, action=&quot;store_true&quot;, help=&quot;메일을 보내지 않고 콘솔에만 출력&quot;)
-    args = parser.parse_args()
-
-    if not KEYWORDS and not RSS_FEEDS and not DART_WATCH:
-        print(&quot;설정된 키워드가 없습니다. .env 파일의 KEYWORDS를 채워주세요.&quot;)
-        return 1
-
-    print(f&quot;키워드: {&#x27;, &#x27;.join(KEYWORDS) or &#x27;(없음)&#x27;}&quot;)
-
-    print(&quot;\n[1/3] 수집 중...&quot;)
-    collected: list[Item] = []
-    for label, collector in ((&quot;NewsAPI&quot;, collect_newsapi),
-                             (&quot;DART&quot;, collect_dart)):
-        found = collector()
-        print(f&quot;  · {label}: {len(found)}건&quot;)
-        collected.extend(found)
-
-    items = dedupe_and_sort(collected)
-    print(f&quot;  → 중복 제거 후 {len(items)}건&quot;)
-
-    print(&quot;\n[2/3] 메일 조립 중...&quot;)
-    subject = f&quot;[이슈 리포트] {datetime.now(KST).strftime(&#x27;%m/%d&#x27;)} · {len(items)}건&quot;
-    plain_body = &quot;\n&quot;.join(
-        f&quot;- [{i.source}] {i.title}\n  {i.link}&quot; for i in items[:MAX_ITEMS]
-    ) or &quot;오늘 수집된 항목이 없습니다.&quot;
-    html_body = build_html(items)
-
-    print(&quot;\n[3/3] 발송...&quot;)
-    if args.dry_run:
-        print(&quot;  - --dry-run 이라 보내지 않습니다. 아래는 메일에 들어갈 내용입니다.\n&quot;)
-        print(&quot;=&quot; * 60)
-        print(subject)
-        print(&quot;=&quot; * 60)
-        print(plain_body[:2000])
-    else:
-        send_mail(subject, html_body, plain_body)
-
-    return 0
-
-
-if __name__ == &quot;__main__&quot;:
-    sys.exit(main())</pre>
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 8.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
       </div>
     </details>
   </section>
@@ -1680,46 +1415,13 @@ if __name__ == &quot;__main__&quot;:
     </div>
 
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 보기</summary>
-      <div class="code-box">
-        <button class="copy-btn code-copy-btn" data-copy="code-s1">복사</button>
-        <pre class="code-block" id="code-s1">def google_news_rss(keyword: str) -&gt; str:
-    &quot;&quot;&quot;구글 뉴스는 키워드 검색 결과를 RSS로 내준다. 키가 필요 없어 실습 시작용으로 좋다.&quot;&quot;&quot;
-    return f&quot;https://news.google.com/rss/search?q={quote(keyword)}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko&quot;
-
-
-def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
-    feeds = list(RSS_FEEDS) + [google_news_rss(kw) for kw in KEYWORDS]
-    items: list[Item] = []
-
-    for url in feeds:
-        parsed = feedparser.parse(url)
-
-        # feedparser는 네트워크가 막혀도 예외를 던지지 않고 조용히 빈 결과를 준다.
-        # 왜 0건인지 알 수 있도록 여기서 직접 확인한다.
-        if parsed.bozo and not parsed.entries:
-            print(f&quot;  ! RSS 실패 ({url[:60]}...): {parsed.bozo_exception}&quot;)
-            continue
-
-        for entry in parsed.entries[:limit_per_feed]:
-            dt = None
-            if getattr(entry, &quot;published_parsed&quot;, None):
-                dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-
-            items.append(Item(
-                source=&quot;RSS&quot;,
-                title=clean_text(entry.get(&quot;title&quot;, &quot;&quot;)),
-                link=entry.get(&quot;link&quot;, &quot;&quot;),
-                dt=dt,
-            ))
-
-    return items
-
-
-# main() 의 수집 목록도 이렇게 바뀐다 (RSS가 맨 앞에 추가된다):
-#     for label, collector in ((&quot;RSS&quot;, collect_rss),
-#                              (&quot;NewsAPI&quot;, collect_newsapi),
-#                              (&quot;DART&quot;, collect_dart)):</pre>
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 9.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
       </div>
     </details>
   </section>
@@ -1946,6 +1648,29 @@ def collect_rss(limit_per_feed: int = 10) -&gt; list[Item]:
       var target = document.getElementById(btn.dataset.copy);
       if (!target) return;
       copyText(target.textContent, btn);
+    });
+  });
+
+  /* ── "정답 코드 파일 받기" — main.py 를 base64 로 박아뒀다가 Blob 으로 내려받는다 ── */
+  var MAIN_PY_B64 = "IiIi7IKs64K0IOydtOyKiCDrjbDsnbzrpqwg66as7Y+s7Yq4IOu0hyDigJQg67CU7J2067iM7L2U65SpIOyLpOyKtSDsmYTshLHrs7guCgrtjIzsnbTtlITrnbzsnbg6CiAgICDsiJjsp5Eo64m07IqkIOqygOyDiSBBUEkgwrcgREFSVCDqs7Xsi5wsICsg67O064SI7Iqk66GcIFJTUykg4oaSIOykkeuztSDsoJzqsbDCt+ygleumrCDihpIg7JWE7JuD66OpIOuwnOyGoQoK7IKs64K0IOuEpO2KuOybjO2BrOuKlCDsmbjrtoAgU01UUCjrqZTsnbwg7ISc67KEIOyngeygkSDsl7DqsrAp66W8IOunieyVhOuRkOuKlCDqsr3smrDqsIAg66eO64ukLgrqt7jrnpjshJwg7J20IOu0h+ydgCDrqZTsnbwg7ISc67KE7JeQIOyngeygkSDrtpnsp4Ag7JWK6rOgLCDrgrQgUEPsl5Ag7J2066+4IOuhnOq3uOyduOuQmOyWtCDsvJzsoLgg7J6I64qUCioq7JWE7JuD66OpKOuNsOyKpO2BrO2GsSDslbEp7J2EIOybkOqyqSDsobDsnpEqKu2VtOyEnCDrs7Trgrjri6Qg4oCUIOyCrOuejOydtCDslYTsm4Pro6nsl5DshJwg7IOIIOuplOydvOydhArsk7Dqs6Ag67O064K06riw66W8IOuIhOultOuKlCDqsoPqs7wg6rCZ7J2AIOuPmeyekeydhCDsiqTtgazrpr3tirjqsIAg64yA7IugIOuIjOufrOyjvOuKlCDrsKnsi53snbTri6QuCuq3uOuemOyEnCDruYTrsIDrsojtmLjrpbwg65Sw66GcIOyggOyepe2VoCDtlYTsmpTqsIAg7JeG6rOgLCDsnIjrj4TsmrAgKyDtgbTrnpjsi50g7JWE7JuD66Op7JeQ7ISc66eMIOuQnOuLpC4KCuyLpO2WiToKICAgIHB5dGhvbiBtYWluLnB5IC0tZHJ5LXJ1biAgICAgIyDrqZTsnbwg7JeG7J20IOy9mOyGlOuhnOunjCDtmZXsnbggKOyymOydjOyXlCDsnbTqsbjroZwpCiAgICBweXRob24gbWFpbi5weSAgICAgICAgICAgICAgICMg7KCE7LK0IOyLpO2WiSAo66mU7J28IOuwnOyGoSwg7JWE7JuD66Op7J20IOy8nOyguCDsnojslrTslbwg7ZWoKQoK7ISk7KCV7J2AIOuqqOuRkCDqsJnsnYAg7Y+0642U7J2YIC5lbnYg7YyM7J287JeQ7IScIOydveuKlOuLpC4gKC5lbnYuZXhhbXBsZSDssLjqs6ApCiIiIgoKZnJvbSBfX2Z1dHVyZV9fIGltcG9ydCBhbm5vdGF0aW9ucwoKaW1wb3J0IGFyZ3BhcnNlCmltcG9ydCBodG1sCmltcG9ydCBvcwppbXBvcnQgcmUKaW1wb3J0IHN5cwpmcm9tIGRhdGFjbGFzc2VzIGltcG9ydCBkYXRhY2xhc3MsIGZpZWxkCmZyb20gZGF0ZXRpbWUgaW1wb3J0IGRhdGV0aW1lLCB0aW1lZGVsdGEsIHRpbWV6b25lCmZyb20gdXJsbGliLnBhcnNlIGltcG9ydCBxdW90ZQoKaW1wb3J0IGZlZWRwYXJzZXIKaW1wb3J0IHJlcXVlc3RzCmZyb20gZG90ZW52IGltcG9ydCBsb2FkX2RvdGVudgoKbG9hZF9kb3RlbnYoKQoKS1NUID0gdGltZXpvbmUodGltZWRlbHRhKGhvdXJzPTkpKQpGQVJfUEFTVCA9IGRhdGV0aW1lKDE5NzAsIDEsIDEsIHR6aW5mbz10aW1lem9uZS51dGMpCgoKIyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKIyBTVEVQIDAuIOu8iOuMgCDigJQg7ISk7KCVIOydveyWtOyYpOq4sAojIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKZGVmIF9lbnZfbGlzdChuYW1lOiBzdHIpIC0+IGxpc3Rbc3RyXToKICAgICIiIuyJvO2RnOuhnCDqtazrtoTrkJwg7ZmY6rK967OA7IiY66W8IOumrOyKpO2KuOuhnC4g67mIIOqwkuydgCDrsoTrprDri6QuIiIiCiAgICByZXR1cm4gW3Yuc3RyaXAoKSBmb3IgdiBpbiBvcy5nZXRlbnYobmFtZSwgIiIpLnNwbGl0KCIsIikgaWYgdi5zdHJpcCgpXQoKCktFWVdPUkRTID0gX2Vudl9saXN0KCJLRVlXT1JEUyIpICAgICAgICAgICAgICAgICMg66qo64uI7YSw66eB7ZWgIO2CpOybjOuTnApSU1NfRkVFRFMgPSBfZW52X2xpc3QoIlJTU19GRUVEUyIpICAgICAgICAgICAgICAjIOyngeygkSDsp4DsoJXtlZwgUlNTIOyjvOyGjApEQVJUX1dBVENIID0gX2Vudl9saXN0KCJEQVJUX1dBVENIIikgICAgICAgICAgICAjIOqzteyLnOulvCDsp4DsvJzrs7wg7ZqM7IKs66qFICjruYTsmrDrqbQg7KCE7LK0KQpEQVlTX0JBQ0sgPSBpbnQob3MuZ2V0ZW52KCJEQVlTX0JBQ0siLCAiMSIpKSAgICAjIOupsOy5oOy5mOulvCDrs7wg6rKD7J246rCAICjsmKTripgg7Y+s7ZWoKQpNQVhfSVRFTVMgPSBpbnQob3MuZ2V0ZW52KCJNQVhfSVRFTVMiLCAiNDAiKSkgICAjIOuplOydvOyXkCDri7TsnYQg7LWc64yAIOqxtOyImAoKREFSVF9BUElfS0VZID0gb3MuZ2V0ZW52KCJEQVJUX0FQSV9LRVkiLCAiIikKTkVXU0FQSV9LRVkgPSBvcy5nZXRlbnYoIk5FV1NBUElfS0VZIiwgIiIpCgpNQUlMX1RPID0gX2Vudl9saXN0KCJNQUlMX1RPIikgICAjIOuwm+uKlCDsgqzrnowgKOyJvO2RnOuhnCDsl6zrn6wg66qFKS4g7JWE7JuD66OpIOyekOuPme2ZlOudvCDrsJjrk5zsi5wg7LGE7JuM7JW8IO2VnOuLpAoKCkBkYXRhY2xhc3MKY2xhc3MgSXRlbToKICAgICIiIuyImOynke2VnCDtla3rqqkg7ZWY64KYICjribTsiqQg6riw7IKs65OgIOqzteyLnOuToCDqsJnsnYAg66qo7JaR7Jy866GcIOuLpOujrOuLpCkuIiIiCgogICAgc291cmNlOiBzdHIgICAgICAgICAgICAgICAgICAgICAgICMgIlJTUyIgfCAiTmV3c0FQSSIgfCAiREFSVCIKICAgIHRpdGxlOiBzdHIKICAgIGxpbms6IHN0cgogICAgZHQ6IGRhdGV0aW1lIHwgTm9uZSA9IE5vbmUgICAgICAgICMg67Cc7ZaJIOyLnOqwgSAodGltZXpvbmUg7Y+s7ZWoKQogICAgbm90ZTogc3RyID0gZmllbGQoZGVmYXVsdD0iIikgICAgICMg6rO17IucIOygnOy2nOyduCDrk7Eg67aA6rCAIOygleuztAoKICAgIEBwcm9wZXJ0eQogICAgZGVmIHdoZW4oc2VsZikgLT4gc3RyOgogICAgICAgIHJldHVybiBzZWxmLmR0LmFzdGltZXpvbmUoS1NUKS5zdHJmdGltZSgiJW0vJWQgJUg6JU0iKSBpZiBzZWxmLmR0IGVsc2UgIi0iCgoKZGVmIGNsZWFuX3RleHQocmF3OiBzdHIpIC0+IHN0cjoKICAgICIiIkhUTUwg7YOc6re47JmAIOyXlO2LsO2LsOulvCDqsbfslrTrgrjri6QuIChSU1Mg7ZWt66qp7JeQIOqwhO2YuSBIVE1MIO2DnOq3uOqwgCDshJ7sl6wg7Jio64ukKSIiIgogICAgcmV0dXJuIGh0bWwudW5lc2NhcGUocmUuc3ViKHIiPFtePl0rPiIsICIiLCByYXcpKS5zdHJpcCgpCgoKIyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKIyBTVEVQIDIuIOyImOynkSDikaEg64m07IqkIOqygOyDiSBBUEkoTmV3c0FQSS5vcmcpIOKAlCDtl6TrjZTroZwg7J247Kad7ZWY64qUIOyyqyDqsr3tl5gKIyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKIyDrrLTro4wg6rCc67Cc7J6QIO2UjOuenOydgCDtmLjstpwg7ZWc64+E6rCAIOyeiOqzoCDstZzqt7wg7ZWcIOuLrCDquLDsgqzrp4wg6rKA7IOJ65Cc64ukLiDqsJzrsJwv7YWM7Iqk7Yq4CiMg7Jqp64+E66Gc66eMIO2XiOyaqeuQmOuLiCwg7Iuk7Iq17J20IOuBneuCmOuptCDsi6TsoJwg7Jq07JiB7JeQ64qUIOuLpOuluCDsnKDro4wg7ZSM656c7J20IO2VhOyalO2VmOuLpC4KCmRlZiBjb2xsZWN0X25ld3NhcGkocGFnZV9zaXplOiBpbnQgPSAxMCkgLT4gbGlzdFtJdGVtXToKICAgIGlmIG5vdCBORVdTQVBJX0tFWToKICAgICAgICBwcmludCgiICAtIOuJtOyKpCBBUEkg7YKk6rCAIOyXhuyWtCDqsbTrhIjrnIAgKC5lbnbsnZggTkVXU0FQSV9LRVkpIikKICAgICAgICByZXR1cm4gW10KCiAgICBoZWFkZXJzID0geyJYLUFwaS1LZXkiOiBORVdTQVBJX0tFWX0KICAgIGl0ZW1zOiBsaXN0W0l0ZW1dID0gW10KCiAgICBmb3Iga2V5d29yZCBpbiBLRVlXT1JEUzoKICAgICAgICB0cnk6CiAgICAgICAgICAgIHJlc3AgPSByZXF1ZXN0cy5nZXQoCiAgICAgICAgICAgICAgICAiaHR0cHM6Ly9uZXdzYXBpLm9yZy92Mi9ldmVyeXRoaW5nIiwKICAgICAgICAgICAgICAgIGhlYWRlcnM9aGVhZGVycywKICAgICAgICAgICAgICAgIHBhcmFtcz17InEiOiBrZXl3b3JkLCAibGFuZ3VhZ2UiOiAia28iLCAic29ydEJ5IjogInB1Ymxpc2hlZEF0IiwgInBhZ2VTaXplIjogcGFnZV9zaXplfSwKICAgICAgICAgICAgICAgIHRpbWVvdXQ9MTAsCiAgICAgICAgICAgICkKICAgICAgICAgICAgcmVzcC5yYWlzZV9mb3Jfc3RhdHVzKCkKICAgICAgICBleGNlcHQgcmVxdWVzdHMuSFRUUEVycm9yIGFzIGV4YzoKICAgICAgICAgICAgIyA0MDHsnbTrqbQg7YKk6rCAIO2LgOumsCDqsoMsIDQyOeuptCDtlZjro6gg7Zi47LacIO2VnOuPhCDstIjqs7wKICAgICAgICAgICAgcHJpbnQoZiIgICEg64m07IqkIEFQSSDqsoDsg4kg7Iuk7YyoICgne2tleXdvcmR9Jyk6IHtleGN9IikKICAgICAgICAgICAgY29udGludWUKICAgICAgICBleGNlcHQgcmVxdWVzdHMuUmVxdWVzdEV4Y2VwdGlvbiBhcyBleGM6CiAgICAgICAgICAgIHByaW50KGYiICAhIOuJtOyKpCBBUEkg7Jew6rKwIOyLpO2MqDoge2V4Y30iKQogICAgICAgICAgICBjb250aW51ZQoKICAgICAgICBmb3Igcm93IGluIHJlc3AuanNvbigpLmdldCgiYXJ0aWNsZXMiLCBbXSk6CiAgICAgICAgICAgIGR0ID0gTm9uZQogICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICBkdCA9IGRhdGV0aW1lLmZyb21pc29mb3JtYXQocm93LmdldCgicHVibGlzaGVkQXQiLCAiIikucmVwbGFjZSgiWiIsICIrMDA6MDAiKSkKICAgICAgICAgICAgZXhjZXB0IChUeXBlRXJyb3IsIFZhbHVlRXJyb3IpOgogICAgICAgICAgICAgICAgcGFzcwoKICAgICAgICAgICAgaXRlbXMuYXBwZW5kKEl0ZW0oCiAgICAgICAgICAgICAgICBzb3VyY2U9Ik5ld3NBUEkiLAogICAgICAgICAgICAgICAgdGl0bGU9Y2xlYW5fdGV4dChyb3cuZ2V0KCJ0aXRsZSIpIG9yICIiKSwKICAgICAgICAgICAgICAgIGxpbms9cm93LmdldCgidXJsIiwgIiIpLAogICAgICAgICAgICAgICAgZHQ9ZHQsCiAgICAgICAgICAgICkpCgogICAgcmV0dXJuIGl0ZW1zCgoKIyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKIyBTVEVQIDMuIOyImOynkSDikaIgREFSVCDqs7Xsi5wg4oCUIO2MjOudvOuvuO2EsOqwgCDqsIDsnqUg66eO7J2AIEFQSQojIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKZGVmIGNvbGxlY3RfZGFydChtYXhfcGFnZXM6IGludCA9IDUpIC0+IGxpc3RbSXRlbV06CiAgICBpZiBub3QgREFSVF9BUElfS0VZOgogICAgICAgIHByaW50KCIgIC0gREFSVCDtgqTqsIAg7JeG7Ja0IOqxtOuEiOucgCAoLmVuduydmCBEQVJUX0FQSV9LRVkpIikKICAgICAgICByZXR1cm4gW10KCiAgICB0b2RheSA9IGRhdGV0aW1lLm5vdyhLU1QpLmRhdGUoKQogICAgYmVnaW4gPSB0b2RheSAtIHRpbWVkZWx0YShkYXlzPW1heChEQVlTX0JBQ0sgLSAxLCAwKSkKICAgIGl0ZW1zOiBsaXN0W0l0ZW1dID0gW10KCiAgICBmb3IgcGFnZSBpbiByYW5nZSgxLCBtYXhfcGFnZXMgKyAxKToKICAgICAgICB0cnk6CiAgICAgICAgICAgIHJlc3AgPSByZXF1ZXN0cy5nZXQoCiAgICAgICAgICAgICAgICAiaHR0cHM6Ly9vcGVuZGFydC5mc3Mub3Iua3IvYXBpL2xpc3QuanNvbiIsCiAgICAgICAgICAgICAgICBwYXJhbXM9ewogICAgICAgICAgICAgICAgICAgICJjcnRmY19rZXkiOiBEQVJUX0FQSV9LRVksCiAgICAgICAgICAgICAgICAgICAgImJnbl9kZSI6IGJlZ2luLnN0cmZ0aW1lKCIlWSVtJWQiKSwKICAgICAgICAgICAgICAgICAgICAiZW5kX2RlIjogdG9kYXkuc3RyZnRpbWUoIiVZJW0lZCIpLAogICAgICAgICAgICAgICAgICAgICJwYWdlX25vIjogcGFnZSwKICAgICAgICAgICAgICAgICAgICAicGFnZV9jb3VudCI6IDEwMCwgICAjIO2VnCDtjpjsnbTsp4Ag7LWc64yAIDEwMOqxtAogICAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAgIHRpbWVvdXQ9MTAsCiAgICAgICAgICAgICkKICAgICAgICAgICAgcmVzcC5yYWlzZV9mb3Jfc3RhdHVzKCkKICAgICAgICBleGNlcHQgcmVxdWVzdHMuUmVxdWVzdEV4Y2VwdGlvbiBhcyBleGM6CiAgICAgICAgICAgIHByaW50KGYiICAhIERBUlQg7Jew6rKwIOyLpO2MqDoge2V4Y30iKQogICAgICAgICAgICBicmVhawoKICAgICAgICBwYXlsb2FkID0gcmVzcC5qc29uKCkKICAgICAgICBzdGF0dXMgPSBwYXlsb2FkLmdldCgic3RhdHVzIikKCiAgICAgICAgaWYgc3RhdHVzID09ICIwMTMiOiAgICAgICAgICAjIOyhsO2ajOuQnCDrjbDsnbTthLAg7JeG7J2MICjso7zrp5DCt+qzte2ctOydvOydtOuptCDsoJXsg4EpCiAgICAgICAgICAgIGJyZWFrCiAgICAgICAgaWYgc3RhdHVzICE9ICIwMDAiOgogICAgICAgICAgICBwcmludChmIiAgISBEQVJUIOydkeuLtSDsmKTrpZggW3tzdGF0dXN9XSB7cGF5bG9hZC5nZXQoJ21lc3NhZ2UnLCAnJyl9IikKICAgICAgICAgICAgYnJlYWsKCiAgICAgICAgZm9yIHJvdyBpbiBwYXlsb2FkLmdldCgibGlzdCIsIFtdKToKICAgICAgICAgICAgY29ycCA9IHJvdy5nZXQoImNvcnBfbmFtZSIsICIiKQogICAgICAgICAgICAjIOyngOy8nOuzvCDtmozsgqzrpbwg7KeA7KCV7ZaI7Jy866m0IOq3uCDtmozsgqwg6rO17Iuc66eMIOuCqOq4tOuLpAogICAgICAgICAgICBpZiBEQVJUX1dBVENIIGFuZCBub3QgYW55KG5hbWUgaW4gY29ycCBmb3IgbmFtZSBpbiBEQVJUX1dBVENIKToKICAgICAgICAgICAgICAgIGNvbnRpbnVlCgogICAgICAgICAgICBkdCA9IE5vbmUKICAgICAgICAgICAgdHJ5OgogICAgICAgICAgICAgICAgZHQgPSBkYXRldGltZS5zdHJwdGltZShyb3dbInJjZXB0X2R0Il0sICIlWSVtJWQiKS5yZXBsYWNlKHR6aW5mbz1LU1QpCiAgICAgICAgICAgIGV4Y2VwdCAoS2V5RXJyb3IsIFZhbHVlRXJyb3IpOgogICAgICAgICAgICAgICAgcGFzcwoKICAgICAgICAgICAgaXRlbXMuYXBwZW5kKEl0ZW0oCiAgICAgICAgICAgICAgICBzb3VyY2U9IkRBUlQiLAogICAgICAgICAgICAgICAgdGl0bGU9ZiJbe2NvcnB9XSB7cm93LmdldCgncmVwb3J0X25tJywgJycpfSIuc3RyaXAoKSwKICAgICAgICAgICAgICAgIGxpbms9ZiJodHRwczovL2RhcnQuZnNzLm9yLmtyL2RzYWYwMDEvbWFpbi5kbz9yY3BObz17cm93LmdldCgncmNlcHRfbm8nLCAnJyl9IiwKICAgICAgICAgICAgICAgIGR0PWR0LAogICAgICAgICAgICAgICAgbm90ZT1yb3cuZ2V0KCJmbHJfbm0iLCAiIiksCiAgICAgICAgICAgICkpCgogICAgICAgIGlmIHBhZ2UgPj0gaW50KHBheWxvYWQuZ2V0KCJ0b3RhbF9wYWdlIiwgMSkpOgogICAgICAgICAgICBicmVhawoKICAgIHJldHVybiBpdGVtcwoKCiMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiMgU1RFUCA0LiDsoJXrpqwg4oCUIOykkeuztSDsoJzqsbAg7ZuEIOy1nOyLoOyInAojIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKZGVmIGRlZHVwZV9hbmRfc29ydChpdGVtczogbGlzdFtJdGVtXSkgLT4gbGlzdFtJdGVtXToKICAgIHNlZW46IHNldFtzdHJdID0gc2V0KCkKICAgIHVuaXF1ZTogbGlzdFtJdGVtXSA9IFtdCgogICAgZm9yIGl0ZW0gaW4gaXRlbXM6CiAgICAgICAgaWYgbm90IGl0ZW0udGl0bGU6CiAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgIyDrp4HtgazqsIAg64us652864+EIOygnOuqqeydtCDqsJnsnLzrqbQg6rCZ7J2AIOq4sOyCrOuhnCDrs7jri6QgKOqzteuwscK36riw7Zi4IOygnOqxsCDtm4Qg67mE6rWQKQogICAgICAgIGtleSA9IHJlLnN1YihyIlteMC05YS166rCALe2eo10iLCAiIiwgaXRlbS50aXRsZS5sb3dlcigpKQogICAgICAgIGlmIGtleSBpbiBzZWVuOgogICAgICAgICAgICBjb250aW51ZQogICAgICAgIHNlZW4uYWRkKGtleSkKICAgICAgICB1bmlxdWUuYXBwZW5kKGl0ZW0pCgogICAgdW5pcXVlLnNvcnQoa2V5PWxhbWJkYSBpOiBpLmR0IG9yIEZBUl9QQVNULCByZXZlcnNlPVRydWUpCiAgICByZXR1cm4gdW5pcXVlCgoKIyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKIyBTVEVQIDUuIOuplOydvCDsobDrpr0g4oCUIEhUTUwg66as7Y+s7Yq4IOunjOuTpOq4sAojIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKZGVmIGJ1aWxkX2h0bWwoaXRlbXM6IGxpc3RbSXRlbV0pIC0+IHN0cjoKICAgIHJvd3MgPSBbXQogICAgZm9yIGl0ZW0gaW4gaXRlbXNbOk1BWF9JVEVNU106CiAgICAgICAgcm93cy5hcHBlbmQoZiIiIgogICAgICAgIDx0cj4KICAgICAgICAgIDx0ZCBzdHlsZT0icGFkZGluZzoxMHB4IDhweDtib3JkZXItYm90dG9tOjFweCBzb2xpZCAjZWVlO3doaXRlLXNwYWNlOm5vd3JhcDsKICAgICAgICAgICAgICAgICAgICAgY29sb3I6Izg4ODtmb250LXNpemU6MTJweDt2ZXJ0aWNhbC1hbGlnbjp0b3A7Ij57aHRtbC5lc2NhcGUoaXRlbS5zb3VyY2UpfTwvdGQ+CiAgICAgICAgICA8dGQgc3R5bGU9InBhZGRpbmc6MTBweCA4cHg7Ym9yZGVyLWJvdHRvbToxcHggc29saWQgI2VlZTtmb250LXNpemU6MTRweDsiPgogICAgICAgICAgICA8YSBocmVmPSJ7aHRtbC5lc2NhcGUoaXRlbS5saW5rKX0iCiAgICAgICAgICAgICAgIHN0eWxlPSJjb2xvcjojMWExYTFhO3RleHQtZGVjb3JhdGlvbjpub25lOyI+e2h0bWwuZXNjYXBlKGl0ZW0udGl0bGUpfTwvYT4KICAgICAgICAgIDwvdGQ+CiAgICAgICAgICA8dGQgc3R5bGU9InBhZGRpbmc6MTBweCA4cHg7Ym9yZGVyLWJvdHRvbToxcHggc29saWQgI2VlZTt3aGl0ZS1zcGFjZTpub3dyYXA7CiAgICAgICAgICAgICAgICAgICAgIGNvbG9yOiNhYWE7Zm9udC1zaXplOjEycHg7dmVydGljYWwtYWxpZ246dG9wOyI+e2l0ZW0ud2hlbn08L3RkPgogICAgICAgIDwvdHI+IiIiKQoKICAgIHJldHVybiBmIiIiPCFkb2N0eXBlIGh0bWw+CjxodG1sPjxib2R5IHN0eWxlPSJtYXJnaW46MDtwYWRkaW5nOjI0cHg7YmFja2dyb3VuZDojZjVmNmY0OwogICAgICAgICAgICAgICAgICAgZm9udC1mYW1pbHk6J01hbGd1biBHb3RoaWMnLCdBcHBsZSBTRCBHb3RoaWMgTmVvJyxzYW5zLXNlcmlmO2NvbG9yOiMxYTIyMzM7Ij4KICA8ZGl2IHN0eWxlPSJtYXgtd2lkdGg6NzIwcHg7bWFyZ2luOjAgYXV0bztiYWNrZ3JvdW5kOiNmZmY7Ym9yZGVyLXJhZGl1czoxMnB4O3BhZGRpbmc6MjhweDsiPgogICAgPGgxIHN0eWxlPSJmb250LXNpemU6MjBweDttYXJnaW46MCAwIDRweDsiPuyYpOuKmOydmCDsnbTsiogg66as7Y+s7Yq4PC9oMT4KICAgIDxwIHN0eWxlPSJjb2xvcjojODk5M2EzO2ZvbnQtc2l6ZToxM3B4O21hcmdpbjowIDAgMjBweDsiPgogICAgICB7ZGF0ZXRpbWUubm93KEtTVCkuc3RyZnRpbWUoJyVZ64WEICVt7JuUICVk7J28Jyl9IMK3IOyImOynkSB7bGVuKGl0ZW1zKX3qsbQKICAgIDwvcD4KCiAgICA8dGFibGUgc3R5bGU9IndpZHRoOjEwMCU7Ym9yZGVyLWNvbGxhcHNlOmNvbGxhcHNlOyI+eycnLmpvaW4ocm93cyl9PC90YWJsZT4KCiAgICA8cCBzdHlsZT0iY29sb3I6I2FhYTtmb250LXNpemU6MTFweDttYXJnaW4tdG9wOjI0cHg7Ij4KICAgICAg67CU7J2067iM7L2U65SpIOyLpOyKtSDCtyDrgrQgUEPsl5DshJwg7Iuk7ZaJ65CcIOyekOuPmSDrpqztj6ztirgKICAgIDwvcD4KICA8L2Rpdj4KPC9ib2R5PjwvaHRtbD4iIiIKCgojIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAojIFNURVAgNi4g7JWE7JuD66OpIOyekOuPmSDrsJzshqEg4oCUIOqwgOyepSDrp47snbQg66eJ7Z6I64qUIOq1rOqwhAojIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAojIFNNVFAo66mU7J28IOyEnOuyhCDsp4HsoJEg67Cc7IahKeqwgCDsgqzrgrTrp53sl5DshJwg66eJ7ZiAIOyeiOyWtCwg7J2066+4IOuhnOq3uOyduOuQnCDslYTsm4Pro6kg7JWx7J2ECiMg64yA7IugIOyhsOyeke2VmOuKlCDrsKnsi53snYQg7JO064ukLiDslYTsm4Pro6nsnbQg7Iuk7ZaJIOykkeydtOyWtOyVvCDtlZjqs6Ao6rq87KC4IOyeiOycvOuptCDsnpDrj5nsnLzroZwKIyDsvJzsp4Tri6QpLCAi7IOIIOyVhOybg+ujqSLsnbQg7JWE64uI6528IO2BtOuemOyLnSDslYTsm4Pro6nsnbTslrTslbwg7ZWc64ukLiDsnIjrj4TsmrAg7KCE7Jqp7J2064ukLgoKZGVmIF9zZW5kX3ZpYV9jbGFzc2ljX291dGxvb2soc3ViamVjdDogc3RyLCBodG1sX2JvZHk6IHN0cikgLT4gTm9uZToKICAgICIiIu2BtOuemOyLnSDslYTsm4Pro6nsnYQgQ09N7Jy866GcIOyhsOyeke2VtCDsmYTsoIQg7J6Q64+Z7Jy866GcIOuwnOyGoe2VnOuLpC4KCiAgICAn7IOIIOyVhOybg+ujqShOZXcgT3V0bG9vaykn7J2AIOyVoOy0iOyXkCDsnbQgQ09NIOyduO2EsO2OmOydtOyKpCDsnpDssrTrpbwg7KCc6rO17ZWY7KeAIOyViuuKlAogICAg67OE64+EIOq1rOyhsOydmCDslbHsnbTrnbwsIOyDiCDslYTsm4Pro6nrp4wg7ISk7LmY64+8IOyeiOycvOuptCBEaXNwYXRjaCDri6jqs4Tsl5DshJwg7JiI7Jm46rCAIOuCnOuLpC4KICAgIOq3uOqxtCDsnbQg7ZWo7IiY7J2YIOuyhOq3uOqwgCDslYTri4jrnbwg7IOIIOyVhOybg+ujqeydmCDshKTqs4Tsg4Eg7ZWc6rOE7J2066+A66GcLCDtmLjstpztlZwg7Kq97JeQ7IScCiAgICDsnqHslYTshJwgX29wZW5fZHJhZnRfbWFpbCgpIOuhnCDrhJjslrTqsITri6QuCiAgICAiIiIKICAgIGltcG9ydCB3aW4zMmNvbS5jbGllbnQgICMgcHl3aW4zMiDigJQgV2luZG93c+yXkOunjCDshKTsuZjrkJzri6QgKHJlcXVpcmVtZW50cy50eHQg7LC46rOgKQoKICAgIG91dGxvb2sgPSB3aW4zMmNvbS5jbGllbnQuRGlzcGF0Y2goIk91dGxvb2suQXBwbGljYXRpb24iKQogICAgbWFpbCA9IG91dGxvb2suQ3JlYXRlSXRlbSgwKSAgIyAwID0gb2xNYWlsSXRlbQogICAgbWFpbC5TdWJqZWN0ID0gc3ViamVjdAogICAgbWFpbC5UbyA9ICI7ICIuam9pbihNQUlMX1RPKSAgIyDslYTsm4Pro6nsnYAg7IS466+47L2c66Gg7Jy866GcIOyXrOufrCDrqoXsnYQg6rWs67aE7ZWc64ukCiAgICBtYWlsLkhUTUxCb2R5ID0gaHRtbF9ib2R5CiAgICBtYWlsLlNlbmQoKQoKCiMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiMgU1RFUCA3LiDsg4gg7JWE7JuD66OpIO2PtOuwsSArIOuwnOyGoSDtlajsiJgg7JmE7ISxCiMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACgpkZWYgX29wZW5fZHJhZnRfbWFpbChzdWJqZWN0OiBzdHIsIHBsYWluX2JvZHk6IHN0cikgLT4gTm9uZToKICAgICIiIuygnOuqqcK367Cb64qU7IKs656Mwrfrs7jrrLjsnYQg7LGE7Jq0IOyDiCDrqZTsnbwg7LC97J2EIOq4sOuzuCDrqZTsnbwg7JWx7Jy866GcIOyXsOuLpC4KCiAgICDsg4gg7JWE7JuD66Op7J2AIENPTSDsnpDrj5ntmZTrpbwg7KeA7JuQ7ZWY7KeAIOyViuyVhCDsmYTsoIQg7J6Q64+ZIOuwnOyGoeydtCDrtojqsIDriqXtlZjri6QuCiAgICDrjIDsi6AgbWFpbHRvOiDrp4HtgazroZwg7LSI7JWI7J2EIOuvuOumrCDssYTsm4zshJwg7Je07Ja07KO86rOgLCDsgqzrnozsnbQgW+uztOuCtOq4sF3rp4wKICAgIOuIhOultOuptCDrkJjqsowg7ZWc64ukLiAo7JyI64+E7Jqw7J2YIOyDiCDslYTsm4Pro6nCt+q1rOuyhOyghCDslYTsm4Pro6kg66qo65GQIG1haWx0bzog7J2YCiAgICDquLDrs7gg7LKY66as6riw66GcIOyeoeydhCDsiJgg7J6I64ukLikgbWFpbHRvIOuKlCDquLjsnbQg7KCc7ZWc7J20IOyeiOyWtCDrs7jrrLjsnYAg7JWe67aA67aE66eMIOuLtOuKlOuLpC4KICAgICIiIgogICAgaW1wb3J0IHdlYmJyb3dzZXIKICAgIGZyb20gdXJsbGliLnBhcnNlIGltcG9ydCBxdW90ZQoKICAgIGJvZHlfbGltaXQgPSAxNTAwCiAgICBib2R5ID0gcGxhaW5fYm9keVs6Ym9keV9saW1pdF0KICAgIGlmIGxlbihwbGFpbl9ib2R5KSA+IGJvZHlfbGltaXQ6CiAgICAgICAgYm9keSArPSAiXG5cbijrgrTsmqnsnbQg6ri47Ja0IOydvOu2gOunjCDri7TslZjsirXri4jri6QuIOyghOyytCDrgrTsmqnsnYAg7JyEIOy9mOyGlCDstpzroKXsnYQg7LC46rOg7ZWY7IS47JqULikiCgogICAgbWFpbHRvID0gKAogICAgICAgICJtYWlsdG86IiArIHF1b3RlKCIsIi5qb2luKE1BSUxfVE8pKQogICAgICAgICsgIj9zdWJqZWN0PSIgKyBxdW90ZShzdWJqZWN0KQogICAgICAgICsgIiZib2R5PSIgKyBxdW90ZShib2R5KQogICAgKQogICAgd2ViYnJvd3Nlci5vcGVuKG1haWx0bykKCgpkZWYgc2VuZF9tYWlsKHN1YmplY3Q6IHN0ciwgaHRtbF9ib2R5OiBzdHIsIHBsYWluX2JvZHk6IHN0cikgLT4gTm9uZToKICAgIGlmIG5vdCBNQUlMX1RPOgogICAgICAgIHByaW50KCIgICEg67Cb64qUIOyCrOuejOydtCDsl4bsirXri4jri6QgKC5lbnbsnZggTUFJTF9UTykiKQogICAgICAgIHJldHVybgoKICAgIGlmIHN5cy5wbGF0Zm9ybSAhPSAid2luMzIiOgogICAgICAgIHByaW50KCIgICEg7JWE7JuD66OpIOuwnOyGoeydgCDsnIjrj4TsmrDsl5DshJzrp4wg65Cp64uI64ukICjsnbQg7Iqk7YGs66a97Yq46rCAIOuhnOy7rCDslYTsm4Pro6kg7JWx7J2EIOyhsOyeke2VmOuKlCDrsKnsi53snbTrnbzshJwpLiIpCiAgICAgICAgcmV0dXJuCgogICAgdHJ5OgogICAgICAgIGltcG9ydCB3aW4zMmNvbS5jbGllbnQgICMgbm9xYTogRjQwMSAg4oCUIOyXhuycvOuptCDslYTrnpjsl5DshJwgSW1wb3J0RXJyb3LroZwg7J6h64qU64ukCiAgICBleGNlcHQgSW1wb3J0RXJyb3I6CiAgICAgICAgcHJpbnQoIiAgISBweXdpbjMyIOqwgCDshKTsuZjrkJjslrQg7J6I7KeAIOyViuyKteuLiOuLpC4gYHBpcCBpbnN0YWxsIHB5d2luMzJgIOuhnCDshKTsuZjtlZjshLjsmpQuIikKICAgICAgICByZXR1cm4KCiAgICB0cnk6CiAgICAgICAgX3NlbmRfdmlhX2NsYXNzaWNfb3V0bG9vayhzdWJqZWN0LCBodG1sX2JvZHkpCiAgICAgICAgcHJpbnQoZiIgIOKckyDrqZTsnbwg67Cc7IahIOyZhOujjCAo7YG0656Y7IudIOyVhOybg+ujqSwg7J6Q64+ZIOuwnOyGoSkg4oaSIHsnLCAnLmpvaW4oTUFJTF9UTyl9IikKICAgICAgICByZXR1cm4KICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZXhjOgogICAgICAgIHByaW50KGYiICAhIO2BtOuemOyLnSDslYTsm4Pro6kg7J6Q64+ZIOuwnOyGoeydtCDslYgg65Cp64uI64ukOiB7ZXhjfSIpCiAgICAgICAgcHJpbnQoIiAgICAn7IOIIOyVhOybg+ujqShOZXcgT3V0bG9vaykn66eMIOyEpOy5mOuPvCDsnojsnLzrqbQg7JuQ656YIOydtOugh+yKteuLiOuLpCDigJQg7IOIIOyVhOybg+ujqeydgCDsnpDrj5ntmZQg7J6Q7LK066W8IOyngOybkO2VmOyngCDslYrsirXri4jri6QuIikKCiAgICBwcmludCgiICDihpIg64yA7IugIOygnOuqqcK367Cb64qU7IKs656MwrfrgrTsmqnsnYQg7LGE7Jq0IOyDiCDrqZTsnbwg7LC97J2EIOyXveuLiOuLpC4g65yo64qUIOywveyXkOyEnCBb67O064K06riwXeunjCDriIzrn6zso7zshLjsmpQuIikKICAgIHRyeToKICAgICAgICBfb3Blbl9kcmFmdF9tYWlsKHN1YmplY3QsIHBsYWluX2JvZHkpCiAgICAgICAgcHJpbnQoZiIgIOKckyDrqZTsnbwg7LSI7JWIIOyXtOq4sCDsmYTro4wgKOyImOuPmSDrsJzshqEg7ZWE7JqUKSDihpIgeycsICcuam9pbihNQUlMX1RPKX0iKQogICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBleGM6CiAgICAgICAgcHJpbnQoZiIgICEg66mU7J28IOy0iOyViOuPhCDsl7Tsp4Ag66q77ZaI7Iq164uI64ukOiB7ZXhjfSIpCgoKIyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKIyBTVEVQIDguIOyghOyytCDsl7DqsrAg4oCUIOyZhOyEsSAoKyBTVEVQIDkg67O064SI7Iqk66GcIFJTU+q5jOyngCDtlansuZwg7IOB7YOcKQojIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKZGVmIG1haW4oKSAtPiBpbnQ6CiAgICBwYXJzZXIgPSBhcmdwYXJzZS5Bcmd1bWVudFBhcnNlcihkZXNjcmlwdGlvbj0i7IKs64K0IOydtOyKiCDrjbDsnbzrpqwg66as7Y+s7Yq4IOu0hyIpCiAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItLWRyeS1ydW4iLCBhY3Rpb249InN0b3JlX3RydWUiLCBoZWxwPSLrqZTsnbzsnYQg67O064K07KeAIOyViuqzoCDsvZjshpTsl5Drp4wg7Lac66ClIikKICAgIGFyZ3MgPSBwYXJzZXIucGFyc2VfYXJncygpCgogICAgaWYgbm90IEtFWVdPUkRTIGFuZCBub3QgUlNTX0ZFRURTIGFuZCBub3QgREFSVF9XQVRDSDoKICAgICAgICBwcmludCgi7ISk7KCV65CcIO2CpOybjOuTnOqwgCDsl4bsirXri4jri6QuIC5lbnYg7YyM7J287J2YIEtFWVdPUkRT66W8IOyxhOybjOyjvOyEuOyalC4iKQogICAgICAgIHJldHVybiAxCgogICAgcHJpbnQoZiLtgqTsm4zrk5w6IHsnLCAnLmpvaW4oS0VZV09SRFMpIG9yICco7JeG7J2MKSd9IikKCiAgICBwcmludCgiXG5bMS8zXSDsiJjsp5Eg7KSRLi4uIikKICAgIGNvbGxlY3RlZDogbGlzdFtJdGVtXSA9IFtdCiAgICBmb3IgbGFiZWwsIGNvbGxlY3RvciBpbiAoKCJSU1MiLCBjb2xsZWN0X3JzcyksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKCJOZXdzQVBJIiwgY29sbGVjdF9uZXdzYXBpKSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAoIkRBUlQiLCBjb2xsZWN0X2RhcnQpKToKICAgICAgICBmb3VuZCA9IGNvbGxlY3RvcigpCiAgICAgICAgcHJpbnQoZiIgIMK3IHtsYWJlbH06IHtsZW4oZm91bmQpfeqxtCIpCiAgICAgICAgY29sbGVjdGVkLmV4dGVuZChmb3VuZCkKCiAgICBpdGVtcyA9IGRlZHVwZV9hbmRfc29ydChjb2xsZWN0ZWQpCiAgICBwcmludChmIiAg4oaSIOykkeuztSDsoJzqsbAg7ZuEIHtsZW4oaXRlbXMpfeqxtCIpCgogICAgcHJpbnQoIlxuWzIvM10g66mU7J28IOyhsOumvSDspJEuLi4iKQogICAgc3ViamVjdCA9IGYiW+ydtOyKiCDrpqztj6ztirhdIHtkYXRldGltZS5ub3coS1NUKS5zdHJmdGltZSgnJW0vJWQnKX0gwrcge2xlbihpdGVtcyl96rG0IgogICAgcGxhaW5fYm9keSA9ICJcbiIuam9pbigKICAgICAgICBmIi0gW3tpLnNvdXJjZX1dIHtpLnRpdGxlfVxuICB7aS5saW5rfSIgZm9yIGkgaW4gaXRlbXNbOk1BWF9JVEVNU10KICAgICkgb3IgIuyYpOuKmCDsiJjsp5HrkJwg7ZWt66qp7J20IOyXhuyKteuLiOuLpC4iCiAgICBodG1sX2JvZHkgPSBidWlsZF9odG1sKGl0ZW1zKQoKICAgIHByaW50KCJcblszLzNdIOuwnOyGoS4uLiIpCiAgICBpZiBhcmdzLmRyeV9ydW46CiAgICAgICAgcHJpbnQoIiAgLSAtLWRyeS1ydW4g7J206528IOuztOuCtOyngCDslYrsirXri4jri6QuIOyVhOuemOuKlCDrqZTsnbzsl5Ag65Ok7Ja06rCIIOuCtOyaqeyeheuLiOuLpC5cbiIpCiAgICAgICAgcHJpbnQoIj0iICogNjApCiAgICAgICAgcHJpbnQoc3ViamVjdCkKICAgICAgICBwcmludCgiPSIgKiA2MCkKICAgICAgICBwcmludChwbGFpbl9ib2R5WzoyMDAwXSkKICAgIGVsc2U6CiAgICAgICAgc2VuZF9tYWlsKHN1YmplY3QsIGh0bWxfYm9keSwgcGxhaW5fYm9keSkKCiAgICByZXR1cm4gMAoKCiMg4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACiMgU1RFUCA5LiDstpTqsIDsi6TsirUo67O064SI7IqkKSDigJQgUlNTIOyImOynkS4g7YKkIOuwnOq4ieydtCDtlYTsmpQg7JeG64ukLgojIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKZGVmIGdvb2dsZV9uZXdzX3JzcyhrZXl3b3JkOiBzdHIpIC0+IHN0cjoKICAgICIiIuq1rOq4gCDribTsiqTripQg7YKk7JuM65OcIOqygOyDiSDqsrDqs7zrpbwgUlNT66GcIOuCtOykgOuLpC4g7YKk6rCAIO2VhOyalCDsl4bslrQg7Iuk7Iq1IOyLnOyekeyaqeycvOuhnCDsoovri6QuIiIiCiAgICByZXR1cm4gZiJodHRwczovL25ld3MuZ29vZ2xlLmNvbS9yc3Mvc2VhcmNoP3E9e3F1b3RlKGtleXdvcmQpfSZobD1rbyZnbD1LUiZjZWlkPUtSOmtvIgoKCmRlZiBjb2xsZWN0X3JzcyhsaW1pdF9wZXJfZmVlZDogaW50ID0gMTApIC0+IGxpc3RbSXRlbV06CiAgICBmZWVkcyA9IGxpc3QoUlNTX0ZFRURTKSArIFtnb29nbGVfbmV3c19yc3Moa3cpIGZvciBrdyBpbiBLRVlXT1JEU10KICAgIGl0ZW1zOiBsaXN0W0l0ZW1dID0gW10KCiAgICBmb3IgdXJsIGluIGZlZWRzOgogICAgICAgIHBhcnNlZCA9IGZlZWRwYXJzZXIucGFyc2UodXJsKQoKICAgICAgICAjIGZlZWRwYXJzZXLripQg64Sk7Yq47JuM7YGs6rCAIOunie2YgOuPhCDsmIjsmbjrpbwg642Y7KeA7KeAIOyViuqzoCDsobDsmqntnogg67mIIOqysOqzvOulvCDspIDri6QuCiAgICAgICAgIyDsmZwgMOqxtOyduOyngCDslYwg7IiYIOyeiOuPhOuhnSDsl6zquLDshJwg7KeB7KCRIO2ZleyduO2VnOuLpC4KICAgICAgICBpZiBwYXJzZWQuYm96byBhbmQgbm90IHBhcnNlZC5lbnRyaWVzOgogICAgICAgICAgICBwcmludChmIiAgISBSU1Mg7Iuk7YyoICh7dXJsWzo2MF19Li4uKToge3BhcnNlZC5ib3pvX2V4Y2VwdGlvbn0iKQogICAgICAgICAgICBjb250aW51ZQoKICAgICAgICBmb3IgZW50cnkgaW4gcGFyc2VkLmVudHJpZXNbOmxpbWl0X3Blcl9mZWVkXToKICAgICAgICAgICAgZHQgPSBOb25lCiAgICAgICAgICAgIGlmIGdldGF0dHIoZW50cnksICJwdWJsaXNoZWRfcGFyc2VkIiwgTm9uZSk6CiAgICAgICAgICAgICAgICBkdCA9IGRhdGV0aW1lKCplbnRyeS5wdWJsaXNoZWRfcGFyc2VkWzo2XSwgdHppbmZvPXRpbWV6b25lLnV0YykKCiAgICAgICAgICAgIGl0ZW1zLmFwcGVuZChJdGVtKAogICAgICAgICAgICAgICAgc291cmNlPSJSU1MiLAogICAgICAgICAgICAgICAgdGl0bGU9Y2xlYW5fdGV4dChlbnRyeS5nZXQoInRpdGxlIiwgIiIpKSwKICAgICAgICAgICAgICAgIGxpbms9ZW50cnkuZ2V0KCJsaW5rIiwgIiIpLAogICAgICAgICAgICAgICAgZHQ9ZHQsCiAgICAgICAgICAgICkpCgogICAgcmV0dXJuIGl0ZW1zCgoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIHN5cy5leGl0KG1haW4oKSkK";
+  Array.prototype.slice.call(document.querySelectorAll(".download-mainpy-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      try {
+        var binary = atob(MAIN_PY_B64);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        var blob = new Blob([bytes], { type: "text/x-python" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "main.py";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      } catch (e) {
+        alert("다운로드에 실패했습니다. 강사에게 파일을 요청하세요.");
+      }
     });
   });
 })();

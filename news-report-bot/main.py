@@ -1,7 +1,7 @@
 """사내 이슈 데일리 리포트 봇 — 바이브코딩 실습 완성본.
 
 파이프라인:
-    수집(RSS · 뉴스 검색 API · DART 공시) → 중복 제거·정리 → 아웃룩 발송
+    수집(뉴스 검색 API · DART 공시, + 보너스로 RSS) → 중복 제거·정리 → 아웃룩 발송
 
 사내 네트워크는 외부 SMTP(메일 서버 직접 연결)를 막아두는 경우가 많다.
 그래서 이 봇은 메일 서버에 직접 붙지 않고, 내 PC에 이미 로그인되어 켜져 있는
@@ -38,7 +38,7 @@ FAR_PAST = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 # ─────────────────────────────────────────────────────────────
-# 설정 — .env 에서 읽어온다
+# STEP 0. 뼈대 — 설정 읽어오기
 # ─────────────────────────────────────────────────────────────
 
 def _env_list(name: str) -> list[str]:
@@ -76,43 +76,6 @@ class Item:
 def clean_text(raw: str) -> str:
     """HTML 태그와 엔티티를 걷어낸다. (RSS 항목에 간혹 HTML 태그가 섞여 온다)"""
     return html.unescape(re.sub(r"<[^>]+>", "", raw)).strip()
-
-
-# ─────────────────────────────────────────────────────────────
-# STEP 1. 수집 ① RSS — 키 발급이 필요 없다. 여기서 첫 성공을 만든다.
-# ─────────────────────────────────────────────────────────────
-
-def google_news_rss(keyword: str) -> str:
-    """구글 뉴스는 키워드 검색 결과를 RSS로 내준다. 키가 필요 없어 실습 시작용으로 좋다."""
-    return f"https://news.google.com/rss/search?q={quote(keyword)}&hl=ko&gl=KR&ceid=KR:ko"
-
-
-def collect_rss(limit_per_feed: int = 10) -> list[Item]:
-    feeds = list(RSS_FEEDS) + [google_news_rss(kw) for kw in KEYWORDS]
-    items: list[Item] = []
-
-    for url in feeds:
-        parsed = feedparser.parse(url)
-
-        # feedparser는 네트워크가 막혀도 예외를 던지지 않고 조용히 빈 결과를 준다.
-        # 왜 0건인지 알 수 있도록 여기서 직접 확인한다.
-        if parsed.bozo and not parsed.entries:
-            print(f"  ! RSS 실패 ({url[:60]}...): {parsed.bozo_exception}")
-            continue
-
-        for entry in parsed.entries[:limit_per_feed]:
-            dt = None
-            if getattr(entry, "published_parsed", None):
-                dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
-
-            items.append(Item(
-                source="RSS",
-                title=clean_text(entry.get("title", "")),
-                link=entry.get("link", ""),
-                dt=dt,
-            ))
-
-    return items
 
 
 # ─────────────────────────────────────────────────────────────
@@ -252,11 +215,8 @@ def dedupe_and_sort(items: list[Item]) -> list[Item]:
 
 
 # ─────────────────────────────────────────────────────────────
-# STEP 5. 메일 발송 — 로컬 아웃룩(데스크톱 앱)을 원격 조작
+# STEP 5. 메일 조립 — HTML 리포트 만들기
 # ─────────────────────────────────────────────────────────────
-# SMTP(메일 서버 직접 발송)가 사내망에서 막혀 있어, 이미 로그인된 아웃룩 앱을
-# 대신 조작하는 방식을 쓴다. 아웃룩이 실행 중이어야 하고(꺼져 있으면 자동으로
-# 켜진다), "새 아웃룩"이 아니라 클래식 아웃룩이어야 한다. 윈도우 전용이다.
 
 def build_html(items: list[Item]) -> str:
     rows = []
@@ -291,6 +251,13 @@ def build_html(items: list[Item]) -> str:
 </body></html>"""
 
 
+# ─────────────────────────────────────────────────────────────
+# STEP 6. 아웃룩 자동 발송 — 가장 많이 막히는 구간
+# ─────────────────────────────────────────────────────────────
+# SMTP(메일 서버 직접 발송)가 사내망에서 막혀 있어, 이미 로그인된 아웃룩 앱을
+# 대신 조작하는 방식을 쓴다. 아웃룩이 실행 중이어야 하고(꺼져 있으면 자동으로
+# 켜진다), "새 아웃룩"이 아니라 클래식 아웃룩이어야 한다. 윈도우 전용이다.
+
 def _send_via_classic_outlook(subject: str, html_body: str) -> None:
     """클래식 아웃룩을 COM으로 조작해 완전 자동으로 발송한다.
 
@@ -308,6 +275,10 @@ def _send_via_classic_outlook(subject: str, html_body: str) -> None:
     mail.HTMLBody = html_body
     mail.Send()
 
+
+# ─────────────────────────────────────────────────────────────
+# STEP 7. 새 아웃룩 폴백 + 발송 함수 완성
+# ─────────────────────────────────────────────────────────────
 
 def _open_draft_mail(subject: str, plain_body: str) -> None:
     """제목·받는사람·본문을 채운 새 메일 창을 기본 메일 앱으로 연다.
@@ -365,7 +336,7 @@ def send_mail(subject: str, html_body: str, plain_body: str) -> None:
 
 
 # ─────────────────────────────────────────────────────────────
-# 전체 파이프라인
+# STEP 8. 전체 연결 — 완성 (+ STEP 9 보너스로 RSS까지 합친 상태)
 # ─────────────────────────────────────────────────────────────
 
 def main() -> int:
@@ -409,6 +380,43 @@ def main() -> int:
         send_mail(subject, html_body, plain_body)
 
     return 0
+
+
+# ─────────────────────────────────────────────────────────────
+# STEP 9. 추가실습(보너스) — RSS 수집. 키 발급이 필요 없다.
+# ─────────────────────────────────────────────────────────────
+
+def google_news_rss(keyword: str) -> str:
+    """구글 뉴스는 키워드 검색 결과를 RSS로 내준다. 키가 필요 없어 실습 시작용으로 좋다."""
+    return f"https://news.google.com/rss/search?q={quote(keyword)}&hl=ko&gl=KR&ceid=KR:ko"
+
+
+def collect_rss(limit_per_feed: int = 10) -> list[Item]:
+    feeds = list(RSS_FEEDS) + [google_news_rss(kw) for kw in KEYWORDS]
+    items: list[Item] = []
+
+    for url in feeds:
+        parsed = feedparser.parse(url)
+
+        # feedparser는 네트워크가 막혀도 예외를 던지지 않고 조용히 빈 결과를 준다.
+        # 왜 0건인지 알 수 있도록 여기서 직접 확인한다.
+        if parsed.bozo and not parsed.entries:
+            print(f"  ! RSS 실패 ({url[:60]}...): {parsed.bozo_exception}")
+            continue
+
+        for entry in parsed.entries[:limit_per_feed]:
+            dt = None
+            if getattr(entry, "published_parsed", None):
+                dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+
+            items.append(Item(
+                source="RSS",
+                title=clean_text(entry.get("title", "")),
+                link=entry.get("link", ""),
+                dt=dt,
+            ))
+
+    return items
 
 
 if __name__ == "__main__":

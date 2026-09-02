@@ -909,7 +909,7 @@
         <h2>STEP 0 · 프로젝트 뼈대 — 설정 읽어오기</h2>
         <span class="step-time">5분</span>
       </div>
-      <p class="step-desc">내 PC에 main.py 파일을 직접 만들고, .env에 적어둔 키워드·키를 코드에서 읽어오는 부분부터 시작한다. 여기서부터는 화면에 뭔가 찍히면 다음 단계로 넘어가도 된다.</p>
+      <p class="step-desc">내 PC에 main.py라는 파일을 만들고, .env에 적어둔 키워드·키를 프로그램이 읽어와서 쓸 수 있게 만드는 부분부터 시작한다. 여기서부터는 화면에 뭔가 뜨면 다음 단계로 넘어가도 된다.</p>
     </div>
 
     <div class="workflow-note">
@@ -937,21 +937,30 @@
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s0">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s0">파이썬으로 DART·뉴스 정보 크롤링 및 메일발송 프로그램의 첫 부분을 작성해줘. 다음을 포함해야 해:
+      <pre class="prompt-text" id="prompt-s0">파이썬으로 DART·뉴스 정보 크롤링 및 메일발송 프로그램의 첫 부분을 만들어줘. 프로그래밍 용어는
+몰라도 되고, 아래 내용대로 동작하게만 만들어주면 돼.
 
-1. python-dotenv로 .env 파일을 읽어온다 (load_dotenv() 호출).
-2. .env의 값을 쉼표로 구분해 리스트로 만드는 _env_list(name) 함수를 만들고,
-   이걸로 KEYWORDS, RSS_FEEDS, DART_WATCH 를 만들어줘. 값이 없으면 빈 리스트.
-3. DAYS_BACK(기본값 1), MAX_ITEMS(기본값 40)은 .env에서 정수로 읽어와줘.
-4. DART_API_KEY, NEWSAPI_KEY 도 .env에서 읽어와줘.
-5. MAIL_TO 는 쉼표로 구분된 받는 사람 리스트로 읽어와줘.
-6. 수집한 기사/공시 하나를 표현하는 Item 이라는 dataclass를 만들어줘.
-   필드: source(문자열), title, link, dt(datetime 또는 None, 기본 None), note(기본 빈 문자열).
-   dt를 &quot;MM/DD HH:MM&quot; 형식(한국시간 KST = UTC+9)으로 보여주는 when 이라는 property도 추가해줘.
-   dt가 없으면 &quot;-&quot; 를 리턴.
-7. HTML 태그와 엔티티를 제거하는 clean_text(raw) 함수도 추가해줘
-   (정규식으로 &lt;...&gt; 태그 제거한 뒤 html.unescape 적용).
-8. 맨 아래에 KEYWORDS를 출력하는 코드를 넣어서 잘 읽히는지 확인할 수 있게 해줘.
+이 프로그램은 실행될 때마다 같은 폴더에 있는 .env 파일에 미리 적어둔 설정값들을 읽어와서 써야 해.
+구체적으로 이런 값들이야:
+
+- 모니터링할 키워드 목록(KEYWORDS), 직접 지정한 뉴스 사이트 주소 목록(RSS_FEEDS), 공시를 지켜볼
+  회사명 목록(DART_WATCH) — 이 셋은 여러 개를 쉼표로 구분해서 적어둘 수 있어야 하고, 값이 아예
+  없으면 그냥 빈 목록으로 처리하면 돼.
+- 며칠치 정보를 볼지 정하는 숫자(DAYS_BACK, 아무것도 안 적으면 1일), 메일에 최대 몇 건까지
+  담을지 정하는 숫자(MAX_ITEMS, 아무것도 안 적으면 40건).
+- DART 인증키(DART_API_KEY)와 뉴스 검색 API 키(NEWSAPI_KEY).
+- 메일 받을 사람 목록(MAIL_TO, 여러 명이면 쉼표로 구분).
+
+그리고 나중에 모을 뉴스 기사나 공시 하나하나를 정리해서 다룰 수 있는 형태를 만들어줘. 각 항목은
+이런 정보를 가지고 있어야 해: 어디서 가져왔는지(출처), 제목, 원문 링크, 발행된 날짜/시간(아직
+모르면 비워둘 수 있음), 참고 메모(없으면 빈칸). 이 날짜/시간을 &quot;09/03 14:30&quot;처럼 한국 시간
+기준으로 보기 좋게 보여줄 수 있는 방법도 같이 만들어줘 — 날짜 정보가 없으면 그냥 &quot;-&quot; 라고
+보여주면 돼.
+
+또, 인터넷에서 긁어온 텍스트에 &lt;b&gt;나 &amp;amp; 같은 HTML 코드 조각이 섞여 들어오는 경우가 많으니까,
+그런 걸 깨끗한 순수 텍스트로 바꿔주는 정리 기능도 하나 만들어줘.
+
+마지막으로, 지금까지 설정이 잘 읽혔는지 확인할 수 있게 키워드 목록을 화면에 출력해줘.
 
 채팅창에 코드를 텍스트로 보여주지 말고, 지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 다운로드 가능한 파일(.py)로 첨부해서 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
     </div>
@@ -960,8 +969,7 @@
       <p class="criteria-label">성공 기준</p>
       <ul>
           <li>pip install python-dotenv 로 라이브러리를 먼저 설치했다</li>
-          <li>python main.py 를 실행하면 .env에 적은 키워드가 그대로 출력된다</li>
-          <li>Item(source=&quot;RSS&quot;, title=&quot;테스트&quot;, link=&quot;x&quot;) 를 만들어 item.when 을 출력하면 &quot;-&quot; 가 나온다</li>
+          <li>python main.py 를 실행하면 .env에 적은 키워드가 그대로 화면에 뜬다</li>
       </ul>
     </div>
 
@@ -984,10 +992,10 @@
         <label class="page-check-wrap">
           <input type="checkbox" class="check page-check" data-id="s2">
         </label>
-        <h2>STEP 2 · 뉴스 검색 API — 헤더로 인증하기</h2>
+        <h2>STEP 2 · 뉴스 검색 API 연결하기</h2>
         <span class="step-time">10분</span>
       </div>
-      <p class="step-desc">처음으로 인증 키가 필요한 API. 요청 헤더에 키를 실어 보내는 방식을 경험한다. (NewsAPI.org 무료 플랜은 개발/테스트용이라 호출 한도가 있고, 최근 한 달 기사만 검색된다)</p>
+      <p class="step-desc">처음으로 인증 키가 필요한 서비스를 써본다. 키가 있어야 이 서비스가 우리 요청을 진짜 사용자로 인정해준다. (NewsAPI.org 무료 플랜은 개발/테스트용이라 호출 한도가 있고, 최근 한 달 기사만 검색된다)</p>
     </div>
 
       <div class="cmd-box">
@@ -1000,19 +1008,21 @@
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s2">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s2">NewsAPI.org로 기사를 모으는 collect_newsapi(page_size=10) 함수를 추가해줘.
+      <pre class="prompt-text" id="prompt-s2">이제 NewsAPI.org라는 뉴스 검색 서비스에서 기사를 가져오는 기능을 추가해줘.
 
-- NEWSAPI_KEY 가 없으면 &quot;- 뉴스 API 키가 없어 건너뜀 (.env의 NEWSAPI_KEY)&quot; 을 출력하고 빈 리스트를 리턴한다.
-- 있으면 KEYWORDS 각각에 대해 https://newsapi.org/v2/everything 에 GET 요청을 보낸다.
-  - 헤더: X-Api-Key
-  - 파라미터: q(키워드), language=&quot;ko&quot;, sortBy=&quot;publishedAt&quot;, pageSize
-  - timeout=10
-- requests.HTTPError 가 나면 &quot;! 뉴스 API 검색 실패 (&#x27;키워드&#x27;): ...&quot; 를 출력하고 그 키워드는 건너뛴다
-  (401이면 키가 틀린 것, 429면 호출 한도 초과라는 뜻).
-- requests.RequestException 이면 &quot;! 뉴스 API 연결 실패: ...&quot; 를 출력하고 건너뛴다.
-- 응답 JSON의 articles 배열을 순회하면서, title은 clean_text로, link는 url을 쓴다.
-  publishedAt(&quot;2024-01-01T00:00:00Z&quot; 형식)은 datetime.fromisoformat으로 파싱한다
-  (뒤의 Z는 &quot;+00:00&quot;으로 바꿔준 뒤 파싱). source는 &quot;NewsAPI&quot;로 Item을 만든다.
+뉴스 API 키(NEWSAPI_KEY)가 비어있으면, &quot;뉴스 API 키가 없어 건너뜀&quot;이라고 화면에 알려주고
+그냥 넘어가면 돼.
+
+키가 있으면, 아까 설정해둔 키워드 목록(KEYWORDS)에 있는 단어 하나하나로 NewsAPI.org에
+검색을 요청해서 관련 기사를 가져와줘. 이때 그 서비스가 정해둔 방식대로 키를 실어서
+요청을 보내야 하고, 한국어 기사 위주로 최신순으로 가져오면 돼.
+
+만약 키가 틀렸거나 서비스 이용 한도를 넘겼다는 응답이 오면 &quot;검색 실패&quot;라고 화면에 알려주고
+그 키워드는 건너뛰고 다음 키워드로 넘어가줘. 인터넷 연결 자체가 안 되는 경우도 마찬가지로
+알려주고 넘어가면 돼.
+
+가져온 기사들은 아까 만든 &quot;항목&quot; 형태로 하나씩 정리해줘 — 제목은 이상한 코드 조각 없이
+깨끗하게, 링크는 원문 주소로, 발행 날짜/시간도 같이 넣고, 출처는 &quot;NewsAPI&quot;라고 표시해줘.
 
 채팅창에 코드를 텍스트로 보여주지 말고, 지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 다운로드 가능한 파일(.py)로 첨부해서 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
     </div>
@@ -1048,7 +1058,7 @@
         <h2>STEP 3 · DART 공시 API — 실무형 API 경험</h2>
         <span class="step-time">15분</span>
       </div>
-      <p class="step-desc">파라미터가 가장 많은 API. 페이지네이션과 &#x27;결과 없음&#x27;을 에러와 구분하는 처리까지 다룬다.</p>
+      <p class="step-desc">조건을 가장 많이 넣어서 요청해야 하는 서비스다. 결과가 여러 페이지로 나뉘어 오는 것과, &#x27;결과 없음&#x27;을 진짜 오류와 구분하는 것까지 다룬다.</p>
     </div>
 
     <div class="prompt-box">
@@ -1056,21 +1066,23 @@
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s3">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s3">전자공시(DART) 목록을 가져오는 collect_dart(max_pages=5) 함수를 추가해줘.
+      <pre class="prompt-text" id="prompt-s3">이번엔 전자공시시스템(DART)에서 공시 목록을 가져오는 기능을 추가해줘.
 
-- DART_API_KEY 가 없으면 &quot;- DART 키가 없어 건너뜀 (.env의 DART_API_KEY)&quot; 출력 후 빈 리스트.
-- 오늘 날짜(KST) 기준으로, DAYS_BACK 만큼 이전 날짜부터 오늘까지를 조회 범위로 잡는다.
-- https://opendart.fss.or.kr/api/list.json 에 GET 요청:
-  파라미터는 crtfc_key, bgn_de(YYYYMMDD), end_de(YYYYMMDD), page_no, page_count=100.
-- 응답 JSON의 status 값에 따라:
-  - &quot;013&quot; 이면 그 기간에 공시가 없다는 뜻이니 에러가 아니라 조용히 조회를 멈춘다.
-  - &quot;000&quot; 이 아닌 다른 값이면 &quot;! DART 응답 오류 [코드] 메시지&quot; 를 출력하고 멈춘다.
-- DART_WATCH 에 회사명이 지정돼 있으면 그 회사들만 남기고, 비어 있으면 전부 포함한다.
-- 제목은 &quot;[회사명] 보고서명&quot; 형식, 링크는
-  https://dart.fss.or.kr/dsaf001/main.do?rcpNo=접수번호, note에는 제출인(flr_nm)을 넣는다.
-  rcept_dt(YYYYMMDD)를 KST 자정 기준 dt로 변환한다. source는 &quot;DART&quot;.
-- total_page 까지 페이지를 넘기며 반복하고, 다 돌면 멈춘다.
-- requests.RequestException 이 나면 &quot;! DART 연결 실패: ...&quot; 출력 후 멈춘다.
+DART 인증키(DART_API_KEY)가 없으면 &quot;DART 키가 없어 건너뜀&quot;이라고 알려주고 넘어가.
+
+키가 있으면, 오늘부터 DAYS_BACK에 적어둔 일수만큼 거슬러 올라간 기간 동안의 공시 목록을
+DART에 요청해서 가져와줘. DART_WATCH에 회사 이름을 적어뒀으면 그 회사들 공시만 남기고,
+비어있으면 전체 다 가져와줘.
+
+가져온 공시 하나하나는 &quot;항목&quot; 형태로 정리해줘 — 제목은 &quot;[회사명] 보고서 이름&quot; 형식으로,
+링크는 그 공시의 원문을 볼 수 있는 DART 페이지 주소로, 날짜는 접수된 날짜로, 메모에는
+누가 제출했는지 넣어줘. 출처는 &quot;DART&quot;로 표시하고.
+
+주의할 점: DART는 결과가 많으면 여러 페이지로 나눠서 주니까, 있는 페이지를 전부 끝까지
+다 가져와야 해. 그리고 DART에서 013이라는 응답 코드가 오면 그 기간에 공시가 없다는 뜻이지
+오류가 아니니까(주말이나 공휴일엔 흔한 일이야), 에러처럼 표시하지 말고 그냥 조용히 넘어가줘.
+000이 아닌 다른 코드가 오면 진짜 문제가 생긴 거니까 무슨 코드인지 화면에 알려주고 멈춰줘.
+인터넷 연결 자체가 안 되는 경우도 마찬가지로 알려주고 멈추면 돼.
 
 채팅창에 코드를 텍스트로 보여주지 말고, 지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 다운로드 가능한 파일(.py)로 첨부해서 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
     </div>
@@ -1114,14 +1126,13 @@
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s4">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s4">지금까지 모은 소스(뉴스 API, DART)에서 모은 Item 리스트를 하나로 합친 뒤 정리하는
-dedupe_and_sort(items) 함수를 추가해줘.
+      <pre class="prompt-text" id="prompt-s4">지금까지 모은 항목들(뉴스 API 결과 + DART 결과)을 하나로 합친 뒤 정리하는 기능을
+추가해줘.
 
-- 제목이 빈 항목은 버린다.
-- 제목에서 한글·영문·숫자만 남기고 소문자로 바꿔서 비교했을 때 같으면 중복으로 보고
-  (링크가 달라도) 먼저 나온 것만 남긴다.
-- 발행시각(dt) 기준 최신순으로 정렬한다. dt가 없는 항목은 맨 뒤로 보낸다.
-- 정리된 리스트를 리턴한다.
+- 제목이 비어있는 항목은 빼줘.
+- 제목이 완전히 똑같은 게 여러 소스에서 중복으로 들어올 수 있으니까(링크가 달라도 제목이
+  같으면 같은 걸로 봐도 돼), 중복된 건 하나만 남기고 나머지는 지워줘.
+- 발행 날짜가 최신인 것부터 순서대로 정렬해줘. 날짜 정보가 없는 항목은 맨 뒤로 보내줘.
 
 채팅창에 코드를 텍스트로 보여주지 말고, 지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 다운로드 가능한 파일(.py)로 첨부해서 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
     </div>
@@ -1153,10 +1164,10 @@ dedupe_and_sort(items) 함수를 추가해줘.
         <label class="page-check-wrap">
           <input type="checkbox" class="check page-check" data-id="s5">
         </label>
-        <h2>STEP 5 · 메일 조립 — HTML 리포트 만들기</h2>
+        <h2>STEP 5 · 메일 조립 — 보기 좋은 이메일 만들기</h2>
         <span class="step-time">10분</span>
       </div>
-      <p class="step-desc">정리된 항목을 사람이 읽기 좋은 HTML 메일 본문으로 바꾼다.</p>
+      <p class="step-desc">정리된 항목을 사람이 읽기 좋은 이메일 본문으로 바꾼다.</p>
     </div>
 
     <div class="prompt-box">
@@ -1164,14 +1175,16 @@ dedupe_and_sort(items) 함수를 추가해줘.
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s5">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s5">수집한 Item 리스트를 HTML 메일 본문으로 만드는 build_html(items) 함수를 추가해줘.
+      <pre class="prompt-text" id="prompt-s5">정리된 항목들을 사람이 보기 좋은 이메일 본문(디자인이 들어간 형태)으로 만들어줘.
 
-- 상단에 &quot;오늘의 이슈 리포트&quot; 제목과, 오늘 날짜(한국어, 예: 2026년 09월 01일)와 수집 건수를 보여준다.
-- 그 아래 표: 각 행에 출처(source), 제목(원문 링크가 걸린 클릭 가능한 텍스트), 발행시각(item.when).
-- MAX_ITEMS 개까지만 표시한다.
-- 이메일 클라이언트는 외부 CSS를 못 읽으니까, 모든 스타일을 style=&quot;...&quot; 속성으로 인라인으로 쓴다.
-- 제목이나 링크에 &lt;, &gt;, &amp; 같은 문자가 섞여 있어도 깨지지 않도록 html.escape 를 사용한다.
-- 완성된 HTML 문자열을 리턴한다.
+- 맨 위에 &quot;오늘의 이슈 리포트&quot;라는 제목과, 오늘 날짜(한국어, 예: 2026년 09월 01일), 그리고
+  총 몇 건을 모았는지 보여줘.
+- 그 아래엔 표 형태로 각 항목의 출처, 제목(누르면 원문으로 이동하는 링크), 발행 시간을 보여줘.
+- 너무 많으면 지저분하니까 MAX_ITEMS에 설정한 개수까지만 보여줘.
+- 이메일은 별도 디자인 파일을 못 불러오니까, 디자인은 전부 본문 안에 직접 넣어줘.
+- 제목이나 링크에 특수문자가 섞여 있어도 이메일이 깨지지 않게 안전하게 처리해줘.
+- 확인해볼 수 있도록, 맨 아래에 지금 만든 이메일 본문을 preview.html이라는 파일로 저장하는
+  부분도 추가해줘. 실행한 뒤 그 파일을 더블클릭해서 열어보면 어떻게 생겼는지 바로 볼 수 있어.
 
 채팅창에 코드를 텍스트로 보여주지 말고, 지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 다운로드 가능한 파일(.py)로 첨부해서 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
     </div>
@@ -1179,8 +1192,8 @@ dedupe_and_sort(items) 함수를 추가해줘.
     <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
       <ul>
-          <li>build_html([]) 을 호출해도 에러 없이 완전한 HTML 문서 문자열이 나온다</li>
-          <li>그 결과를 메모장에 붙여넣고 확장자를 .html로 저장해 열어보면 표 형태로 보인다</li>
+          <li>python main.py 를 실행하면 폴더에 preview.html 파일이 생긴다</li>
+          <li>preview.html 을 더블클릭해서 열어보면 표 형태의 리포트가 보인다</li>
       </ul>
     </div>
 
@@ -1219,13 +1232,19 @@ dedupe_and_sort(items) 함수를 추가해줘.
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s6">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s6">윈도우에 로그인된 클래식 아웃룩을 원격 조작해서 메일을 자동으로 보내는
-_send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
+      <pre class="prompt-text" id="prompt-s6">이제 완성된 이메일을, 윈도우에 로그인되어 있는 아웃룩(데스크톱 앱)을 이용해서
+자동으로 발송하는 기능을 추가해줘.
 
-- pywin32의 win32com.client.Dispatch(&quot;Outlook.Application&quot;) 으로 아웃룩 앱을 잡는다.
-- outlook.CreateItem(0) 으로 새 메일을 만든다 (0 = olMailItem).
-- Subject, To(MAIL_TO 여러 명을 세미콜론으로 이어붙이기), HTMLBody 를 채운 뒤 Send() 를 호출한다.
-- 이 함수 안에서는 예외를 잡지 말고 그대로 던지게 둬 — 호출하는 쪽에서 처리할 거야.
+내가 이미 로그인해둔 아웃룩 프로그램을 원격으로 조작해서, 새 메일을 하나 만들고, 받는
+사람(MAIL_TO에 적어둔 사람들, 여러 명이면 전부)과 제목, 방금 만든 이메일 본문을 채운 뒤
+실제로 전송까지 해줘.
+
+이 부분에서 뭔가 문제가 생기면(예: &quot;새 아웃룩&quot;이라서 이 방식 자체가 안 통하는 경우) 일단
+그대로 오류가 나게 둬 — 그 문제를 처리하는 건 다음 단계에서 따로 다룰 거야.
+
+확인해볼 수 있도록, 맨 아래에 &quot;테스트 메일&quot;이라는 제목과 간단한 내용으로 방금 만든 발송
+기능을 실행하는 부분도 추가해줘. 그러면 이 프로그램을 실행하기만 해도 실제로 메일이
+가는지 바로 확인할 수 있어.
 
 채팅창에 코드를 텍스트로 보여주지 말고, 지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 다운로드 가능한 파일(.py)로 첨부해서 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
     </div>
@@ -1234,7 +1253,7 @@ _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
       <p class="criteria-label">성공 기준</p>
       <ul>
           <li>윈도우 + 클래식 아웃룩 로그인 상태에서 pip install pywin32 를 실행했다</li>
-          <li>이 함수를 본인 메일 주소로 직접 호출해보면 실제로 메일이 도착한다</li>
+          <li>python main.py 를 실행하면 본인 메일함으로 실제 테스트 메일이 도착한다</li>
           <li>아웃룩이 꺼져 있으면 자동으로 켜지면서 발송된다 (로그인 창이 뜬다면 먼저 로그인)</li>
       </ul>
     </div>
@@ -1258,7 +1277,7 @@ _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
         <label class="page-check-wrap">
           <input type="checkbox" class="check page-check" data-id="s7">
         </label>
-        <h2>STEP 7 · 새 아웃룩 폴백 + 발송 함수 완성</h2>
+        <h2>STEP 7 · 새 아웃룩 대응 + 발송 마무리</h2>
         <span class="step-time">10분</span>
       </div>
       <p class="step-desc">새 아웃룩(New Outlook)은 방금 만든 방식 자체를 지원하지 않는다. 그 경우를 감지해서 대신 처리해주는 안전망을 만든다.</p>
@@ -1269,24 +1288,20 @@ _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s7">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s7">새 아웃룩에서도 쓸 수 있도록 폴백과, 둘을 합치는 최종 발송 함수를 추가해줘.
+      <pre class="prompt-text" id="prompt-s7">방금 만든 자동 발송 방식은 &quot;새 아웃룩(New Outlook)&quot;이라는 최신 버전에서는 지원이
+안 돼서 오류가 나. 그 경우를 대비한 대안과, 전체 발송 과정을 마무리하는 부분을 추가해줘.
 
-1. _open_draft_mail(subject, plain_body) 함수:
-   - 제목·받는사람·본문이 채워진 새 메일 작성 창을 mailto: 링크로 열어준다
-     (webbrowser.open 사용). 사람이 [보내기]만 누르면 되는 방식이다.
-   - mailto 는 길이 제한이 있으니 본문은 앞 1500자까지만 담고, 넘치면
-     &quot;(내용이 길어 일부만 담았습니다...)&quot; 안내를 덧붙인다.
-   - 받는사람은 콤마로 이어붙인 뒤 URL 인코딩한다.
+1. 자동 발송이 안 될 때를 위한 대안: 제목·받는사람·본문이 이미 채워진 새 메일 작성 창을
+   대신 열어줘서, 사람이 마지막 [보내기]만 누르면 되게 만들어줘. (본문이 너무 길면 일부만
+   담고 &quot;내용이 길어 일부만 담았다&quot;는 안내를 붙여줘.)
 
-2. send_mail(subject, html_body, plain_body) 함수:
-   - MAIL_TO 가 비어 있으면 &quot;! 받는 사람이 없습니다&quot; 출력 후 종료.
-   - sys.platform 이 &quot;win32&quot; 가 아니면 &quot;! 아웃룩 발송은 윈도우에서만 됩니다&quot; 출력 후 종료.
-   - win32com.client 를 import 시도. ImportError 면 pywin32 설치 안내 후 종료.
-   - _send_via_classic_outlook 을 시도한다. 성공하면 &quot;✓ 메일 발송 완료 (클래식 아웃룩, 자동 발송)&quot;
-     을 출력하고 끝낸다.
-   - 예외가 나면(새 아웃룩인 경우) &quot;! 클래식 아웃룩 자동 발송이 안 됩니다: ...&quot; 와
-     &quot;새 아웃룩은 자동화를 지원하지 않습니다&quot; 를 출력한 뒤, _open_draft_mail 로 넘어가서
-     초안을 열어주고 &quot;✓ 메일 초안 열기 완료 (수동 발송 필요)&quot; 를 출력한다.
+2. 전체 발송 마무리:
+   - 받는 사람이 하나도 안 적혀 있으면 &quot;받는 사람이 없다&quot;고 알려주고 그냥 끝내줘.
+   - 윈도우가 아닌 컴퓨터에서 실행하면 &quot;아웃룩 발송은 윈도우에서만 된다&quot;고 알려주고 끝내줘.
+   - 아웃룩 자동 조작에 필요한 게 설치가 안 되어 있으면 설치하라고 안내하고 끝내줘.
+   - 아까 만든 자동 발송을 먼저 시도해보고, 성공하면 &quot;자동 발송 완료&quot;라고 알려줘.
+   - 만약 새 아웃룩이라서 자동 발송이 안 되면, 그 사실을 알려준 뒤 방금 만든 대안(메일
+     창 열어주기)으로 넘어가서 &quot;메일 창 열기 완료, 보내기만 누르면 된다&quot;고 알려줘.
 
 채팅창에 코드를 텍스트로 보여주지 말고, 지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 다운로드 가능한 파일(.py)로 첨부해서 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
     </div>
@@ -1330,16 +1345,16 @@ _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s8">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s8">지금까지 만든 함수들을 하나로 묶는 main() 함수와 실행부를 추가해줘.
+      <pre class="prompt-text" id="prompt-s8">지금까지 만든 기능들을 순서대로 이어붙여서 프로그램 하나로 완성해줘.
 
-- argparse로 --dry-run 옵션을 추가한다 (있으면 메일을 안 보내고 콘솔에만 출력).
-- KEYWORDS, RSS_FEEDS, DART_WATCH 가 전부 비어 있으면 안내 메시지를 출력하고 종료(return 1).
-- [1/3] 수집: 뉴스 API → DART 순서로 각각 호출해서 건수를 출력하고, 다 합친 뒤
-  dedupe_and_sort 로 정리한다.
-- [2/3] 메일 조립: 제목은 &quot;[이슈 리포트] MM/DD · N건&quot; 형식으로, 본문(텍스트 버전)은
-  각 항목을 &quot;- [출처] 제목\n  링크&quot; 형태로 이어붙인다. build_html 로 HTML 버전도 만든다.
-- [3/3] 발송: --dry-run 이면 콘솔에 제목과 본문 미리보기만 출력하고, 아니면 send_mail 을 호출한다.
-- 마지막에 if __name__ == &quot;__main__&quot;: sys.exit(main()) 을 추가한다.
+- 프로그램을 실행할 때 &quot;--dry-run&quot;이라는 옵션을 붙이면, 실제로 메일을 보내지 않고 화면에
+  결과만 미리 보여주도록 해줘 (테스트용으로 안전하게 확인하려고).
+- KEYWORDS, RSS_FEEDS, DART_WATCH 가 전부 비어있으면, 설정을 채워달라는 안내를 띄우고
+  프로그램을 끝내줘.
+- 순서는 이렇게 진행해줘: 먼저 [1/3] 뉴스 API와 DART에서 각각 정보를 모아서 몇 건씩
+  모았는지 화면에 보여주고, 다 합친 뒤 중복 정리를 해줘. 그다음 [2/3] 메일 제목(&quot;[이슈
+  리포트] 오늘 날짜 · N건&quot; 형식)과 본문을 만들어줘. 마지막으로 [3/3] --dry-run이면
+  화면에 제목과 본문 미리보기만 보여주고, 아니면 진짜로 메일을 발송해줘.
 
 채팅창에 코드를 텍스트로 보여주지 말고, 지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 다운로드 가능한 파일(.py)로 첨부해서 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
     </div>
@@ -1388,23 +1403,17 @@ _send_via_classic_outlook(subject, html_body) 함수를 추가해줘.
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s1">복사</button>
       </div>
-      <pre class="prompt-text" id="prompt-s1">지금 완성된 프로그램에 RSS 수집 기능을 추가로 붙여줘.
+      <pre class="prompt-text" id="prompt-s1">지금 완성된 프로그램에 RSS 수집 기능을 추가로 붙여줘. 구글 뉴스는 검색한 키워드에
+대한 결과를, 별도 프로그램 설치나 키 발급 없이도 받아볼 수 있는 방법(RSS)으로 제공해줘.
+이 방법으로 키워드별 기사를 모아와줘.
 
-1. google_news_rss(keyword) 함수: 아래 형태의 URL 문자열을 리턴해줘 (keyword는 URL 인코딩).
-   https://news.google.com/rss/search?q={keyword}&amp;hl=ko&amp;gl=KR&amp;ceid=KR:ko
+직접 지정해둔 뉴스 사이트 주소(RSS_FEEDS)가 있으면 그것도 같이 포함해서 가져와줘. 특정
+사이트에 문제가 있어서 못 가져오면 그 사이트만 건너뛰고 계속 진행해줘. 각 사이트에서 너무
+많이 가져오지 않게 사이트당 가져올 개수를 적당히 제한해줘 (예: 10개).
 
-2. collect_rss(limit_per_feed=10) 함수:
-   - RSS_FEEDS 목록 + KEYWORDS 각각으로 만든 구글뉴스 RSS 주소들을 모두 대상으로 한다.
-   - feedparser로 각 주소를 읽는다. feedparser는 네트워크가 막혀도 예외를 던지지 않고
-     조용히 빈 결과를 주니까, parsed.bozo 이면서 entries가 비어 있으면
-     &quot;! RSS 실패 (...)&quot; 를 출력하고 그 피드는 건너뛴다.
-   - 각 피드에서 최대 limit_per_feed개까지만 가져온다.
-   - title은 clean_text로 정리하고, link, 발행시각(entry.published_parsed가 있으면
-     UTC datetime으로 변환)을 채워서 Item으로 만든다. source는 &quot;RSS&quot;.
-   - 모은 Item 리스트를 리턴한다.
-
-3. main() 함수의 수집 목록 맨 앞에 (&quot;RSS&quot;, collect_rss) 를 추가해서, RSS → 뉴스 API → DART
-   순서로 호출되게 해줘.
+가져온 기사들도 지금까지처럼 &quot;항목&quot; 형태로 정리하고 출처는 &quot;RSS&quot;로 표시해줘. 그리고 전체
+수집 순서 맨 앞에 이 RSS 수집도 포함시켜서, 실행했을 때 결과 건수에 RSS도 같이 나오게
+해줘 (RSS → 뉴스 API → DART 순서).
 
 채팅창에 코드를 텍스트로 보여주지 말고, 지금까지의 요구사항을 모두 반영한 파이썬 코드 전체를 처음부터 끝까지 빠짐없이 담은 다운로드 가능한 파일(.py)로 첨부해서 줘. 그 파일을 받아서 내 PC의 main.py로 그대로 저장(덮어쓰기)할 거야.</pre>
     </div>

@@ -1,4 +1,12 @@
+#!/usr/bin/env python3.12
 """사내 이슈 데일리 리포트 프로그램 — 바이브코딩 실습 완성본 (GUI 버전).
+
+맨 위 줄(#!/usr/bin/env python3.12)은 장식이 아니다. 윈도우에서 .py 파일을
+더블클릭하면 py.exe(파이썬 실행 도우미)가 뜨는데, 이 도우미는 기본적으로
+**설치된 것 중 가장 높은 버전**을 골라 실행한다. 즉 3.13 이 함께 깔려 있으면
+3.12 를 따로 설치해도 더블클릭은 3.13 으로 실행돼서, 사내망에서 인터넷 통신이
+전부 막힌다. py.exe 는 맨 윗줄에 적힌 버전을 우선하므로, 이 한 줄이 있으면
+더블클릭해도 3.12 로 실행된다.
 
 더블클릭하면 프로그램 창이 뜨고, 창 안에서 키워드·인증키·받는사람을 입력한 뒤
 버튼을 눌러서 뉴스·공시를 모으고 메일을 보낸다. 입력한 값은 같은 폴더의
@@ -441,6 +449,24 @@ class App:
 
         self.log_box = scrolledtext.ScrolledText(root, width=76, height=20, state="disabled")
         self.log_box.pack(fill="both", expand=True, padx=10, pady=10)
+
+        self._log_python_version()
+
+    def _log_python_version(self) -> None:
+        """어떤 파이썬으로 돌고 있는지 맨 처음에 보여준다.
+
+        3.13 이상이면 사내망에서 인터넷 통신이 막히므로, 수집이 실패한 뒤에
+        원인을 찾아 헤매지 않도록 창을 열자마자 알려준다.
+        """
+        major, minor = sys.version_info[:2]
+        self.log(f"파이썬 {major}.{minor} 로 실행 중")
+
+        if (major, minor) >= (3, 13):
+            self.log("")
+            self.log("! 주의 — 이 버전은 사내망에서 인터넷 자료를 못 받아올 수 있습니다.")
+            self.log("!        회사 보안 장비가 만든 인증서를 3.13 이상은 거부합니다.")
+            self.log("!        파이썬 3.12 로 실행하세요:  py -3.12 main.py")
+            self.log("")
 
     def _save_settings(self) -> None:
         save_settings({k: v.get() for k, v in self.vars.items()})

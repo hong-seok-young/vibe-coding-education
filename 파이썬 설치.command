@@ -30,7 +30,7 @@ finish() {
 # ------------------------------------------------------------
 echo " [1/2] 파이썬이 이미 있는지 확인합니다..."
 PY=""
-for c in python3.12 python3; do
+for c in python3 python3.13 python3.12; do
   if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/null; then
     PY="$c"
     break
@@ -47,11 +47,11 @@ fi
 
 if command -v brew >/dev/null 2>&1; then
   echo ""
-  echo " [1/1] brew 로 파이썬 3.12 를 확인합니다 (몇 초 걸립니다)..."
-  brew upgrade python@3.12 >/dev/null 2>&1
+  echo " [1/1] brew 로 파이썬을 확인합니다 (몇 초 걸립니다)..."
+  brew upgrade python3 >/dev/null 2>&1
 
   PY=""
-  for c in python3.12 python3; do
+  for c in python3 python3.13 python3.12; do
     if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
   done
 
@@ -65,8 +65,8 @@ if command -v brew >/dev/null 2>&1; then
   else
     echo ""
     echo " [1/2] 파이썬을 설치합니다..."
-    brew install python@3.12
-    for c in python3.12 python3; do
+    brew install python3
+    for c in python3 python3.13 python3.12; do
       if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
     done
     if [ -z "$PY" ]; then
@@ -87,11 +87,11 @@ elif [ -z "$PY" ]; then
   echo "      3) 설치가 끝나면 이 창으로 돌아오세요"
   echo "  ------------------------------------------------------------"
   echo ""
-  open "https://www.python.org/ftp/python/3.12.10/python-3.12.10-macos11.pkg"
+  open "https://www.python.org/downloads/"
   echo "    설치를 마쳤으면 아무 키나 누르세요..."
   read -r -n 1 -s
 
-  for c in python3.12 python3; do
+  for c in python3 python3.13 python3.12; do
     if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
   done
   if [ -z "$PY" ]; then
@@ -108,8 +108,6 @@ echo ""
 echo " ============================================================"
 echo "   설치 끝. 파이썬 준비 완료입니다."
 echo " ============================================================"
-echo ""
-echo "   실습에서 프로그램을 실행할 때는 python3.12 로 실행하세요."
 echo ""
 echo "   다음에 할 일"
 echo "     1) DART 인증키를 발급받아 메모장에 붙여두기"

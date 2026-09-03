@@ -1,12 +1,8 @@
-#!/usr/bin/env python3.12
 """사내 이슈 데일리 리포트 프로그램 — 바이브코딩 실습 완성본 (GUI 버전).
 
-맨 위 줄(#!/usr/bin/env python3.12)은 장식이 아니다. 윈도우에서 .py 파일을
-더블클릭하면 py.exe(파이썬 실행 도우미)가 뜨는데, 이 도우미는 기본적으로
-**설치된 것 중 가장 높은 버전**을 골라 실행한다. 즉 3.13 이 함께 깔려 있으면
-3.12 를 따로 설치해도 더블클릭은 3.13 으로 실행돼서, 사내망에서 인터넷 통신이
-전부 막힌다. py.exe 는 맨 윗줄에 적힌 버전을 우선하므로, 이 한 줄이 있으면
-더블클릭해도 3.12 로 실행된다.
+파이썬 버전은 가리지 않는다. 3.13 부터 인증서 검사가 깐깐해져서 사내망(HTTPS를
+중간에서 검사하는 환경)에서 통신이 막히는 문제가 있는데, 아래 "사내망 대응"에서
+처리하므로 최신 버전으로도 그대로 돌아간다.
 
 더블클릭하면 프로그램 창이 뜨고, 창 안에서 키워드·인증키·받는사람을 입력한 뒤
 버튼을 눌러서 뉴스·공시를 모으고 메일을 보낸다. 입력한 값은 같은 폴더의
@@ -33,11 +29,9 @@ from datetime import datetime, timedelta, timezone
 from tkinter import scrolledtext, ttk
 from urllib.parse import quote
 
-import certifi
 import feedparser
 import requests
 from requests.adapters import HTTPAdapter
-from urllib3.util.ssl_ import create_urllib3_context
 
 KST = timezone(timedelta(hours=9))
 FAR_PAST = datetime(1970, 1, 1, tzinfo=timezone.utc)
@@ -57,39 +51,60 @@ SETTINGS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "settin
 #
 #   SSL: CERTIFICATE_VERIFY_FAILED ... Missing Authority Key Identifier
 #
-# 파이썬 3.12 에서는 나지 않는다(브라우저와 같은 기준으로 검사한다). 그래서
-# 교육에서는 3.12 설치를 안내하지만, 이미 3.13 이상이 깔린 PC에서도 돌아가야
-# 하니 아래처럼 대응해둔다. 인증서 검증 자체는 계속 켜둔 채로,
-#   (1) 윈도우가 신뢰하는 인증서 목록을 파이썬도 쓰게 하거나(truststore),
-#   (2) 그게 없으면 3.13 에서 새로 생긴 엄격 검사만 끈다.
+# 파이썬 3.12 까지는 나지 않았다(브라우저와 같은 기준으로 검사했다). 버전을 3.12 로
+# 못 박아 피하는 방법도 있지만, 3.12 는 이미 보안 패치만 나오는 단계라 오래 못 쓴다.
+# 그래서 버전을 가리지 않고 아래에서 직접 대응한다.
+
+def _make_ssl_context() -> ssl.SSLContext:
+    """사내망을 통과할 수 있는 인증서 검사 설정을 만든다.
+
+    두 가지를 같이 해줘야 한다.
+
+    (1) 회사 인증서를 신뢰해야 한다.
+        ssl.create_default_context() 는 윈도우에서 윈도우 인증서 저장소(ROOT/CA)를
+        함께 읽는다. 회사 보안 장비의 인증서는 이미 거기 등록돼 있으니 이걸 쓰면 된다.
+        requests 의 기본값(certifi 묶음)을 쓰면 안 된다 — certifi 를 지정하는 순간
+        윈도우 저장소를 덮어써서 회사 인증서를 못 믿게 되고, "발급자를 찾을 수 없다"는
+        다른 오류로 바뀐다.
+
+    (2) 3.13 부터 새로 생긴 엄격 검사를 끈다.
+        회사 장비가 만든 인증서에는 Authority Key Identifier 항목이 없는데,
+        3.13 부터 VERIFY_X509_STRICT 가 기본으로 켜지면서 이 항목을 요구한다.
+        (1)로 신뢰까지 해놓고도 이 검사에서 거부되므로 이 플래그만 해제한다.
+
+    인증서 검증 자체는 그대로 켜둔다(verify_mode/check_hostname 을 건드리지 않는다).
+    """
+    ctx = ssl.create_default_context()
+    ctx.verify_flags &= ~getattr(ssl, "VERIFY_X509_STRICT", 0)
+    return ctx
+
+
+class _CorporateTLSAdapter(HTTPAdapter):
+    """requests 가 위 설정을 쓰도록 끼워 넣는다."""
+
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs["ssl_context"] = _make_ssl_context()
+        return super().init_poolmanager(*args, **kwargs)
+
+    def proxy_manager_for(self, *args, **kwargs):
+        kwargs["ssl_context"] = _make_ssl_context()
+        return super().proxy_manager_for(*args, **kwargs)
+
 
 def _build_session() -> requests.Session:
     session = requests.Session()
     session.headers["User-Agent"] = "Mozilla/5.0 (issue-report-bot)"
 
-    # (1) 윈도우 인증서 저장소를 쓴다 — 회사 인증서는 이미 윈도우가 신뢰하고 있다.
+    # truststore 가 깔려 있으면 그게 가장 깔끔하다 — 검사 자체를 윈도우에 맡기므로
+    # 위 두 문제가 한 번에 사라진다. 없어도 아래 설정으로 동작한다.
     try:
         import truststore
 
         truststore.inject_into_ssl()
-        return session
     except Exception:
         pass
 
-    # (2) truststore 가 없을 때 — 3.13 에서 추가된 엄격 검사(VERIFY_X509_STRICT)만 해제.
-    strict = getattr(ssl, "VERIFY_X509_STRICT", 0)
-    if not strict:
-        return session
-
-    class _RelaxedStrictAdapter(HTTPAdapter):
-        def init_poolmanager(self, *args, **kwargs):
-            ctx = create_urllib3_context()
-            ctx.load_verify_locations(certifi.where())
-            ctx.verify_flags &= ~strict
-            kwargs["ssl_context"] = ctx
-            return super().init_poolmanager(*args, **kwargs)
-
-    session.mount("https://", _RelaxedStrictAdapter())
+    session.mount("https://", _CorporateTLSAdapter())
     return session
 
 
@@ -453,20 +468,13 @@ class App:
         self._log_python_version()
 
     def _log_python_version(self) -> None:
-        """어떤 파이썬으로 돌고 있는지 맨 처음에 보여준다.
+        """어떤 파이썬으로 돌고 있는지 맨 처음에 한 줄로 보여준다.
 
-        3.13 이상이면 사내망에서 인터넷 통신이 막히므로, 수집이 실패한 뒤에
-        원인을 찾아 헤매지 않도록 창을 열자마자 알려준다.
+        문제가 생겼을 때 강사에게 알려주기 쉽게 하려는 목적이다. 버전에 따라
+        동작이 달라지지는 않는다.
         """
         major, minor = sys.version_info[:2]
         self.log(f"파이썬 {major}.{minor} 로 실행 중")
-
-        if (major, minor) >= (3, 13):
-            self.log("")
-            self.log("! 주의 — 이 버전은 사내망에서 인터넷 자료를 못 받아올 수 있습니다.")
-            self.log("!        회사 보안 장비가 만든 인증서를 3.13 이상은 거부합니다.")
-            self.log("!        파이썬 3.12 로 실행하세요:  py -3.12 main.py")
-            self.log("")
 
     def _save_settings(self) -> None:
         save_settings({k: v.get() for k, v in self.vars.items()})

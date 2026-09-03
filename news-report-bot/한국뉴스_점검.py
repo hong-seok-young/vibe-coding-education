@@ -3,10 +3,11 @@
 구글 뉴스 RSS는 인증키도, 가입도, 호출 한도도 없다. 한국어 키워드가 그대로 통한다.
 이 파일을 실행하면 내 PC/회사 네트워크에서 실제로 기사가 몇 건 잡히는지 바로 보인다.
 
-실행: py -3.12 한국뉴스_점검.py
+실행: python 한국뉴스_점검.py
 (pip install 필요 없음 — 파이썬에 기본 포함된 기능만 쓴다)
 """
 
+import ssl
 import sys
 import urllib.error
 import urllib.parse
@@ -24,9 +25,21 @@ PRESS_FEEDS = [
 ]
 
 
+def make_ssl_context() -> ssl.SSLContext:
+    """사내망(HTTPS를 중간에서 검사하는 환경)을 통과할 수 있는 설정.
+
+    회사 보안 장비가 만든 인증서에는 Authority Key Identifier 항목이 없는데,
+    파이썬 3.13 부터 이 항목을 요구하는 검사가 기본으로 켜져서 연결이 거부된다.
+    그 검사만 끈다. 인증서 검증 자체는 그대로 켜둔다.
+    """
+    ctx = ssl.create_default_context()   # 윈도우에서는 윈도우 인증서 저장소를 함께 읽는다
+    ctx.verify_flags &= ~getattr(ssl, "VERIFY_X509_STRICT", 0)
+    return ctx
+
+
 def fetch(url: str) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=20) as resp:
+    with urllib.request.urlopen(req, timeout=20, context=make_ssl_context()) as resp:
         return resp.read().decode("utf-8", "replace")
 
 
@@ -42,18 +55,14 @@ def show_feed(label: str, url: str) -> None:
         text = str(exc)
         print(f"  연결 자체가 안 됨: {type(exc).__name__}: {text}")
 
-        if "Missing Authority Key Identifier" in text:
-            print("  → 원인을 찾았다. 회사 보안 장비가 인터넷 통신을 중간에서 열어보고")
-            print("     자기 인증서로 다시 봉인해서 넘겨주는데, 파이썬 3.13부터 이 봉인을")
-            print("     검사하는 기준이 깐깐해져서 회사 장비가 만든 인증서를 거부한다.")
-            print(f"     (지금 쓰는 파이썬: {sys.version.split()[0]})")
-            print("     해결: 파이썬 3.12를 쓰면 된다. cmd에서 py install 3.12 로 깔고")
-            print("           py -3.12 한국뉴스_점검.py 로 다시 실행해본다.")
-            print("           3.13을 계속 써야 하면 pip install truststore 를 하면 된다.")
-        elif "CERTIFICATE_VERIFY_FAILED" in text:
+        if "unable to get local issuer certificate" in text:
             print("  → 회사 보안 장비의 인증서를 파이썬이 신뢰하지 않아서 막힌 것이다.")
             print("     pip install truststore 를 실행하면 윈도우가 이미 신뢰하는")
             print("     목록을 파이썬도 쓰게 되어 해결되는 경우가 많다.")
+        elif "CERTIFICATE_VERIFY_FAILED" in text:
+            print("  → 인증서 검사에서 막혔다. 이 파일은 사내망 대응을 이미 넣어뒀는데도")
+            print("     막혔다면, 이 메시지를 그대로 복사해서 강사나 AI에게 보여주면 된다.")
+            print(f"     (지금 쓰는 파이썬: {sys.version.split()[0]})")
         else:
             print("  → 회사 네트워크가 이 사이트를 막고 있을 수 있다.")
         return
@@ -96,8 +105,8 @@ if __name__ == "__main__":
 읽는 방법
   · 구글 뉴스 RSS에서 기사가 잘 나온다        → 이걸로 가면 된다. 인증키가 아예 필요 없다.
   · 구글만 막히고 언론사 RSS는 나온다          → 회사가 구글 뉴스를 막은 것. 언론사 RSS로 간다.
-  · "Missing Authority Key Identifier"    → 파이썬 버전 문제다. 3.12로 바꾸면 해결된다.
-                                             (회사 보안 장비가 만든 인증서를 3.13이 거부한다)
+  · "unable to get local issuer..."       → 회사 인증서를 파이썬이 못 믿는 상태다.
+                                             pip install truststore 로 해결되는 경우가 많다.
   · 전부 "연결 자체가 안 됨"                   → 회사 네트워크가 외부를 막고 있다.
                                              개인 네트워크(핫스팟)에서 다시 시험해본다.
 """)

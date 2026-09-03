@@ -59,7 +59,7 @@ def save_settings(data: dict) -> None:
 class Item:
     """수집한 항목 하나 (뉴스 기사든 공시든 같은 모양으로 다룬다)."""
 
-    source: str                       # "RSS" | "NewsAPI" | "DART"
+    source: str                       # "뉴스" | "DART" | 언론사 이름
     title: str
     link: str
     dt: datetime | None = None        # 발행 시각 (timezone 포함)
@@ -76,63 +76,51 @@ def clean_text(raw: str) -> str:
 
 
 # ─────────────────────────────────────────────────────────────
-# STEP 2. 뉴스 수집 버튼 — NewsAPI.org 연결
+# STEP 2. 뉴스 수집 버튼 — 구글 뉴스 검색 (인증키 없음)
 # ─────────────────────────────────────────────────────────────
+#
+# 뉴스 수집에 인증키를 쓰지 않는 이유:
+#   · NewsAPI.org 는 언어 지정 값에 한국어(ko)가 아예 없다. 받는 값은
+#     ar/de/en/es/fr/he/it/nl/no/pt/ru/sv/ud/zh 뿐이고, ko 를 넣으면 400 으로
+#     거절당한다. 게다가 한국 매체 수집 자체가 빈약해서 한국어 키워드는 0건이 흔하다.
+#   · 네이버 검색은 품질이 가장 좋지만 NAVER API HUB(네이버 클라우드) 계정이 필요하다.
+#   · 구글 뉴스는 키워드 검색 결과를 RSS 로 그냥 내준다 — 가입도, 키도, 호출 한도도
+#     없고 한국어 키워드가 그대로 통한다. 그래서 이걸 기본으로 쓴다.
 
-def collect_newsapi(keywords: list[str], api_key: str, page_size: int = 10) -> tuple[list[Item], list[str]]:
+def google_news_rss(keyword: str) -> str:
+    """구글 뉴스의 키워드 검색 결과 주소. 한국어(hl=ko)·한국(gl=KR) 기준으로 받는다."""
+    return f"https://news.google.com/rss/search?q={quote(keyword)}&hl=ko&gl=KR&ceid=KR:ko"
+
+
+def collect_news(keywords: list[str], limit_per_keyword: int = 10) -> tuple[list[Item], list[str]]:
     items: list[Item] = []
     errors: list[str] = []
 
-    if not api_key:
-        return items, ["뉴스 검색 인증키가 없어 건너뜀"]
+    if not keywords:
+        return items, ["키워드가 없어 건너뜀"]
 
-    headers = {"X-Api-Key": api_key}
     for keyword in keywords:
-        # language 파라미터에 "ko"(한국어)는 없다. NewsAPI가 받는 값은
-        # ar/de/en/es/fr/he/it/nl/no/pt/ru/sv/ud/zh 뿐이라, ko를 넣으면 검색이
-        # 되기는커녕 400(parameterInvalid)으로 거절당한다. 그래서 언어는 지정하지
-        # 않고, 한국어 키워드 자체로 검색한다.
-        params = {"q": keyword, "sortBy": "publishedAt", "pageSize": page_size}
-        try:
-            resp = requests.get(
-                "https://newsapi.org/v2/everything",
-                headers=headers,
-                params=params,
-                timeout=10,
-            )
-        except requests.RequestException as exc:
-            errors.append(f"뉴스 API 연결 실패: {exc}")
+        parsed = feedparser.parse(google_news_rss(keyword))
+
+        # feedparser 는 네트워크가 막혀도 예외를 던지지 않고 조용히 빈 결과를 준다.
+        # 그래서 "왜 0건인지"를 직접 구분해서 알려줘야 한다.
+        if not parsed.entries:
+            reason = getattr(parsed, "bozo_exception", None)
+            if reason:
+                errors.append(f"'{keyword}' 검색 실패: {reason}")
+            else:
+                errors.append(f"'{keyword}' 검색 결과 0건")
             continue
 
-        # NewsAPI는 실패할 때도 본문에 이유를 문장으로 담아준다. "검색 실패" 한 줄만
-        # 남기면 원인을 알 수 없으니, 그 문장을 그대로 보여준다.
-        try:
-            payload = resp.json()
-        except ValueError:
-            payload = {}
-
-        if resp.status_code != 200 or payload.get("status") != "ok":
-            reason = payload.get("message") or f"HTTP {resp.status_code}"
-            errors.append(f"'{keyword}' 검색 실패: {reason}")
-            continue
-
-        rows = payload.get("articles", [])
-        if not rows:
-            # 실패가 아니라 "그 키워드로 걸리는 기사가 없음"이다. NewsAPI는 한국 매체
-            # 수집이 빈약해서 한국어 키워드는 0건이 나오는 경우가 흔하다.
-            errors.append(f"'{keyword}' 검색 결과 0건")
-
-        for row in rows:
+        for entry in parsed.entries[:limit_per_keyword]:
             dt = None
-            try:
-                dt = datetime.fromisoformat(row.get("publishedAt", "").replace("Z", "+00:00"))
-            except (TypeError, ValueError):
-                pass
+            if getattr(entry, "published_parsed", None):
+                dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
 
             items.append(Item(
-                source="NewsAPI",
-                title=clean_text(row.get("title") or ""),
-                link=row.get("url", ""),
+                source="뉴스",
+                title=clean_text(entry.get("title", "")),
+                link=entry.get("link", ""),
                 dt=dt,
             ))
 
@@ -351,7 +339,6 @@ FIELDS = [
     ("dart_watch", "지켜볼 회사 (쉼표로 구분, 비워도 됨)"),
     ("mail_to", "메일 받을 사람 (쉼표로 구분)"),
     ("dart_key", "DART 인증키"),
-    ("newsapi_key", "뉴스 검색 인증키"),
 ]
 
 
@@ -432,7 +419,7 @@ class App:
     def on_collect_news(self) -> None:
         def task():
             self.root.after(0, lambda: self.log("뉴스 수집 중..."))
-            items, errors = collect_newsapi(self._list_field("keywords"), self.vars["newsapi_key"].get())
+            items, errors = collect_news(self._list_field("keywords"))
             for e in errors:
                 self.root.after(0, lambda e=e: self.log(f"  ! {e}"))
             self._merge(items, "뉴스")
@@ -464,7 +451,7 @@ class App:
             self.root.after(0, lambda: self.log("전체 실행 시작..."))
 
             self.root.after(0, lambda: self.log("뉴스 수집 중..."))
-            news_items, news_errors = collect_newsapi(self._list_field("keywords"), self.vars["newsapi_key"].get())
+            news_items, news_errors = collect_news(self._list_field("keywords"))
             for e in news_errors:
                 self.root.after(0, lambda e=e: self.log(f"  ! {e}"))
             self._merge(news_items, "뉴스")
@@ -488,23 +475,30 @@ class App:
 
 
 # ─────────────────────────────────────────────────────────────
-# STEP 9. 추가실습(보너스) — RSS 수집. 키 발급이 필요 없다.
+# STEP 9. 추가실습(보너스) — 언론사 RSS 추가로 붙이기
 # ─────────────────────────────────────────────────────────────
+#
+# 구글 뉴스는 "키워드로 검색"이지만, 언론사 RSS는 "그 언론사 해당 분야 최신 기사"가
+# 통째로 온다. 키워드에 안 걸리는 기사까지 훑을 수 있어서 같이 쓰면 사각지대가 줄어든다.
+# 이것도 인증키가 필요 없다.
 
-def google_news_rss(keyword: str) -> str:
-    """구글 뉴스는 키워드 검색 결과를 RSS로 내준다. 키가 필요 없어 실습 시작용으로 좋다."""
-    return f"https://news.google.com/rss/search?q={quote(keyword)}&hl=ko&gl=KR&ceid=KR:ko"
+PRESS_FEEDS = [
+    ("연합뉴스 경제", "https://www.yna.co.kr/rss/economy.xml"),
+    ("한국경제", "https://rss.hankyung.com/feed/economy.xml"),
+    ("매일경제", "https://www.mk.co.kr/rss/30100041/"),
+]
 
 
-def collect_rss(keywords: list[str], rss_feeds: list[str], limit_per_feed: int = 10) -> list[Item]:
-    feeds = list(rss_feeds) + [google_news_rss(kw) for kw in keywords]
+def collect_press_rss(feeds=PRESS_FEEDS, limit_per_feed: int = 10) -> tuple[list[Item], list[str]]:
     items: list[Item] = []
+    errors: list[str] = []
 
-    for url in feeds:
+    for label, url in feeds:
         parsed = feedparser.parse(url)
 
-        # feedparser는 네트워크가 막혀도 예외를 던지지 않고 조용히 빈 결과를 준다.
-        if parsed.bozo and not parsed.entries:
+        if not parsed.entries:
+            reason = getattr(parsed, "bozo_exception", None)
+            errors.append(f"{label} 가져오기 실패: {reason}" if reason else f"{label} 0건")
             continue
 
         for entry in parsed.entries[:limit_per_feed]:
@@ -513,13 +507,13 @@ def collect_rss(keywords: list[str], rss_feeds: list[str], limit_per_feed: int =
                 dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
 
             items.append(Item(
-                source="RSS",
+                source=label,
                 title=clean_text(entry.get("title", "")),
                 link=entry.get("link", ""),
                 dt=dt,
             ))
 
-    return items
+    return items, errors
 
 
 if __name__ == "__main__":

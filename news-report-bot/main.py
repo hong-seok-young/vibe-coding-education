@@ -88,23 +88,41 @@ def collect_newsapi(keywords: list[str], api_key: str, page_size: int = 10) -> t
 
     headers = {"X-Api-Key": api_key}
     for keyword in keywords:
+        # language 파라미터에 "ko"(한국어)는 없다. NewsAPI가 받는 값은
+        # ar/de/en/es/fr/he/it/nl/no/pt/ru/sv/ud/zh 뿐이라, ko를 넣으면 검색이
+        # 되기는커녕 400(parameterInvalid)으로 거절당한다. 그래서 언어는 지정하지
+        # 않고, 한국어 키워드 자체로 검색한다.
+        params = {"q": keyword, "sortBy": "publishedAt", "pageSize": page_size}
         try:
             resp = requests.get(
                 "https://newsapi.org/v2/everything",
                 headers=headers,
-                params={"q": keyword, "language": "ko", "sortBy": "publishedAt", "pageSize": page_size},
+                params=params,
                 timeout=10,
             )
-            resp.raise_for_status()
-        except requests.HTTPError as exc:
-            # 401이면 키가 틀린 것, 429면 호출 한도 초과
-            errors.append(f"'{keyword}' 검색 실패: {exc}")
-            continue
         except requests.RequestException as exc:
             errors.append(f"뉴스 API 연결 실패: {exc}")
             continue
 
-        for row in resp.json().get("articles", []):
+        # NewsAPI는 실패할 때도 본문에 이유를 문장으로 담아준다. "검색 실패" 한 줄만
+        # 남기면 원인을 알 수 없으니, 그 문장을 그대로 보여준다.
+        try:
+            payload = resp.json()
+        except ValueError:
+            payload = {}
+
+        if resp.status_code != 200 or payload.get("status") != "ok":
+            reason = payload.get("message") or f"HTTP {resp.status_code}"
+            errors.append(f"'{keyword}' 검색 실패: {reason}")
+            continue
+
+        rows = payload.get("articles", [])
+        if not rows:
+            # 실패가 아니라 "그 키워드로 걸리는 기사가 없음"이다. NewsAPI는 한국 매체
+            # 수집이 빈약해서 한국어 키워드는 0건이 나오는 경우가 흔하다.
+            errors.append(f"'{keyword}' 검색 결과 0건")
+
+        for row in rows:
             dt = None
             try:
                 dt = datetime.fromisoformat(row.get("publishedAt", "").replace("Z", "+00:00"))

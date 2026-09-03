@@ -30,7 +30,7 @@ finish() {
 # ------------------------------------------------------------
 echo " [1/2] 파이썬이 이미 있는지 확인합니다..."
 PY=""
-for c in python3.14 python3.13 python3; do
+for c in python3.12 python3; do
   if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)' 2>/dev/null; then
     PY="$c"
     break
@@ -47,13 +47,11 @@ fi
 
 if command -v brew >/dev/null 2>&1; then
   echo ""
-  echo " [1/2] brew 로 최신 버전인지 확인합니다 (몇 초 걸립니다)..."
-  brew upgrade python@3.14 >/dev/null 2>&1
-  brew upgrade python@3.13 >/dev/null 2>&1
-  brew upgrade python3 >/dev/null 2>&1
+  echo " [1/1] brew 로 파이썬 3.12 를 확인합니다 (몇 초 걸립니다)..."
+  brew upgrade python@3.12 >/dev/null 2>&1
 
   PY=""
-  for c in python3.14 python3.13 python3; do
+  for c in python3.12 python3; do
     if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
   done
 
@@ -67,8 +65,8 @@ if command -v brew >/dev/null 2>&1; then
   else
     echo ""
     echo " [1/2] 파이썬을 설치합니다..."
-    brew install python@3.14 || brew install python3
-    for c in python3.14 python3.13 python3; do
+    brew install python@3.12
+    for c in python3.12 python3; do
       if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
     done
     if [ -z "$PY" ]; then
@@ -89,11 +87,11 @@ elif [ -z "$PY" ]; then
   echo "      3) 설치가 끝나면 이 창으로 돌아오세요"
   echo "  ------------------------------------------------------------"
   echo ""
-  open "https://www.python.org/downloads/"
+  open "https://www.python.org/ftp/python/3.12.10/python-3.12.10-macos11.pkg"
   echo "    설치를 마쳤으면 아무 키나 누르세요..."
   read -r -n 1 -s
 
-  for c in python3.14 python3.13 python3; do
+  for c in python3.12 python3; do
     if command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
   done
   if [ -z "$PY" ]; then
@@ -103,21 +101,7 @@ elif [ -z "$PY" ]; then
   fi
   echo "        설치 완료 - $($PY --version 2>&1)"
 else
-  echo "        Homebrew 가 없어 최신 버전인지는 확인하지 못합니다. 있는 그대로 사용합니다."
-fi
-
-# ------------------------------------------------------------
-# 2단계 - 설정 파일 준비 (라이브러리는 실습하면서 직접 pip install 한다)
-# ------------------------------------------------------------
-echo ""
-echo " [2/2] 설정 파일(.env)을 준비합니다..."
-if [ -f "news-report-bot/.env" ]; then
-  echo "        .env 가 이미 있습니다. 덮어쓰지 않고 그대로 둡니다."
-elif [ -f "news-report-bot/.env.example" ]; then
-  cp "news-report-bot/.env.example" "news-report-bot/.env"
-  echo "        news-report-bot/.env 를 만들었습니다."
-else
-  echo "        .env.example 이 없어 건너뜁니다."
+  echo "        Homebrew 가 없어 버전 확인은 못 합니다. 있는 그대로 사용합니다."
 fi
 
 echo ""
@@ -125,9 +109,10 @@ echo " ============================================================"
 echo "   설치 끝. 파이썬 준비 완료입니다."
 echo " ============================================================"
 echo ""
+echo "   실습에서 프로그램을 실행할 때는 python3.12 로 실행하세요."
+echo ""
 echo "   다음에 할 일"
-echo "     1) 열리는 편집기에 발급받은 키를 채우고 저장"
+echo "     1) DART 인증키를 발급받아 메모장에 붙여두기"
 echo "     2) 실습 페이지의 안내대로 pip install 과 코드 작성을 직접 진행"
 echo ""
-[ -f "news-report-bot/.env" ] && open -e "news-report-bot/.env"
 finish 0

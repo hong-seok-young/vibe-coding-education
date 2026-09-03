@@ -788,14 +788,24 @@
         <span class="check-col"><input type="checkbox" class="check" data-id="install"></span>
         <span>
           <span class="item-title">
-            파이썬 설치
+            파이썬 <code>3.12</code> 설치
             <span class="tag required">필수</span>
           </span>
+          <p class="tiny">아래 버튼을 누르면 설치 파일이 바로 받아진다. 받은 파일을 더블클릭해서
+            설치한다.</p>
           <div class="actions">
-            <a class="btn primary" href="https://www.python.org/ftp/python/pymanager/python-manager-26.3.msix" target="_blank" rel="noopener">
-              <span class="arrow">⬇</span> 파이썬 설치 관리자 받기 (윈도우, .msix)
+            <a class="btn primary" href="https://www.python.org/ftp/python/3.12.10/python-3.12.10-amd64.exe">
+              <span class="arrow">⬇</span> 파이썬 3.12 받기 (윈도우 64비트)
+            </a>
+            <a class="btn" href="https://www.python.org/ftp/python/3.12.10/python-3.12.10-macos11.pkg">
+              <span class="arrow">⬇</span> 맥용 받기
             </a>
           </div>
+          <p class="tiny warn" style="margin-top: 10px;">설치 첫 화면 맨 아래
+            <strong>[Add python.exe to PATH]</strong> 를 반드시 체크하고 <strong>[Install Now]</strong> 를
+            누른다. 이걸 빠뜨리면 나중에 프로그램이 실행되지 않는다.</p>
+          <p class="tiny">확인: 명령 프롬프트(cmd)에서 <code>py -3.12 --version</code> 을 입력했을 때
+            <code>Python 3.12.10</code> 이 나오면 된다.</p>
         </span>
       </label>
 
@@ -803,18 +813,34 @@
         <span class="check-col"><input type="checkbox" class="check" data-id="pyver"></span>
         <span>
           <span class="item-title">
-            버전은 <code>3.12</code> 로 설치하기
-            <span class="tag required">중요</span>
+            왜 최신 버전이 아니라 3.12 인가
+            <span class="tag required">읽어두기</span>
           </span>
-          <p class="tiny">위 설치 관리자를 깐 다음, 명령 프롬프트(cmd)에
-            <strong><code>py install 3.12</code></strong> 를 입력한다.</p>
-          <p class="tiny warn"><strong>3.13 이나 그 이상은 쓰지 않는다.</strong> 회사 네트워크는 보안 장비가
-            인터넷 통신을 중간에서 열어보고 자기 인증서로 다시 봉인해서 넘겨주는데(브라우저에서는
-            자연스럽게 처리된다), 파이썬 3.13부터 이 봉인을 검사하는 기준이 깐깐해져서 회사 장비가
-            만든 인증서를 거부한다. 그러면 프로그램이 인터넷에서 아무것도 못 받아온다.
-            3.12 에서는 브라우저와 같은 기준으로 처리돼서 문제가 없다.</p>
-          <p class="tiny">확인: cmd 에서 <code>py -3.12 --version</code> 을 입력했을 때
-            <code>Python 3.12.x</code> 가 나오면 된다.</p>
+          <p class="tiny"><strong>최신 버전(3.13 이상)을 쓰면 프로그램이 인터넷에서 아무것도 못
+            받아온다.</strong> 회사 네트워크는 보안 장비가 인터넷 통신을 중간에서 열어보고 자기
+            인증서로 다시 봉인해서 넘겨주는데(브라우저에서는 자연스럽게 처리된다), 파이썬 3.13부터
+            이 봉인을 검사하는 기준이 깐깐해져서 회사 장비가 만든 인증서를 거부한다. 3.12 에서는
+            브라우저와 같은 기준으로 처리돼서 문제가 없다.</p>
+          <p class="tiny">이미 3.13 이상이 깔려 있어도 <strong>지울 필요는 없다.</strong> 3.12 를
+            나란히 깔아두고, 실습에서 프로그램을 실행할 때만 <code>py -3.12</code> 로 실행하면 된다.</p>
+        </span>
+      </label>
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="pyalt"></span>
+        <span>
+          <span class="item-title">
+            위 방법이 막혔다면
+            <span class="tag free">대안</span>
+          </span>
+          <p class="tiny">회사 보안 정책이 설치 파일 실행을 막는 경우가 있다. 그럴 때는 파이썬 공식
+            설치 관리자를 쓴다 — 받아서 깔고, 명령 프롬프트에
+            <code>py install 3.12</code> 를 입력하면 된다.</p>
+          <div class="actions">
+            <a class="btn" href="https://www.python.org/ftp/python/pymanager/python-manager-26.3.msix">
+              <span class="arrow">⬇</span> 파이썬 설치 관리자 받기 (.msix)
+            </a>
+          </div>
         </span>
       </label>
 

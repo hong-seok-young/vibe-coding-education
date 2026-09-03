@@ -16,6 +16,7 @@ import html
 import json
 import os
 import re
+import ssl
 import sys
 import threading
 import tkinter as tk
@@ -24,8 +25,11 @@ from datetime import datetime, timedelta, timezone
 from tkinter import scrolledtext, ttk
 from urllib.parse import quote
 
+import certifi
 import feedparser
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.ssl_ import create_urllib3_context
 
 KST = timezone(timedelta(hours=9))
 FAR_PAST = datetime(1970, 1, 1, tzinfo=timezone.utc)
@@ -33,6 +37,55 @@ MAX_ITEMS = 40
 DAYS_BACK = 1
 
 SETTINGS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "settings.json")
+
+
+# ─────────────────────────────────────────────────────────────
+# 사내망 대응 — HTTPS 검사 장비(TLS 인스펙션) 뚫고 나가기
+# ─────────────────────────────────────────────────────────────
+#
+# 회사 보안 장비는 인터넷 통신을 중간에서 열어보고, 자기 인증서로 다시 봉인해서
+# 넘겨준다. 그 인증서에 파이썬 3.13 부터 새로 요구하는 항목(Authority Key
+# Identifier)이 빠져 있어서, 3.13 이상에서는 연결이 이렇게 거부된다:
+#
+#   SSL: CERTIFICATE_VERIFY_FAILED ... Missing Authority Key Identifier
+#
+# 파이썬 3.12 에서는 나지 않는다(브라우저와 같은 기준으로 검사한다). 그래서
+# 교육에서는 3.12 설치를 안내하지만, 이미 3.13 이상이 깔린 PC에서도 돌아가야
+# 하니 아래처럼 대응해둔다. 인증서 검증 자체는 계속 켜둔 채로,
+#   (1) 윈도우가 신뢰하는 인증서 목록을 파이썬도 쓰게 하거나(truststore),
+#   (2) 그게 없으면 3.13 에서 새로 생긴 엄격 검사만 끈다.
+
+def _build_session() -> requests.Session:
+    session = requests.Session()
+    session.headers["User-Agent"] = "Mozilla/5.0 (issue-report-bot)"
+
+    # (1) 윈도우 인증서 저장소를 쓴다 — 회사 인증서는 이미 윈도우가 신뢰하고 있다.
+    try:
+        import truststore
+
+        truststore.inject_into_ssl()
+        return session
+    except Exception:
+        pass
+
+    # (2) truststore 가 없을 때 — 3.13 에서 추가된 엄격 검사(VERIFY_X509_STRICT)만 해제.
+    strict = getattr(ssl, "VERIFY_X509_STRICT", 0)
+    if not strict:
+        return session
+
+    class _RelaxedStrictAdapter(HTTPAdapter):
+        def init_poolmanager(self, *args, **kwargs):
+            ctx = create_urllib3_context()
+            ctx.load_verify_locations(certifi.where())
+            ctx.verify_flags &= ~strict
+            kwargs["ssl_context"] = ctx
+            return super().init_poolmanager(*args, **kwargs)
+
+    session.mount("https://", _RelaxedStrictAdapter())
+    return session
+
+
+SESSION = _build_session()
 
 
 # ─────────────────────────────────────────────────────────────
@@ -92,6 +145,22 @@ def google_news_rss(keyword: str) -> str:
     return f"https://news.google.com/rss/search?q={quote(keyword)}&hl=ko&gl=KR&ceid=KR:ko"
 
 
+def _fetch_feed(url: str) -> tuple[list, str | None]:
+    """뉴스 목록을 받아온다. (항목들, 실패 이유) 를 돌려준다.
+
+    feedparser 에 주소를 그대로 넘기면 feedparser 가 직접 인터넷에 접속하는데,
+    그러면 위에서 만든 사내망 대응(SESSION)을 못 타고, 실패해도 예외 없이 조용히
+    빈 결과만 준다. 그래서 받아오는 건 우리가 하고, feedparser 에는 받아온 내용만 넘긴다.
+    """
+    try:
+        resp = SESSION.get(url, timeout=15)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        return [], str(exc)
+
+    return feedparser.parse(resp.content).entries, None
+
+
 def collect_news(keywords: list[str], limit_per_keyword: int = 10) -> tuple[list[Item], list[str]]:
     items: list[Item] = []
     errors: list[str] = []
@@ -100,19 +169,16 @@ def collect_news(keywords: list[str], limit_per_keyword: int = 10) -> tuple[list
         return items, ["키워드가 없어 건너뜀"]
 
     for keyword in keywords:
-        parsed = feedparser.parse(google_news_rss(keyword))
+        entries, reason = _fetch_feed(google_news_rss(keyword))
 
-        # feedparser 는 네트워크가 막혀도 예외를 던지지 않고 조용히 빈 결과를 준다.
-        # 그래서 "왜 0건인지"를 직접 구분해서 알려줘야 한다.
-        if not parsed.entries:
-            reason = getattr(parsed, "bozo_exception", None)
+        if not entries:
             if reason:
                 errors.append(f"'{keyword}' 검색 실패: {reason}")
             else:
                 errors.append(f"'{keyword}' 검색 결과 0건")
             continue
 
-        for entry in parsed.entries[:limit_per_keyword]:
+        for entry in entries[:limit_per_keyword]:
             dt = None
             if getattr(entry, "published_parsed", None):
                 dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
@@ -143,7 +209,7 @@ def collect_dart(watch: list[str], api_key: str, days_back: int = DAYS_BACK, max
 
     for page in range(1, max_pages + 1):
         try:
-            resp = requests.get(
+            resp = SESSION.get(
                 "https://opendart.fss.or.kr/api/list.json",
                 params={
                     "crtfc_key": api_key,
@@ -494,14 +560,13 @@ def collect_press_rss(feeds=PRESS_FEEDS, limit_per_feed: int = 10) -> tuple[list
     errors: list[str] = []
 
     for label, url in feeds:
-        parsed = feedparser.parse(url)
+        entries, reason = _fetch_feed(url)
 
-        if not parsed.entries:
-            reason = getattr(parsed, "bozo_exception", None)
+        if not entries:
             errors.append(f"{label} 가져오기 실패: {reason}" if reason else f"{label} 0건")
             continue
 
-        for entry in parsed.entries[:limit_per_feed]:
+        for entry in entries[:limit_per_feed]:
             dt = None
             if getattr(entry, "published_parsed", None):
                 dt = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)

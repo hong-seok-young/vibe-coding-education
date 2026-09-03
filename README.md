@@ -55,8 +55,17 @@ DART 공시  ─┐
 
 - [파이썬 설치 관리자 받기 (.msix)](https://www.python.org/ftp/python/pymanager/python-manager-26.3.msix)
 - 받은 파일을 더블클릭해 설치 관리자 자체를 먼저 설치한다.
-- 명령 프롬프트(cmd)에서 `py install 3.13` 을 입력하면 실제 파이썬이 깔린다. `Add python.exe to PATH`
+- 명령 프롬프트(cmd)에서 **`py install 3.12`** 를 입력하면 실제 파이썬이 깔린다. `Add python.exe to PATH`
   체크 같은 건 이 방식엔 없다 — PATH는 자동으로 설정된다.
+
+> **버전은 3.12 로 맞춘다 (3.13 이상 금지).** 사내망은 보안 장비가 HTTPS 통신을 중간에서
+> 열어보고 자기 인증서로 다시 서명해 넘겨주는데(TLS 인스펙션), 그 인증서에 Authority Key
+> Identifier 확장이 없다. 파이썬 3.13부터 `ssl.create_default_context()` 가
+> `VERIFY_X509_STRICT` 를 기본으로 켜면서 이 확장을 요구하기 때문에, 3.13 이상에서는
+> `CERTIFICATE_VERIFY_FAILED ... Missing Authority Key Identifier` 로 모든 외부 통신이
+> 막힌다. 회사 CA를 신뢰 목록에 넣어도 이 검사에서 걸리므로 해결되지 않는다
+> ([cpython#138193](https://github.com/python/cpython/issues/138193)). 3.12는 이 검사를
+> 켜지 않아 브라우저와 동일하게 동작한다.
 
 **맥**은 이 저장소를 통째로 내려받은 뒤(초록색 `Code` 버튼 → `Download ZIP` → 압축 풀기),
 폴더 안의 **`파이썬 설치.command`** 파일을 더블클릭하면 끝난다. 1~2분 걸리고, 검은 창이
@@ -77,7 +86,7 @@ DART 공시  ─┐
 | 파란 경고창 `Windows의 PC 보호` | `추가 정보` → `실행` 을 누르면 된다 |
 | 맥에서 파일이 안 열린다 | 터미널에서 `chmod +x "파이썬 설치.command"` 를 한 번 실행한 뒤 다시 더블클릭 |
 
-설치가 다 끝났는지 확인하려면 명령 프롬프트에서 `py -3 --version` (맥은 `python3 --version`).
+설치가 다 끝났는지 확인하려면 명령 프롬프트에서 `py -3.12 --version` (맥은 `python3 --version`).
 버전 번호가 나오면 된 것이다.
 
 ---

@@ -1,6 +1,7 @@
 requests>=2.31.0
 feedparser>=6.0.10
-python-dotenv>=1.0.0
 
 # 메일 발송 — 로컬 아웃룩(데스크톱 앱) 원격 조작용. 윈도우에서만 설치된다
 pywin32>=306; sys_platform == "win32"
+
+# 프로그램 창(GUI)은 파이썬에 기본 포함된 tkinter를 쓴다 — 따로 설치할 필요 없다

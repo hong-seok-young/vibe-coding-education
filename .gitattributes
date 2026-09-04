@@ -5,3 +5,11 @@
 # 맥/리눅스 스크립트는 LF
 *.command text eol=lf
 *.sh text eol=lf
+
+# 배치 파일 주의사항
+#  · CRLF 로 저장해야 한다. LF 면 cmd 가 goto 라벨을 찾지 못해
+#    아무 메시지 없이 창이 닫힌다.
+#  · echo / title 밖(rem 주석 포함)에는 비ASCII 문자를 넣지 않는다.
+#    chcp 65001 로 코드페이지를 바꾼 파일에서 주석의 한글·특수문자(예: em 대시)가
+#    파싱을 어긋내 "'?' is not recognized as an internal or external command" 를
+#    띄운다. 수강생이 보는 문구는 echo 에만 두고, 설계 의도는 README 에 적는다.

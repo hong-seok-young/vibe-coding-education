@@ -1,15 +1,15 @@
 @echo off
 chcp 65001 >nul 2>&1
-title 바이브 코딩 실습 - 환경 준비
+title Vibe Coding - Setup
 
 rem ============================================================
-rem  창이 바로 닫히는 것을 막는다
+rem  Keep the window open so errors stay visible
 rem
-rem  더블클릭으로 실행하면, 중간에 오류가 나도 창이 즉시 닫혀서 무엇이
-rem  잘못됐는지 볼 수 없다. 그래서 자기 자신을 한 번 더 불러 실행하고,
-rem  그 실행이 끝나거나 실패하면 창을 붙잡아 둔다.
-rem  (이 파일은 CRLF 줄바꿈으로 저장해야 한다. LF 로 저장하면 cmd 가
-rem   라벨을 찾지 못해 아무 메시지 없이 창이 닫힌다 — .gitattributes 참고)
+rem  When double-clicked, an error would close the window instantly and the
+rem  user could not see what went wrong. So we call this file once more and
+rem  hold the window when that inner run ends or fails.
+rem  IMPORTANT: save this file as CRLF, ASCII-only outside echo/title.
+rem  LF endings break goto labels; non-ASCII in rem lines breaks parsing.
 rem ============================================================
 if /i not "%~1"=="__run" (
     call "%~f0" __run
@@ -19,9 +19,9 @@ if /i not "%~1"=="__run" (
     exit /b
 )
 
-rem 브라우저로 받은 파일에는 Windows가 "인터넷에서 받음" 표시(Mark of the Web)를
-rem 붙인다. 보안 정책이 엄격한 PC에서는 이 표시 때문에 실행이 막힐 수 있어
-rem 스스로 지운다. (관리자 권한 불필요, 실패해도 무시하고 계속 진행)
+rem Files downloaded via a browser get a Mark of the Web tag, which can block
+rem execution on locked-down PCs. Clear it ourselves. No admin rights needed;
+rem if it fails we ignore it and continue.
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Unblock-File -LiteralPath '%~f0'" >nul 2>&1
 
 cd /d "%~dp0"
@@ -39,7 +39,7 @@ echo    2~3분 걸립니다. 끝날 때까지 이 창을 닫지 마세요.
 echo.
 
 rem ============================================================
-rem  1단계 - 파이썬
+rem  Step 1 - Python
 rem ============================================================
 echo  [1/2] 파이썬을 확인합니다...
 call :find_python
@@ -93,13 +93,13 @@ echo        확인:
 echo.
 
 rem ============================================================
-rem  2단계 - 부품(라이브러리) 3개
+rem  Step 2 - the three libraries
 rem
-rem  실습 중에 받게 하면 시간이 걸리고, 사내망에서 막히면 그 자리에서 멈춘다.
-rem  특히 메일 발송에 쓰는 pywin32 는 가장 많이 막히는 구간에 필요하다.
+rem  Installing these during class costs time and stalls if the corporate
+rem  network blocks pip. pywin32 is needed in the most failure-prone step.
 rem
-rem  %PY% -m pip 으로 설치하는 이유: 방금 찾은 그 파이썬에 정확히 깔린다.
-rem  (여러 버전이 깔린 PC에서 "설치했는데 없다"는 문제가 여기서 생긴다)
+rem  We use %PY% -m pip so packages land in the exact interpreter we found.
+rem  (This is what causes 'installed but missing' on multi-version PCs.)
 rem ============================================================
 echo  [2/2] 실습에 필요한 부품 3개를 받습니다 (1~2분)...
 %PY% -m pip install requests feedparser pywin32
@@ -123,7 +123,7 @@ echo.
 echo        부품 3개 준비 완료 (requests, feedparser, pywin32)
 
 rem ============================================================
-rem  끝
+rem  Done
 rem ============================================================
 echo.
 echo  ============================================================
@@ -137,23 +137,23 @@ echo      3) 살펴볼 키워드 3개 정해오기
 exit /b 0
 
 rem ============================================================
-rem  파이썬 찾기 - 결과를 PY 에 넣는다 (못 찾으면 비어 있음)
+rem  Find Python; result goes into PY (empty if not found)
 rem
-rem  PY 는 항상 "그대로 실행하면 되는 형태"로 넣는다.
-rem  경로에 공백이 있을 수 있어 따옴표째로 넣고, %PY% 로 직접 실행한다.
-rem  (for /f 안에서 %PY% 를 쓰면 따옴표가 겹쳐 실패하므로 그렇게 쓰지 않는다)
+rem  PY always holds a directly runnable form. Paths may contain spaces so
+rem  they are stored quoted and invoked as %PY% directly.
+rem  Never use %PY% inside for /f - the quotes would nest and fail.
 rem ============================================================
 :find_python
 set "PY="
 
-rem (1) py 런처 - 파이썬을 공식 설치했으면 항상 있다
+rem (1) py launcher - always present with an official Python install
 py -3 --version >nul 2>&1
 if not errorlevel 1 (
     set "PY=py -3"
     goto :eof
 )
 
-rem (2) PATH 의 python - 단, 마이크로소프트 스토어 껍데기는 제외
+rem (2) python on PATH, excluding the Microsoft Store stub
 for /f "delims=" %%P in ('where python 2^>nul') do (
     echo %%P | find /i "WindowsApps" >nul
     if errorlevel 1 (
@@ -162,7 +162,7 @@ for /f "delims=" %%P in ('where python 2^>nul') do (
 )
 if defined PY goto :eof
 
-rem (3) 방금 설치해서 PATH 가 아직 갱신되지 않은 경우 설치 경로를 직접 확인
+rem (3) just-installed case: PATH not refreshed yet, check install dirs
 for %%V in (316 315 314 313 312 311) do (
     if not defined PY if exist "%LOCALAPPDATA%\Programs\Python\Python%%V\python.exe" set PY="%LOCALAPPDATA%\Programs\Python\Python%%V\python.exe"
     if not defined PY if exist "C:\Program Files\Python%%V\python.exe" set PY="C:\Program Files\Python%%V\python.exe"

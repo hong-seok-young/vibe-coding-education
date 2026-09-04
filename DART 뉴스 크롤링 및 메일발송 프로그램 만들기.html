@@ -807,6 +807,61 @@
       </label>
 
       <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="libs"></span>
+        <span>
+          <span class="item-title">
+            부품 3개 미리 받아두기
+            <span class="tag required">필수</span>
+          </span>
+          <p class="tiny">프로그램이 인터넷에서 자료를 받아오고 메일을 보내려면 부품 세 개가
+            필요하다. 실습 중에 받으면 시간이 걸리고, 회사 네트워크에서 막히면 그 자리에서
+            멈춰버린다. 특히 <strong>메일 발송 부품은 실습에서 가장 많이 막히는 구간에서
+            쓰이니</strong> 미리 받아두는 편이 안전하다.</p>
+          <p class="tiny">명령 프롬프트(cmd)를 열고 아래를 그대로 붙여넣는다.</p>
+          <div class="cmd-box">
+            <code class="cmd-text" id="libs-cmd">pip install requests feedparser pywin32</code>
+            <button class="copy-btn" data-copy="libs-cmd">복사</button>
+          </div>
+          <p class="tiny" style="margin-top: 10px;"><code>Successfully installed</code> 이라고
+            나오면 된 것이다. 이미 깔려 있으면 <code>already satisfied</code> 라고 나오는데
+            그것도 정상이다.</p>
+          <p class="tiny warn"><strong>맥이라면</strong> 마지막 <code>pywin32</code> 는 빼고
+            <code>pip install requests feedparser</code> 만 실행한다 (메일 발송이 윈도우 전용
+            기능이라 맥에는 설치되지 않는다).</p>
+        </span>
+      </label>
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="libsfail"></span>
+        <span>
+          <span class="item-title">
+            위 명령이 인증서 오류로 실패하면
+            <span class="tag free">대안</span>
+          </span>
+          <p class="tiny">회사 보안 장비 때문에 부품을 받아오는 것 자체가 막히는 경우가 있다
+            (<code>SSL</code> 이나 <code>CERTIFICATE</code> 같은 글자가 섞인 오류). 그럴 땐
+            아래를 대신 붙여넣는다 — 받아오는 곳을 믿어도 된다고 알려주는 것이다.</p>
+          <div class="cmd-box">
+            <code class="cmd-text" id="libs-cmd2">pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org requests feedparser pywin32</code>
+            <button class="copy-btn" data-copy="libs-cmd2">복사</button>
+          </div>
+          <p class="tiny" style="margin-top: 10px;">이것도 안 되면 <strong>오류 문장을 그대로
+            캡처해서 강사에게 보여준다.</strong> 회사 정책 문제라서 개인이 풀 수 없는 경우가 있다.</p>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">B</span>
+      <h2>인증키 발급 (DART 하나만)</h2>
+    </div>
+
+    <div class="items">
+
+      <label class="item">
         <span class="check-col"><input type="checkbox" class="check" data-id="dart"></span>
         <span>
           <span class="item-title">
@@ -1004,7 +1059,7 @@
     </div>
 
       <div class="cmd-box">
-        <span class="cmd-label">터미널에 먼저 입력</span>
+        <span class="cmd-label">터미널에 먼저 입력 — 사전 준비에서 이미 받아뒀으면 넘어가기</span>
         <code class="cmd-text" id="cmd-s2">pip install feedparser</code>
         <button class="copy-btn" data-copy="cmd-s2">복사</button>
       </div>
@@ -1103,7 +1158,7 @@
     </div>
 
       <div class="cmd-box">
-        <span class="cmd-label">터미널에 먼저 입력</span>
+        <span class="cmd-label">터미널에 먼저 입력 — 사전 준비에서 이미 받아뒀으면 넘어가기</span>
         <code class="cmd-text" id="cmd-s3">pip install requests</code>
         <button class="copy-btn" data-copy="cmd-s3">복사</button>
       </div>
@@ -1302,7 +1357,7 @@ DART 인증키가 없으면 결과창에 &quot;DART 인증키가 없어 건너�
     </div>
 
       <div class="cmd-box">
-        <span class="cmd-label">터미널에 먼저 입력</span>
+        <span class="cmd-label">터미널에 먼저 입력 — 사전 준비에서 이미 받아뒀으면 넘어가기</span>
         <code class="cmd-text" id="cmd-s6">pip install pywin32   (윈도우에서만)</code>
         <button class="copy-btn" data-copy="cmd-s6">복사</button>
       </div>

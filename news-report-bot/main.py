@@ -146,7 +146,15 @@ class Item:
 
     @property
     def when(self) -> str:
-        return self.dt.astimezone(KST).strftime("%m/%d %H:%M") if self.dt else "-"
+        if not self.dt:
+            return "-"
+        local = self.dt.astimezone(KST)
+        # DART 공시는 접수 "날짜"만 알려준다. 그대로 두면 시각이 00:00 으로 채워져서
+        # 실제로는 모르는 시각을 아는 것처럼 보이고, 같은 날 뉴스보다 항상 아래로
+        # 밀려난다. 자정이면 날짜만 보여준다.
+        if (local.hour, local.minute) == (0, 0):
+            return local.strftime("%m/%d")
+        return local.strftime("%m/%d %H:%M")
 
 
 def clean_text(raw: str) -> str:
@@ -349,35 +357,75 @@ def dedupe_and_sort(items: list[Item]) -> list[Item]:
     return unique
 
 
+def group_by_source(items: list[Item]) -> list[tuple[str, list[Item]]]:
+    """출처별로 묶어서 (출처, 항목들) 목록으로 돌려준다. 각 묶음은 최신순.
+
+    한 목록에 뉴스와 공시를 시간순으로 섞어두면 읽기가 어렵다. 특히 공시는 시각을
+    모르니 같은 날 뉴스보다 늘 아래로 밀려서 뒤죽박죽으로 보인다. 그래서 보여줄 때는
+    출처별로 나눈다. (중복 제거와 최신순 정렬은 이미 끝난 상태로 들어온다)
+    """
+    groups: dict[str, list[Item]] = {}
+    for item in items:
+        groups.setdefault(item.source, []).append(item)
+
+    # 뉴스를 먼저, DART를 그다음, 나머지(언론사)는 뒤에
+    def order(source: str) -> tuple[int, str]:
+        return ({"뉴스": 0, "DART": 1}.get(source, 2), source)
+
+    return sorted(groups.items(), key=lambda kv: order(kv[0]))
+
+
 # ─────────────────────────────────────────────────────────────
 # STEP 5. 메일 조립 — 보기 좋은 이메일 만들기
 # ─────────────────────────────────────────────────────────────
 
 def build_html(items: list[Item]) -> str:
-    rows = []
-    for item in items[:MAX_ITEMS]:
-        rows.append(f"""
+    """메일 본문을 만든다. 출처별로 섹션을 나눠서, 뉴스와 공시가 섞이지 않게 한다."""
+    sections = []
+    shown = 0
+
+    for source, group in group_by_source(items):
+        if shown >= MAX_ITEMS:
+            break
+
+        rows = []
+        for item in group[: MAX_ITEMS - shown]:
+            rows.append(f"""
         <tr>
-          <td style="padding:10px 8px;border-bottom:1px solid #eee;white-space:nowrap;
-                     color:#888;font-size:12px;vertical-align:top;">{html.escape(item.source)}</td>
-          <td style="padding:10px 8px;border-bottom:1px solid #eee;font-size:14px;">
+          <td style="padding:9px 8px;border-bottom:1px solid #eee;font-size:14px;">
             <a href="{html.escape(item.link)}"
                style="color:#1a1a1a;text-decoration:none;">{html.escape(item.title)}</a>
           </td>
-          <td style="padding:10px 8px;border-bottom:1px solid #eee;white-space:nowrap;
+          <td style="padding:9px 8px;border-bottom:1px solid #eee;white-space:nowrap;
                      color:#aaa;font-size:12px;vertical-align:top;">{item.when}</td>
         </tr>""")
+        shown += len(rows)
+
+        sections.append(f"""
+    <h2 style="font-size:14px;margin:24px 0 6px;padding-bottom:6px;
+               border-bottom:2px solid #1a2233;">{html.escape(source)}
+      <span style="color:#8993a3;font-weight:normal;font-size:12px;">{len(group)}건</span>
+    </h2>
+    <table style="width:100%;border-collapse:collapse;">{''.join(rows)}</table>""")
+
+    omitted = len(items) - shown
+    more = (f"""
+    <p style="color:#aaa;font-size:12px;margin-top:16px;">
+      이 밖에 {omitted}건이 더 있습니다.
+    </p>""" if omitted > 0 else "")
+
+    summary = " · ".join(f"{source} {len(group)}건" for source, group in group_by_source(items))
 
     return f"""<!doctype html>
 <html><body style="margin:0;padding:24px;background:#f5f6f4;
                    font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:#1a2233;">
   <div style="max-width:720px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;">
     <h1 style="font-size:20px;margin:0 0 4px;">오늘의 이슈 리포트</h1>
-    <p style="color:#8993a3;font-size:13px;margin:0 0 20px;">
+    <p style="color:#8993a3;font-size:13px;margin:0 0 4px;">
       {datetime.now(KST).strftime('%Y년 %m월 %d일')} · 수집 {len(items)}건
     </p>
-
-    <table style="width:100%;border-collapse:collapse;">{''.join(rows)}</table>
+    <p style="color:#8993a3;font-size:12px;margin:0;">{html.escape(summary)}</p>
+{''.join(sections)}{more}
 
     <p style="color:#aaa;font-size:11px;margin-top:24px;">
       바이브코딩 실습 · 내 PC에서 실행된 자동 리포트
@@ -553,12 +601,25 @@ class App:
         threading.Thread(target=wrapper, daemon=True).start()
 
     def _merge(self, new_items: list[Item], label: str) -> None:
+        before = len(self.collected)
         self.collected = dedupe_and_sort(self.collected + new_items)
+        added = len(self.collected) - before
 
         def show():
-            self.log(f"{label} {len(new_items)}건 수집 (전체 {len(self.collected)}건)")
-            for item in self.collected[:10]:
-                self.log(f"  · [{item.source}] {item.when}  {item.title}")
+            # 방금 누른 버튼이 무엇을 가져왔는지만 보여준다. 전체 목록을 매번 다시
+            # 늘어놓으면 앞서 모은 것과 뒤섞여 보여서 뭐가 새로 온 건지 알 수 없다.
+            self.log(f"{label} {len(new_items)}건 가져옴 (새로 추가 {added}건)")
+            for item in dedupe_and_sort(new_items)[:10]:
+                self.log(f"    {item.when}  {item.title}")
+            if len(new_items) > 10:
+                self.log(f"    ... 외 {len(new_items) - 10}건")
+
+            # 지금까지 모은 것을 출처별로 한 줄 요약
+            summary = " · ".join(
+                f"{source} {len(group)}건" for source, group in group_by_source(self.collected)
+            )
+            self.log(f"  = 지금까지 모은 것: {summary}  (전체 {len(self.collected)}건)")
+            self.log("")
 
         self.root.after(0, show)
 

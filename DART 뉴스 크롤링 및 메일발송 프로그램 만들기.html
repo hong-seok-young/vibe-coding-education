@@ -779,8 +779,9 @@
   <section class="group">
     <div class="group-head">
       <span class="num">A</span>
-      <h2>파이썬 설치</h2>
+      <h2>설치</h2>
     </div>
+    <p class="group-sub">파일 하나 더블클릭이면 끝난다. 직접 뭘 입력할 건 없다.</p>
 
     <div class="items">
 
@@ -788,65 +789,16 @@
         <span class="check-col"><input type="checkbox" class="check" data-id="install"></span>
         <span>
           <span class="item-title">
-            파이썬 설치
-            <span class="tag required">필수</span>
+            <code>파이썬 설치.bat</code> 더블클릭
+            <span class="tag required">이것만 하면 끝</span>
           </span>
-          <p class="tiny">아래 버튼을 누르면 파이썬 공식 설치 관리자가 받아진다. 받은 파일을
-            더블클릭해서 설치한 뒤, 명령 프롬프트(cmd)에 <code>py install 3</code> 를 입력하면
-            실제 파이썬이 깔린다. <code>Add python.exe to PATH</code> 같은 체크는 이 방식엔
-            없다 — 알아서 설정된다.</p>
-          <div class="actions">
-            <a class="btn primary" href="https://www.python.org/ftp/python/pymanager/python-manager-26.3.msix">
-              <span class="arrow">⬇</span> 파이썬 설치 관리자 받기 (윈도우, .msix)
-            </a>
-          </div>
-          <p class="tiny" style="margin-top: 10px;">확인: cmd 에서 <code>py --version</code> 을
-            입력했을 때 버전 번호가 나오면 된다. <strong>버전은 최신이어도 상관없다</strong> —
-            실습에서 만드는 프로그램이 사내망 환경을 알아서 처리하도록 만든다.</p>
-        </span>
-      </label>
-
-      <label class="item">
-        <span class="check-col"><input type="checkbox" class="check" data-id="libs"></span>
-        <span>
-          <span class="item-title">
-            부품 3개 미리 받아두기
-            <span class="tag required">필수</span>
-          </span>
-          <p class="tiny">프로그램이 인터넷에서 자료를 받아오고 메일을 보내려면 부품 세 개가
-            필요하다. 실습 중에 받으면 시간이 걸리고, 회사 네트워크에서 막히면 그 자리에서
-            멈춰버린다. 특히 <strong>메일 발송 부품은 실습에서 가장 많이 막히는 구간에서
-            쓰이니</strong> 미리 받아두는 편이 안전하다.</p>
-          <p class="tiny">명령 프롬프트(cmd)를 열고 아래를 그대로 붙여넣는다.</p>
-          <div class="cmd-box">
-            <code class="cmd-text" id="libs-cmd">pip install requests feedparser pywin32</code>
-            <button class="copy-btn" data-copy="libs-cmd">복사</button>
-          </div>
-          <p class="tiny" style="margin-top: 10px;"><code>Successfully installed</code> 이라고
-            나오면 된 것이다. 이미 깔려 있으면 <code>already satisfied</code> 라고 나오는데
-            그것도 정상이다.</p>
-          <p class="tiny warn"><strong>맥이라면</strong> 마지막 <code>pywin32</code> 는 빼고
-            <code>pip install requests feedparser</code> 만 실행한다 (메일 발송이 윈도우 전용
-            기능이라 맥에는 설치되지 않는다).</p>
-        </span>
-      </label>
-
-      <label class="item">
-        <span class="check-col"><input type="checkbox" class="check" data-id="libsfail"></span>
-        <span>
-          <span class="item-title">
-            위 명령이 인증서 오류로 실패하면
-            <span class="tag free">대안</span>
-          </span>
-          <p class="tiny">회사 보안 장비 때문에 부품을 받아오는 것 자체가 막히는 경우가 있다
-            (<code>SSL</code> 이나 <code>CERTIFICATE</code> 같은 글자가 섞인 오류). 그럴 땐
-            아래를 대신 붙여넣는다 — 받아오는 곳을 믿어도 된다고 알려주는 것이다.</p>
-          <div class="cmd-box">
-            <code class="cmd-text" id="libs-cmd2">pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org requests feedparser pywin32</code>
-            <button class="copy-btn" data-copy="libs-cmd2">복사</button>
-          </div>
-          <p class="tiny" style="margin-top: 10px;">이것도 안 되면 <strong>오류 문장을 그대로
-            캡처해서 강사에게 보여준다.</strong> 회사 정책 문제라서 개인이 풀 수 없는 경우가 있다.</p>
+          <p class="tiny">강사가 준 실습 폴더 안에 있다. (맥은 <code>파이썬 설치.command</code>)
+            <strong>더블클릭하면 파이썬과 필요한 부품까지 알아서 다 깔린다.</strong>
+            2~3분 걸리고, 검은 창에 글자가 올라가는 동안 <strong>창을 닫지 말 것.</strong></p>
+          <p class="tiny"><strong><code>준비 끝!</code> 이라고 나오면 된 것이다.</strong>
+            이미 깔려 있는 건 알아서 건너뛴다.</p>
+          <p class="tiny warn">파란 경고창 <code>Windows의 PC 보호</code> 가 뜨면
+            <code>추가 정보</code> → <code>실행</code> 을 누른다. 정상이다.</p>
         </span>
       </label>
 
@@ -949,6 +901,17 @@
   </section>
 
 
+  <div class="callout">
+    <p><strong>설치 파일이 회사 정책에 막히면</strong> — 아래 순서로 대신 준비한다.
+      여기까지 왔으면 강사에게 알려주는 것이 가장 빠르다.</p>
+    <ol style="margin:8px 0 0; padding-left:20px;">
+      <li><a href="https://www.python.org/ftp/python/pymanager/python-manager-26.3.msix">파이썬 설치 관리자</a>를
+        받아 더블클릭해 설치한 뒤, 명령 프롬프트(cmd)에서 <code>py install 3</code></li>
+      <li>이어서 <code>pip install requests feedparser pywin32</code>
+        (인증서 오류가 나면 <code>pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org requests feedparser pywin32</code>)</li>
+      <li>맥은 마지막 <code>pywin32</code> 를 뺀다 — 메일 발송은 윈도우 전용이다</li>
+    </ol>
+  </div>
     </div>
   </section>
 

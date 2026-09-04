@@ -104,13 +104,38 @@ else
   echo "        Homebrew 가 없어 버전 확인은 못 합니다. 있는 그대로 사용합니다."
 fi
 
+# ------------------------------------------------------------
+# 2단계 - 부품(라이브러리) 설치
+#
+# 실습 중에 받게 하면 시간이 걸리고, 사내망에서 막히면 그 자리에서 멈춘다.
+# $PY -m pip 으로 설치하는 이유: 방금 찾은 그 파이썬에 정확히 깔린다.
+# (맥에는 메일 발송용 pywin32 를 설치하지 않는다 - 윈도우 전용 기능이다)
+# ------------------------------------------------------------
+echo ""
+echo " [2/2] 실습에 필요한 부품을 받습니다 (1~2분)..."
+"$PY" -m pip install --upgrade pip >/dev/null 2>&1
+
+if "$PY" -m pip install requests feedparser; then
+  echo ""
+  echo "        부품 준비 완료 (requests, feedparser)"
+elif "$PY" -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org requests feedparser; then
+  echo ""
+  echo "        부품 준비 완료 (requests, feedparser)"
+else
+  echo ""
+  echo " [!] 부품을 받지 못했습니다. 파이썬은 준비됐으니 실습은 시작할 수 있지만,"
+  echo "     실습 중에 다시 받아야 합니다. 위 오류를 캡처해서 강사에게 보여주세요."
+fi
+
 echo ""
 echo " ============================================================"
-echo "   설치 끝. 파이썬 준비 완료입니다."
+echo "   준비 끝!"
 echo " ============================================================"
 echo ""
-echo "   다음에 할 일"
-echo "     1) DART 인증키를 발급받아 메모장에 붙여두기"
-echo "     2) 실습 페이지의 안내대로 pip install 과 코드 작성을 직접 진행"
+echo "   남은 준비물"
+echo "     1) DART 인증키 발급받아 메모장에 붙여두기"
+echo "     2) 살펴볼 키워드 3개 정해오기"
+echo ""
+echo "   (메일 발송은 윈도우 전용입니다. 맥에서는 수집까지만 됩니다)"
 echo ""
 finish 0

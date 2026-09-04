@@ -36,7 +36,10 @@ from requests.adapters import HTTPAdapter
 KST = timezone(timedelta(hours=9))
 FAR_PAST = datetime(1970, 1, 1, tzinfo=timezone.utc)
 MAX_ITEMS = 40
-DAYS_BACK = 1
+
+# DART 조회 기간(일). 하루치만 보면 특정 회사는 공시가 없는 날이 훨씬 많아서
+# "0건"만 계속 보게 된다. 한 주를 보면 대체로 뭔가 잡힌다.
+DAYS_BACK = 7
 
 SETTINGS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "settings.json")
 
@@ -220,7 +223,20 @@ def collect_news(keywords: list[str], limit_per_keyword: int = 10) -> tuple[list
 # STEP 3. DART 수집 버튼 — 전자공시시스템 연결
 # ─────────────────────────────────────────────────────────────
 
-def collect_dart(watch: list[str], api_key: str, days_back: int = DAYS_BACK, max_pages: int = 5) -> tuple[list[Item], list[str]]:
+def collect_dart(watch: list[str], api_key: str, days_back: int = DAYS_BACK, max_pages: int = 30) -> tuple[list[Item], list[str]]:
+    """DART 공시를 가져온다. 회사 이름을 지정했으면 그 회사 것만 남긴다.
+
+    주의할 점이 두 가지 있다.
+
+    · DART 의 목록 조회는 **회사 이름으로 검색할 수 없다.** 기간 안의 공시를 전부
+      받아온 뒤 우리가 직접 골라내야 한다. 그래서 기간 안의 페이지를 끝까지 받아야
+      한다 — 중간에 끊으면 뒷페이지에 있던 그 회사 공시를 놓쳐서 "0건"이 된다.
+    · 하루치만 보면 특정 회사는 공시가 없는 날이 훨씬 많다. 그래서 기본 기간을
+      넉넉하게 잡는다(DAYS_BACK).
+
+    0건일 때 왜 0건인지 알 수 있도록, 기간 안의 전체 공시 수와 걸러낸 결과를
+    함께 돌려준다.
+    """
     items: list[Item] = []
     errors: list[str] = []
 
@@ -229,8 +245,13 @@ def collect_dart(watch: list[str], api_key: str, days_back: int = DAYS_BACK, max
 
     today = datetime.now(KST).date()
     begin = today - timedelta(days=max(days_back - 1, 0))
+    period = f"{begin:%Y-%m-%d}~{today:%Y-%m-%d}"
 
-    for page in range(1, max_pages + 1):
+    total_seen = 0        # 기간 안의 전체 공시 수 (걸러내기 전)
+    truncated = False
+
+    page = 1
+    while page <= max_pages:
         try:
             resp = SESSION.get(
                 "https://opendart.fss.or.kr/api/list.json",
@@ -252,12 +273,16 @@ def collect_dart(watch: list[str], api_key: str, days_back: int = DAYS_BACK, max
         status = payload.get("status")
 
         if status == "013":          # 조회된 데이터 없음 (주말·공휴일이면 정상)
+            errors.append(f"DART: {period} 기간에 공시가 없습니다 (주말·공휴일이면 정상)")
             break
         if status != "000":
             errors.append(f"DART 응답 오류 [{status}] {payload.get('message', '')}")
             break
 
-        for row in payload.get("list", []):
+        rows = payload.get("list", [])
+        total_seen += len(rows)
+
+        for row in rows:
             corp = row.get("corp_name", "")
             if watch and not any(name in corp for name in watch):
                 continue
@@ -276,8 +301,29 @@ def collect_dart(watch: list[str], api_key: str, days_back: int = DAYS_BACK, max
                 note=row.get("flr_nm", ""),
             ))
 
-        if page >= int(payload.get("total_page", 1)):
+        total_page = int(payload.get("total_page", 1) or 1)
+        if page >= total_page:
             break
+        page += 1
+    else:
+        truncated = True
+
+    # 0건일 때 원인을 알 수 있게 설명을 남긴다.
+    if total_seen:
+        if watch and not items:
+            errors.append(
+                f"DART: {period} 공시 {total_seen}건을 살펴봤지만 "
+                f"'{', '.join(watch)}' 이(가) 이름에 들어간 회사는 없었습니다. "
+                f"회사 이름을 짧게(예: 삼성) 적었는지, 기간을 늘릴지 확인해보세요."
+            )
+        elif watch:
+            errors.append(f"DART: {period} 공시 {total_seen}건 중 {len(items)}건이 '{', '.join(watch)}' 관련")
+
+    if truncated:
+        errors.append(
+            f"DART: 기간 안의 공시가 너무 많아 앞부분 {total_seen}건까지만 확인했습니다. "
+            f"기간을 줄이면 빠짐없이 볼 수 있습니다."
+        )
 
     return items, errors
 

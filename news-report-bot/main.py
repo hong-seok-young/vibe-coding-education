@@ -24,6 +24,7 @@ import ssl
 import sys
 import threading
 import tkinter as tk
+import webbrowser
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from tkinter import scrolledtext, ttk
@@ -120,6 +121,8 @@ SESSION = _build_session()
 
 # ─────────────────────────────────────────────────────────────
 # STEP 0. 프로그램 창 만들기 — 설정 저장/불러오기
+#          창·버튼·결과 칸(뉴스/DART/진행 상황)을 실제로 조립하는 부분은
+#          파일 맨 아래 STEP 8 의 ResultPane·App 에 있다.
 # ─────────────────────────────────────────────────────────────
 
 def load_settings() -> dict:
@@ -541,10 +544,58 @@ FIELDS = [
 ]
 
 
+class ResultPane:
+    """제목이 붙은 결과창 하나. 뉴스용·DART용으로 따로 하나씩 쓴다.
+
+    항목의 제목은 클릭하면 원문이 기본 브라우저에서 열린다. tkinter 의 Text 는
+    구간(tag)마다 클릭 동작을 따로 걸 수 있어서, 항목마다 고유한 tag 를 붙이고
+    그 tag 에 링크를 묶어둔다. 창은 state="disabled" 로 두어 사용자가 글자를
+    고칠 수 없게 하지만, tag 클릭은 그래도 동작한다.
+    """
+
+    def __init__(self, parent, title: str, height: int = 9):
+        self.frame = ttk.LabelFrame(parent, text=title, padding=6)
+        self.box = scrolledtext.ScrolledText(
+            self.frame, height=height, wrap="word", state="disabled"
+        )
+        self.box.pack(fill="both", expand=True)
+        self.box.tag_configure("link", foreground="#0b57d0", underline=True)
+        self.box.tag_configure("dim", foreground="#666666")
+        self.box.tag_configure("warn", foreground="#b3261e")
+        self._link_seq = 0
+
+    def _append(self, text: str, tags=()) -> None:
+        self.box.configure(state="normal")
+        self.box.insert("end", text, tags)
+        self.box.see("end")
+        self.box.configure(state="disabled")
+
+    def write(self, message: str, style: str | None = None) -> None:
+        self._append(message + "\n", (style,) if style else ())
+
+    def write_item(self, item: Item) -> None:
+        """한 줄에 '날짜  제목  (메모)'. 제목만 눌러서 원문으로 갈 수 있다."""
+        self._append(f"  {item.when}  ")
+        if item.link:
+            self._link_seq += 1
+            tag = f"link{self._link_seq}"
+            self._append(item.title, ("link", tag))
+            self.box.tag_bind(tag, "<Button-1>", lambda _e, u=item.link: webbrowser.open(u))
+            self.box.tag_bind(tag, "<Enter>", lambda _e: self.box.configure(cursor="hand2"))
+            self.box.tag_bind(tag, "<Leave>", lambda _e: self.box.configure(cursor=""))
+        else:
+            self._append(item.title)
+        if item.note:
+            self._append(f"   ({item.note})", ("dim",))
+        self._append("\n")
+
+
 class App:
     def __init__(self, root: tk.Tk):
         self.root = root
         root.title("DART·뉴스 정보 크롤링 및 메일발송 프로그램")
+        root.geometry("880x860")
+        root.minsize(720, 640)
         self.settings = load_settings()
         self.collected: list[Item] = []
 
@@ -572,8 +623,22 @@ class App:
         for b in self.buttons:
             b.pack(side="left", padx=4)
 
-        self.log_box = scrolledtext.ScrolledText(root, width=76, height=20, state="disabled")
-        self.log_box.pack(fill="both", expand=True, padx=10, pady=10)
+        # 결과창을 뉴스용·DART용으로 나눈다. 한 창에 섞어 넣으면 방금 뭘 가져온
+        # 건지 알기 어렵고, 두 수집을 번갈아 눌렀을 때 특히 뒤죽박죽이 된다.
+        panes = ttk.Frame(root, padding=(10, 0))
+        panes.pack(fill="both", expand=True)
+        self.news_pane = ResultPane(panes, "뉴스 수집 결과  (제목을 누르면 원문이 열립니다)")
+        self.news_pane.frame.pack(fill="both", expand=True, pady=(0, 6))
+        self.dart_pane = ResultPane(panes, "DART 수집 결과  (제목을 누르면 원문이 열립니다)")
+        self.dart_pane.frame.pack(fill="both", expand=True)
+
+        # 수집 결과가 아닌 것(진행 상황, 메일 발송, 파이썬 버전)은 여기로 보낸다.
+        status_frame = ttk.LabelFrame(root, text="진행 상황", padding=6)
+        status_frame.pack(fill="x", padx=10, pady=10)
+        self.log_box = scrolledtext.ScrolledText(
+            status_frame, height=6, wrap="word", state="disabled"
+        )
+        self.log_box.pack(fill="both", expand=True)
 
         self._log_python_version()
 
@@ -616,46 +681,49 @@ class App:
 
         threading.Thread(target=wrapper, daemon=True).start()
 
-    def _merge(self, new_items: list[Item], label: str) -> None:
+    def _merge(self, new_items: list[Item], label: str, pane: ResultPane) -> None:
         before = len(self.collected)
         self.collected = dedupe_and_sort(self.collected + new_items)
         added = len(self.collected) - before
 
         def show():
-            # 방금 누른 버튼이 무엇을 가져왔는지만 보여준다. 전체 목록을 매번 다시
-            # 늘어놓으면 앞서 모은 것과 뒤섞여 보여서 뭐가 새로 온 건지 알 수 없다.
-            self.log(f"{label} {len(new_items)}건 가져옴 (새로 추가 {added}건)")
+            # 그 출처의 결과창에, 방금 가져온 것만 쓴다. 매번 누적 전체를 다시
+            # 늘어놓으면 결과창이 수천 줄이 되어 창이 멈춘다.
+            pane.write(f"{label} {len(new_items)}건 가져옴 (새로 추가 {added}건)")
             for item in dedupe_and_sort(new_items)[:10]:
-                self.log(f"    {item.when}  {item.title}")
+                pane.write_item(item)
             if len(new_items) > 10:
-                self.log(f"    ... 외 {len(new_items) - 10}건")
+                pane.write(f"    ... 외 {len(new_items) - 10}건", "dim")
 
             # 지금까지 모은 것을 출처별로 한 줄 요약
             summary = " · ".join(
                 f"{source} {len(group)}건" for source, group in group_by_source(self.collected)
             )
-            self.log(f"  = 지금까지 모은 것: {summary}  (전체 {len(self.collected)}건)")
-            self.log("")
+            pane.write(f"  = 지금까지 모은 것: {summary}  (전체 {len(self.collected)}건)", "dim")
+            pane.write("")
 
         self.root.after(0, show)
 
+    def _collect_news(self) -> None:
+        self.root.after(0, lambda: self.log("뉴스 수집 중..."))
+        items, errors = collect_news(self._list_field("keywords"))
+        # 왜 0건인지 알아야 하니까, 에러도 뉴스 결과창에 그대로 남긴다.
+        for e in errors:
+            self.root.after(0, lambda e=e: self.news_pane.write(f"  ! {e}", "warn"))
+        self._merge(items, "뉴스", self.news_pane)
+
+    def _collect_dart(self) -> None:
+        self.root.after(0, lambda: self.log("DART 수집 중..."))
+        items, errors = collect_dart(self._list_field("dart_watch"), self.vars["dart_key"].get())
+        for e in errors:
+            self.root.after(0, lambda e=e: self.dart_pane.write(f"  ! {e}", "warn"))
+        self._merge(items, "DART", self.dart_pane)
+
     def on_collect_news(self) -> None:
-        def task():
-            self.root.after(0, lambda: self.log("뉴스 수집 중..."))
-            items, errors = collect_news(self._list_field("keywords"))
-            for e in errors:
-                self.root.after(0, lambda e=e: self.log(f"  ! {e}"))
-            self._merge(items, "뉴스")
-        self._run_in_background(task)
+        self._run_in_background(self._collect_news)
 
     def on_collect_dart(self) -> None:
-        def task():
-            self.root.after(0, lambda: self.log("DART 수집 중..."))
-            items, errors = collect_dart(self._list_field("dart_watch"), self.vars["dart_key"].get())
-            for e in errors:
-                self.root.after(0, lambda e=e: self.log(f"  ! {e}"))
-            self._merge(items, "DART")
-        self._run_in_background(task)
+        self._run_in_background(self._collect_dart)
 
     def on_send_mail(self) -> None:
         def task():
@@ -672,18 +740,8 @@ class App:
     def on_run_all(self) -> None:
         def task():
             self.root.after(0, lambda: self.log("전체 실행 시작..."))
-
-            self.root.after(0, lambda: self.log("뉴스 수집 중..."))
-            news_items, news_errors = collect_news(self._list_field("keywords"))
-            for e in news_errors:
-                self.root.after(0, lambda e=e: self.log(f"  ! {e}"))
-            self._merge(news_items, "뉴스")
-
-            self.root.after(0, lambda: self.log("DART 수집 중..."))
-            dart_items, dart_errors = collect_dart(self._list_field("dart_watch"), self.vars["dart_key"].get())
-            for e in dart_errors:
-                self.root.after(0, lambda e=e: self.log(f"  ! {e}"))
-            self._merge(dart_items, "DART")
+            self._collect_news()
+            self._collect_dart()
 
             if not self.collected:
                 self.root.after(0, lambda: self.log("! 수집된 항목이 없어 메일은 보내지 않습니다."))

@@ -98,7 +98,12 @@ python main.py
 | 막히는 지점 | 나타나는 에러 | 처리 |
 |---|---|---|
 | 회사 인증서를 신뢰하지 않음 | `unable to get local issuer certificate` | `ssl.create_default_context()` 를 쓴다. 윈도우에서는 윈도우 인증서 저장소(ROOT/CA)를 함께 읽으므로 회사 인증서가 잡힌다. **`certifi` 를 지정하면 안 된다** — 그 순간 윈도우 저장소를 덮어써서 이 에러로 되돌아간다 |
-| 재서명 인증서에 AKI 확장이 없음 | `Missing Authority Key Identifier` | 3.13부터 기본으로 켜지는 `VERIFY_X509_STRICT` 플래그만 해제한다 ([cpython#138193](https://github.com/python/cpython/issues/138193)) |
+| 재서명 인증서에 AKI 확장이 없음 | `Missing Authority Key Identifier` | 3.13부터 기본으로 켜지는 `VERIFY_X509_STRICT` 플래그만 해제한다 — `ctx.verify_flags &= ~ssl.VERIFY_X509_STRICT` ([cpython#138193](https://github.com/python/cpython/issues/138193)) |
+
+> **AI가 자주 틀리는 지점** — 이 에러를 던져주면 AI가 `ctx.options |= ssl.OP_LEGACY_SERVER_CONNECT`
+> 를 넣는 경우가 있다. 이건 재협상 관련 옵션이라 AKI 검사와 아무 상관이 없어서 에러가 그대로
+> 남는다. 고쳐야 하는 곳은 `ctx.options` 가 아니라 `ctx.verify_flags` 다. 실습 STEP 2 프롬프트가
+> 이걸 콕 집어 지시하도록 되어 있다.
 
 `main.py` 의 `_make_ssl_context()` 가 이 둘을 함께 처리하고, 모든 외부 통신이 그 설정을
 쓰는 하나의 세션(`SESSION`)을 지난다. `verify_mode` 와 `check_hostname` 은 건드리지 않으므로

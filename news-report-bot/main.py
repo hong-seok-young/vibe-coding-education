@@ -446,7 +446,7 @@ def _send_via_classic_outlook(subject: str, html_body: str, mail_to: list[str]) 
     그건 이 함수의 버그가 아니라 새 아웃룩의 설계상 한계이므로, 호출한 쪽에서
     잡아서 _open_draft_mail() 로 넘어간다.
     """
-    import win32com.client  # pywin32 — Windows에만 설치된다 (requirements.txt 참고)
+    import win32com.client  # pywin32 (requirements.txt 참고)
 
     outlook = win32com.client.Dispatch("Outlook.Application")
     mail = outlook.CreateItem(0)  # 0 = olMailItem

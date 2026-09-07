@@ -2,8 +2,7 @@
 *.bat text eol=crlf
 *.cmd text eol=crlf
 
-# 맥/리눅스 스크립트는 LF
-*.command text eol=lf
+# 셸 스크립트는 LF
 *.sh text eol=lf
 
 # 배치 파일 주의사항

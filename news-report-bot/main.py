@@ -37,6 +37,10 @@ KST = timezone(timedelta(hours=9))
 FAR_PAST = datetime(1970, 1, 1, tzinfo=timezone.utc)
 MAX_ITEMS = 40
 
+# 회사 이름을 지정하지 않고 DART 를 돌리면 기간 안의 공시가 전부 걸린다. 한 주면
+# 수천 건이라 결과창과 메일이 감당하지 못하므로, 걸러내기가 없을 때만 상한을 둔다.
+DART_NO_FILTER_LIMIT = 50
+
 # DART 조회 기간(일). 하루치만 보면 특정 회사는 공시가 없는 날이 훨씬 많아서
 # "0건"만 계속 보게 된다. 한 주를 보면 대체로 뭔가 잡힌다.
 DAYS_BACK = 7
@@ -316,6 +320,12 @@ def collect_dart(watch: list[str], api_key: str, days_back: int = DAYS_BACK, max
     else:
         truncated = True
 
+    # 회사 이름 없이 돌렸으면 최신 것부터 상한까지만 남긴다.
+    capped_from = 0
+    if not watch and len(items) > DART_NO_FILTER_LIMIT:
+        capped_from = len(items)
+        items = dedupe_and_sort(items)[:DART_NO_FILTER_LIMIT]
+
     # 0건일 때 원인을 알 수 있게 설명을 남긴다.
     if total_seen:
         if watch and not items:
@@ -326,6 +336,12 @@ def collect_dart(watch: list[str], api_key: str, days_back: int = DAYS_BACK, max
             )
         elif watch:
             errors.append(f"DART: {period} 공시 {total_seen}건 중 {len(items)}건이 '{', '.join(watch)}' 관련")
+
+    if capped_from:
+        errors.append(
+            f"DART: 회사 이름을 안 적어서 {period} 공시 {capped_from}건이 다 걸렸습니다. "
+            f"최신 {DART_NO_FILTER_LIMIT}건만 담았습니다 — 회사 이름을 적으면 그 회사 것만 봅니다."
+        )
 
     if truncated:
         errors.append(

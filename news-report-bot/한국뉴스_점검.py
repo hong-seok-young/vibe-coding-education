@@ -1,10 +1,19 @@
-"""한국 뉴스 수집 점검 — 인증키 없이 되는 방법이 실제로 되는지 확인하는 파일.
+"""뉴스 수집 점검 — 이 PC 에서 뭐가 되고 뭐가 막히는지 확인하는 파일.
 
-구글 뉴스 RSS는 인증키도, 가입도, 호출 한도도 없다. 한국어 키워드가 그대로 통한다.
-이 파일을 실행하면 내 PC/회사 네트워크에서 실제로 기사가 몇 건 잡히는지 바로 보인다.
+    python 한국뉴스_점검.py
 
-실행: python 한국뉴스_점검.py
-(pip install 필요 없음 — 파이썬에 기본 포함된 기능만 쓴다)
+수집이 안 될 때, 원인이 「회사 네트워크가 외부를 막아서」 인지 「파이썬이 쓰는 인증서
+목록에 회사 인증서가 없어서」 인지 갈라준다. 이 둘은 대응이 완전히 다르다.
+
+사내 PC 에서 실제로 측정한 것 (2026-09-08)
+  urllib  (파이썬 기본) : 성공 — 신뢰하는 루트 인증서 67개 = 윈도우 인증서 저장소
+  requests               : 실패 — 신뢰하는 루트 인증서 121개 = certifi 번들
+
+회사 보안장비가 HTTPS 를 중간에서 열어보기 때문에, 파이썬은 진짜 인증서 대신 보안장비가
+만든 인증서를 받는다. 회사가 윈도우에 심어둔 루트 인증서를 보는 쪽(urllib, feedparser)은
+그냥 되고, 자기 목록만 보는 쪽(requests)은 첫 접속부터 실패한다.
+
+pip install 없이 돌아간다 (requests 는 깔려 있으면 같이 시험하고, 없으면 건너뛴다).
 """
 
 import ssl
@@ -17,96 +26,125 @@ import xml.etree.ElementTree as ET
 # 여기만 본인 키워드로 바꿔서 시험해보면 된다.
 KEYWORDS = ["코스피", "삼성전자", "반도체 수출"]
 
-# 언론사 RSS도 같이 시험한다 (키워드 검색은 안 되지만, 해당 분야 최신 기사가 통째로 온다)
-PRESS_FEEDS = [
-    ("연합뉴스 경제", "https://www.yna.co.kr/rss/economy.xml"),
-    ("한국경제", "https://rss.hankyung.com/feed/economy.xml"),
-    ("매일경제", "https://www.mk.co.kr/rss/30100041/"),
-]
+NEWS_RSS = "https://news.google.com/rss/search"
 
 
-def make_ssl_context() -> ssl.SSLContext:
-    """사내망(HTTPS를 중간에서 검사하는 환경)을 통과할 수 있는 설정.
-
-    회사 보안 장비가 만든 인증서에는 Authority Key Identifier 항목이 없는데,
-    파이썬 3.13 부터 이 항목을 요구하는 검사가 기본으로 켜져서 연결이 거부된다.
-    그 검사만 끈다. 인증서 검증 자체는 그대로 켜둔다.
-    """
-    ctx = ssl.create_default_context()   # 윈도우에서는 윈도우 인증서 저장소를 함께 읽는다
-    ctx.verify_flags &= ~getattr(ssl, "VERIFY_X509_STRICT", 0)
-    return ctx
+def news_url(keyword):
+    query = urllib.parse.urlencode(dict(q=keyword, hl="ko", gl="KR", ceid="KR:ko"))
+    return NEWS_RSS + "?" + query
 
 
-def fetch(url: str) -> str:
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=20, context=make_ssl_context()) as resp:
-        return resp.read().decode("utf-8", "replace")
-
-
-def show_feed(label: str, url: str) -> None:
-    print("=" * 70)
-    print(f"[{label}]")
+def show_trust_stores():
+    print("=" * 72)
+    print("■ 1단계 · 파이썬이 신뢰하는 인증서 목록 비교")
+    print(f"  쓰는 파이썬: {sys.version.split()[0]}")
     try:
-        raw = fetch(url)
-    except urllib.error.HTTPError as exc:
-        print(f"  HTTP {exc.code} — 이 주소가 막혔거나 주소가 바뀌었다.")
-        return
+        default_ctx = ssl.create_default_context()
+        print(f"  urllib 이 쓰는 기본 설정        : 루트 인증서 {len(default_ctx.get_ca_certs())}개"
+              "  (윈도우에서는 윈도우 저장소를 읽는다)")
     except Exception as exc:
-        text = str(exc)
-        print(f"  연결 자체가 안 됨: {type(exc).__name__}: {text}")
+        print(f"  기본 설정을 못 읽었다: {exc}")
+    try:
+        import certifi
+        certifi_ctx = ssl.create_default_context(cafile=certifi.where())
+        print(f"  requests 가 쓰는 certifi 번들   : 루트 인증서 {len(certifi_ctx.get_ca_certs())}개"
+              "  (회사 인증서는 여기 없다)")
+    except ImportError:
+        print("  certifi 가 안 깔려 있다 (requests 를 안 쓰면 상관없다)")
+    except Exception as exc:
+        print(f"  certifi 목록을 못 읽었다: {exc}")
 
-        if "unable to get local issuer certificate" in text:
-            print("  → 회사 보안 장비의 인증서를 파이썬이 신뢰하지 않아서 막힌 것이다.")
-            print("     pip install truststore 를 실행하면 윈도우가 이미 신뢰하는")
-            print("     목록을 파이썬도 쓰게 되어 해결되는 경우가 많다.")
-        elif "CERTIFICATE_VERIFY_FAILED" in text:
-            print("  → 인증서 검사에서 막혔다. 이 파일은 사내망 대응을 이미 넣어뒀는데도")
-            print("     막혔다면, 이 메시지를 그대로 복사해서 강사나 AI에게 보여주면 된다.")
-            print(f"     (지금 쓰는 파이썬: {sys.version.split()[0]})")
-        else:
-            print("  → 회사 네트워크가 이 사이트를 막고 있을 수 있다.")
-        return
 
+def try_urllib(keyword):
+    try:
+        request = urllib.request.Request(news_url(keyword),
+                                         headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(request, timeout=20) as response:
+            return True, response.read().decode("utf-8", "replace")
+    except urllib.error.HTTPError as exc:
+        return False, f"HTTP {exc.code} — 주소가 막혔거나 바뀌었다"
+    except Exception as exc:
+        return False, f"{type(exc).__name__}: {exc}"
+
+
+def try_requests(keyword):
+    try:
+        import requests
+    except ImportError:
+        return None, "requests 가 안 깔려 있다 (안 써도 되니 괜찮다)"
+    try:
+        response = requests.get(news_url(keyword), timeout=20,
+                                headers={"User-Agent": "Mozilla/5.0"})
+        return True, response.text
+    except Exception as exc:
+        return False, f"{type(exc).__name__}: {str(exc)[:160]}"
+
+
+def count_articles(raw):
     try:
         root = ET.fromstring(raw)
     except ET.ParseError as exc:
-        print(f"  받아왔지만 뉴스 목록 형식이 아니다: {exc}")
-        print(f"  받은 내용 앞부분: {raw[:200]}")
-        return
-
+        return None, f"받아왔지만 뉴스 목록 형식이 아니다: {exc}"
     items = root.findall(".//item")
-    print(f"  기사 {len(items)}건")
-    if not items:
-        print("  → 형식은 맞는데 기사가 0건이다.")
-        return
-    for item in items[:5]:
-        title = (item.findtext("title") or "").strip()
-        pub = (item.findtext("pubDate") or "").strip()
-        print(f"    · {title[:70]}")
-        print(f"      {pub}")
+    titles = [(it.findtext("title") or "").strip() for it in items[:3]]
+    return items, titles
+
+
+def main():
+    show_trust_stores()
+
+    print()
+    print("=" * 72)
+    print("■ 2단계 · 같은 주소를 두 방식으로 받아보기")
+    urllib_ok = requests_ok = None
+    for keyword in KEYWORDS:
+        print("-" * 72)
+        print(f"[{keyword}]")
+
+        ok, payload = try_urllib(keyword)
+        if ok:
+            items, titles = count_articles(payload)
+            if items is None:
+                print(f"  urllib   : 받아왔지만 형식이 이상하다 — {titles}")
+            else:
+                print(f"  urllib   : 성공, 기사 {len(items)}건")
+                for title in titles:
+                    print(f"               · {title[:64]}")
+                urllib_ok = True if urllib_ok is None else urllib_ok
+        else:
+            print(f"  urllib   : 실패 — {payload}")
+            urllib_ok = False
+
+        ok, payload = try_requests(keyword)
+        if ok is None:
+            print(f"  requests : 건너뜀 — {payload}")
+        elif ok:
+            items, _ = count_articles(payload)
+            print(f"  requests : 성공, 기사 {len(items) if items else 0}건")
+            requests_ok = True if requests_ok is None else requests_ok
+        else:
+            print(f"  requests : 실패 — {payload}")
+            requests_ok = False
+
+    print()
+    print("=" * 72)
+    print("■ 읽는 방법")
+    if urllib_ok and requests_ok is False:
+        print("""
+  urllib 은 되고 requests 는 막혔다 — 예상했던 그 상황이다.
+  프로그램이 requests 를 쓰고 있으면 그게 원인이다. feedparser 나 urllib 으로
+  바꾸면 된다. 실습 페이지 STEP 1 의 「막히면」 안내에 넣을 프롬프트가 있다.
+  인증서 검증을 끄는 방법은 쓰지 않는다.""")
+    elif urllib_ok:
+        print("""
+  둘 다 된다 — 이 PC 에서는 인증서 문제가 없다. 수집이 0건이면 네트워크가 아니라
+  키워드 문제다. 더 넓은 단어로 바꿔본다.""")
+    else:
+        print("""
+  urllib 까지 막혔다 — 회사 네트워크가 구글 뉴스 자체를 막고 있을 가능성이 크다.
+  위에 찍힌 에러 문장을 그대로 복사해서 강사에게 보여주면 된다.
+  개인 네트워크(휴대폰 핫스팟)에서 다시 실행해보면 네트워크 문제인지 갈린다.""")
 
 
 if __name__ == "__main__":
-    print("■ 구글 뉴스 RSS — 인증키 없이 한국어 키워드로 검색")
-    for keyword in KEYWORDS:
-        query = urllib.parse.quote(keyword)
-        show_feed(
-            f"구글 뉴스 RSS · '{keyword}'",
-            f"https://news.google.com/rss/search?q={query}&hl=ko&gl=KR&ceid=KR:ko",
-        )
-
-    print()
-    print("■ 언론사 RSS — 키워드 검색은 없지만 최신 기사가 통째로 온다")
-    for label, url in PRESS_FEEDS:
-        show_feed(label, url)
-
-    print("=" * 70)
-    print("""
-읽는 방법
-  · 구글 뉴스 RSS에서 기사가 잘 나온다        → 이걸로 가면 된다. 인증키가 아예 필요 없다.
-  · 구글만 막히고 언론사 RSS는 나온다          → 회사가 구글 뉴스를 막은 것. 언론사 RSS로 간다.
-  · "unable to get local issuer..."       → 회사 인증서를 파이썬이 못 믿는 상태다.
-                                             pip install truststore 로 해결되는 경우가 많다.
-  · 전부 "연결 자체가 안 됨"                   → 회사 네트워크가 외부를 막고 있다.
-                                             개인 네트워크(핫스팟)에서 다시 시험해본다.
-""")
+    main()

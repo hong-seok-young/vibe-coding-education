@@ -26,10 +26,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 PAGE = os.path.join(REPO, "DART 뉴스 크롤링 및 메일발송 프로그램 만들기.html")
 
-EXPECTED_PAGES = 11        # 사전 준비 + STEP 9개 + 막히면 여기
-EXPECTED_CHECKBOXES = 15   # 사전 준비 페이지의 체크리스트
+EXPECTED_PAGES = 9         # 사전 준비 + STEP 7개 + 막히면 여기
+EXPECTED_CHECKBOXES = 13   # 사전 준비 6개 + STEP 페이지 7개
 PAIRED_TAGS = ("div", "ul", "li", "p", "section", "details", "pre", "code", "span", "strong", "em")
-STALE_WORDS = ("결과창", "NewsAPI", "네이버 검색", ".env", "python3.12", "맥OS", "macOS", ".command")
+# 낡은 표현 + 2026-09-08 검증에서 틀린 것으로 확인돼 되돌아오면 안 되는 처방들.
+# VERIFY_X509_STRICT 제거는 사내 PC 에서 먹히지 않았다 (self-signed certificate in
+# certificate chain). SMTP 는 포트가 막힌 게 아니라 STARTTLS 단계에서 끊긴다.
+STALE_WORDS = ("결과창", "NewsAPI", "네이버 검색", ".env", "python3.12", "맥OS", "macOS",
+               ".command", "VERIFY_X509_STRICT", "Authority Key Identifier",
+               "certifi 를 지정", "포트를 막아")
 
 problems = []
 

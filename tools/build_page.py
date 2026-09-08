@@ -88,8 +88,8 @@ callout_prep = '''
     <ol style="margin:8px 0 0; padding-left:20px;">
       <li><a href="https://www.python.org/ftp/python/pymanager/python-manager-26.3.msix">파이썬 설치 관리자</a>를
         받아 더블클릭해 설치한 뒤, 명령 프롬프트(cmd)에서 <code>py install 3</code></li>
-      <li>이어서 <code>pip install requests feedparser pywin32</code>
-        (인증서 오류가 나면 <code>pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org requests feedparser pywin32</code>)</li>
+      <li>이어서 <code>pip install feedparser pywin32</code>
+        (인증서 오류가 나면 <code>pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org feedparser pywin32</code>)</li>
     </ol>
   </div>'''
 
@@ -203,8 +203,8 @@ step_pages_html = "\n".join(render_step_page(s, i, len(STEPS)) for i, s in enume
 
 # ── TOC ──────────────────────────────────────────────────
 TOC_LABELS = {
-    "s0": "뼈대", "s1": "RSS", "s2": "구글 뉴스", "s3": "DART", "s4": "정리",
-    "s5": "메일 조립", "s6": "아웃룩 발송", "s7": "새 아웃룩", "s8": "완성",
+    "s0": "뼈대", "s1": "구글 뉴스", "s2": "DART", "s3": "정리",
+    "s4": "메일 본문", "s5": "아웃룩 발송", "s6": "완성",
 }
 
 toc_part1 = "\n".join(
@@ -972,9 +972,6 @@ TOC_HTML = f'''<button class="toc-toggle" id="tocToggle" aria-label="목차 열�
   <div class="toc-group-label">실습 2 · 메일 발송</div>
 {toc_part2}
 
-  <div class="toc-group-label">추가실습</div>
-{toc_part3}
-
   <div class="toc-group-label">참고</div>
       <a class="toc-link" data-page="stuck" href="#stuck"><span class="toc-badge">!</span>막히면 여기</a>
 </nav>'''
@@ -1021,27 +1018,29 @@ STUCK_PAGE = '''
     <div class="criteria-box">
       <p class="criteria-label">수집이 안 될 때</p>
       <ul>
-        <li><strong>뉴스 결과 칸에 <code>CERTIFICATE</code> / <code>Missing Authority Key Identifier</code></strong>
-          — 회사 보안 장비가 인터넷 통신을 열어보고 자기 인증서로 다시 서명해 넘겨주는데,
-          파이썬 3.13 부터 기본으로 켜진 엄격 검사가 그 인증서에 없는 항목을 요구해 거부하는
-          것이다. 브라우저는 잘 되는데 프로그램만 막히는 이유다.
-          <strong>STEP 2 의 "막히면" 안내</strong>를 펼쳐서 프롬프트를 이어 넣는다.
-          <strong>AI가 자주 틀리는 지점</strong> — 고쳐야 하는 건 <code>verify_flags</code> 에서
-          <code>VERIFY_X509_STRICT</code> 를 빼는 것 하나다. AI가
-          <code>ctx.options |= ssl.OP_LEGACY_SERVER_CONNECT</code> 같은 걸 넣어놨으면 그건
-          이 에러와 무관해서 아무 효과가 없다(실제로 이렇게 만들어 온 사례가 있다).
-          코드에 <code>OP_LEGACY</code> 가 보이면 그 줄을 짚어서 다시 시키면 된다.
+        <li><strong>뉴스 결과 칸에 <code>CERTIFICATE_VERIFY_FAILED</code></strong>
+          — 회사 보안 장비가 인터넷 통신을 중간에서 열어보고 자기 인증서로 다시 서명해
+          넘겨준다. 크롬은 회사가 윈도우에 심어둔 인증서를 보기 때문에 잘 되는데,
+          프로그램만 막히는 이유다.
+          <strong>원인은 거의 항상 라이브러리 선택이다.</strong> <code>requests</code> 는
+          윈도우 인증서 저장소를 보지 않고 <code>certifi</code> 라는 자기 목록만 보는데,
+          거기에 회사 인증서가 없다. 반면 파이썬에 원래 들어있는 <code>urllib</code> 과
+          그것을 쓰는 <code>feedparser</code> 는 윈도우 저장소를 보므로 그냥 된다
+          (측정값: <code>urllib</code> 은 루트 인증서 67개 = 윈도우 저장소,
+          <code>requests</code> 는 121개 = certifi 번들).
+          <strong>STEP 1 의 "막히면" 안내</strong>를 펼쳐서 프롬프트를 이어 넣는다.
+          코드에 <code>import requests</code> 가 보이면 그게 원인이다.
           인증서 검사를 아예 끄는 방식은 쓰지 않는다.</li>
         <li><strong>수집하고 나면 프로그램이 느려지거나 멈춘다</strong> — 결과 칸에 넣은 줄이
           너무 많은 것이다. 원인은 둘 중 하나다. ① <strong>DART 를 회사명 없이 돌렸다</strong> —
           일주일치 공시는 수천 건이라 그게 전부 쏟아진다. 회사명을 넣고 다시 누른다.
           ② <strong>AI가 버튼을 누를 때마다 지금까지 모은 걸 전부 다시 늘어놓게 만들었다</strong> —
-          STEP 2·3 프롬프트에 "새로 가져온 것만 보여줘"가 들어가 있지만 AI가 무시할 때가 있다.
-          <strong>STEP 4</strong> 를 먼저 적용하면 정리된다.
+          STEP 1·2 프롬프트에 "새로 가져온 것만 보여줘"가 들어가 있지만 AI가 무시할 때가 있다.
+          <strong>STEP 3</strong> 을 먼저 적용하면 정리된다.
           결과 칸을 비우고 싶으면 프로그램을 껐다 켜면 된다 — 입력값은 남아있다.</li>
         <li><strong>뉴스가 전부 <code>검색 실패</code></strong> — 회사가 구글 뉴스를 막았을 수 있다.
           <code>한국뉴스_점검.py</code> 를 실행하면 구글만 막힌 건지 네트워크 전체가 막힌
-          건지 구분해준다. 구글만 막혔으면 <strong>STEP 9(언론사 RSS)</strong> 로 대체한다.</li>
+          건지 구분해준다. 네트워크 전체가 막힌 게 아니라면 키워드를 바꿔 다시 눌러본다.</li>
         <li><strong>뉴스가 <code>0건</code></strong> (실패는 아님) — 그 키워드로 걸리는 기사가 없는
           것이다. 더 넓은 단어로 바꿔본다.</li>
         <li><strong>DART 가 <code>0건</code></strong> — 이유가 세 가지다. ① 그 기간에 공시가 아예
@@ -1054,9 +1053,12 @@ STUCK_PAGE = '''
           <em>"뉴스 수집 결과는 뉴스 칸에만, DART 수집 결과는 DART 칸에만 들어가게 해줘.
           그리고 두 칸 모두 항목 제목을 누르면 그 원문이 브라우저에서 열리게 하고, 제목은
           파란색에 밑줄로 보여줘. 전체를 통째로 다시 줘."</em></li>
-        <li><strong>DART 에서 회사가 안 걸린다</strong> — 이름은 <strong>짧게</strong> 넣는다.
-          <code>삼성</code> 이면 삼성전자·삼성물산이 다 걸리지만, <code>현대차</code> 는 정식
-          명칭(현대자동차)과 달라서 안 걸린다.</li>
+        <li><strong>DART 에서 회사가 안 걸린다</strong> — <strong>정식 명칭으로</strong> 넣는다.
+          <code>현대차</code> 는 DART 에 등록된 이름(현대자동차)과 달라서 안 걸린다.
+          <strong>짧게 넣는 것은 해결책이 아니다</strong> — <code>삼성</code> 으로 넣으면 최근
+          일주일에 140건이 걸리는데 그중 94건이 삼성자산운용 ETF 투자설명서이고 정작
+          삼성전자는 0건이었다(실측). 노이즈만 폭증한다. <code>dart_점검.py</code> 를 실행하면
+          걸린 회사별 건수를 찍어주니, 거기서 실제 등록된 이름을 확인해 그대로 넣는다.</li>
       </ul>
     </div>
 
@@ -1126,8 +1128,8 @@ STUCK_PAGE = '''
       <p><strong>점검용 파일 두 개</strong> — 실습 폴더의 <code>news-report-bot</code> 안에 있다.
         수집이 왜 안 되는지 프로그램과 따로 확인해볼 때 쓴다.</p>
       <ul style="margin:8px 0 0; padding-left:20px;">
-        <li><code>한국뉴스_점검.py</code> — 구글 뉴스와 언론사 RSS가 이 네트워크에서 실제로
-          되는지 보여준다. 그냥 실행하면 된다.</li>
+        <li><code>한국뉴스_점검.py</code> — 구글 뉴스가 이 네트워크에서 실제로 되는지,
+          그리고 requests 와 urllib 중 무엇이 막히는지 보여준다. 그냥 실행하면 된다.</li>
         <li><code>dart_점검.py</code> — DART 가 왜 0건인지 짚어준다. 파일을 열어 인증키와
           회사 이름을 채운 뒤 실행한다.</li>
       </ul>

@@ -102,14 +102,14 @@ rem  We use %PY% -m pip so packages land in the exact interpreter we found.
 rem  (This is what causes 'installed but missing' on multi-version PCs.)
 rem ============================================================
 echo  [2/2] 실습에 필요한 부품 3개를 받습니다 (1~2분)...
-%PY% -m pip install requests feedparser pywin32
+%PY% -m pip install feedparser pywin32
 if not errorlevel 1 goto :libs_ready
 
 echo.
 echo        실패했습니다. 회사 보안 장비 때문일 수 있어
 echo        신뢰할 곳을 지정해서 다시 시도합니다...
 echo.
-%PY% -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org requests feedparser pywin32
+%PY% -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org feedparser pywin32
 if not errorlevel 1 goto :libs_ready
 
 echo.
@@ -120,7 +120,7 @@ exit /b 1
 
 :libs_ready
 echo.
-echo        부품 3개 준비 완료 (requests, feedparser, pywin32)
+echo        부품 2개 준비 완료 (feedparser, pywin32)
 
 rem ============================================================
 rem  Done

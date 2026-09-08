@@ -14,26 +14,24 @@ DART 목록 조회는 회사 이름으로 검색할 수 없다. 기간 안의 �
 """
 
 import json
-import ssl
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections import Counter
 from datetime import date, timedelta
 
 # ── 여기만 본인 값으로 바꾼다 ─────────────────────────────
 API_KEY = "여기에_DART_인증키_붙여넣기"
-WATCH = ["삼성"]          # 지켜볼 회사 이름 (여러 개면 쉼표로)
+WATCH = ["삼성물산", "GS건설"]   # 지켜볼 회사 이름 (여러 개면 쉼표로)
 # ────────────────────────────────────────────────────────
 
 KST_OFFSET = timedelta(hours=9)
 
 
-def make_ssl_context() -> ssl.SSLContext:
-    """사내망(HTTPS를 중간에서 검사하는 환경) 대응. 자세한 이유는 main.py 참고."""
-    ctx = ssl.create_default_context()
-    ctx.verify_flags &= ~getattr(ssl, "VERIFY_X509_STRICT", 0)
-    return ctx
+# 인터넷 접속은 파이썬 기본 기능인 urllib 으로 한다. urllib 은 윈도우 인증서
+# 저장소를 보기 때문에 회사 인증서가 이미 신뢰돼 있어 별도 설정이 필요 없다.
+# requests 로 바꾸면 certifi 목록만 보게 되어 첫 접속부터 실패한다.
 
 
 def fetch_page(begin: date, end: date, page: int) -> dict:
@@ -46,7 +44,7 @@ def fetch_page(begin: date, end: date, page: int) -> dict:
     })
     url = "https://opendart.fss.or.kr/api/list.json?" + params
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=20, context=make_ssl_context()) as resp:
+    with urllib.request.urlopen(req, timeout=25) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
@@ -58,10 +56,11 @@ def check(days: int) -> None:
 
     total = 0
     matched = []
+    matched_corps = Counter()
     page = 1
     total_page = 1
 
-    while page <= 30:
+    while page <= total_page:
         try:
             body = fetch_page(begin, end, page)
         except urllib.error.HTTPError as exc:
@@ -71,7 +70,8 @@ def check(days: int) -> None:
             text = str(exc)
             print(f"  연결 자체가 안 됨: {type(exc).__name__}: {text}")
             if "CERTIFICATE" in text:
-                print("  → 사내망 인증서 문제다. main.py 의 「사내망 대응」 참고.")
+                print("  → 인증서 문제다. 한국뉴스_점검.py 를 실행하면 requests 와")
+                print("     urllib 중 무엇이 막히는지 갈라준다.")
             else:
                 print("  → 회사 네트워크가 opendart.fss.or.kr 을 막고 있을 수 있다.")
             return
@@ -96,9 +96,8 @@ def check(days: int) -> None:
             corp = row.get("corp_name", "")
             if any(name in corp for name in WATCH):
                 matched.append(f"[{corp}] {row.get('report_nm','')} ({row.get('rcept_dt','')})")
+                matched_corps[corp] += 1
 
-        if page >= total_page:
-            break
         page += 1
 
     print(f"  기간 안의 전체 공시: {total}건 (페이지 {total_page}개를 전부 확인)")
@@ -107,6 +106,10 @@ def check(days: int) -> None:
         print(f"    · {line}")
     if len(matched) > 10:
         print(f"    ... 외 {len(matched) - 10}건")
+    if matched_corps:
+        print("  걸린 회사별 건수 (부분일치가 뭘 끌어왔는지 확인):")
+        for name, count in matched_corps.most_common():
+            print(f"    {name}: {count}건")
 
 
 if __name__ == "__main__":
@@ -124,8 +127,12 @@ if __name__ == "__main__":
 읽는 방법
   · 1일은 0건인데 7일은 몇 건 나온다     → 정상이다. 그 회사가 매일 공시하지는 않는다.
                                           프로그램의 조회 기간을 늘리면 된다.
-  · 전체 공시는 많은데 관련은 0건         → 회사 이름이 실제 이름과 다를 수 있다.
-                                          "삼성전자" 대신 "삼성" 처럼 짧게 넣어본다.
+  · 전체 공시는 많은데 관련은 0건         → 그 회사가 그 기간에 공시를 안 냈거나,
+                                          이름이 DART 에 등록된 이름과 다른 것이다.
+                                          아래 회사별 집계에서 실제 이름을 확인한다.
+  · 이름을 짧게 넣으면 오히려 나빠진다     → "삼성" 으로 넣으면 최근 일주일에 140건이
+                                          걸리는데 그중 94건이 삼성자산운용 ETF 서류이고
+                                          삼성전자는 0건이다(실측). 구체적으로 넣는다.
   · 전부 "이 기간에 공시가 아예 없다"      → 주말·공휴일이다. 평일 기준으로 다시.
   · 인증키 관련 오류가 뜬다               → 발급 직후면 잠시 뒤 다시 시도해본다.
 """)

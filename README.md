@@ -113,6 +113,22 @@ DART 공시  ─┐
 
 ---
 
+## 실습 페이지를 고칠 때
+
+`DART 뉴스 크롤링 및 메일발송 프로그램 만들기.html` 은 [`tools/`](tools/) 에서
+생성된다. **HTML 을 직접 고치면 다음 생성 때 덮어써진다.**
+
+```
+python3 tools/build_page.py     # HTML 다시 만들기
+python3 tools/check_page.py     # 점검
+```
+
+프롬프트와 성공 기준은 `tools/steps.py`, 사전 준비 페이지는 `tools/prep.html` 에 있다.
+프롬프트를 쓸 때 지켜야 하는 것들(실제로 사내 PC 에서 막혀본 것들)은
+[`tools/README.md`](tools/README.md) 에 정리해뒀다.
+
+---
+
 ## 참고
 
 각 과정 폴더의 코드는 **완성본**이다. 실습에서는 이걸 그대로 복사하는 게 아니라

@@ -1,0 +1,710 @@
+<title>이슈봇 사전 준비</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef0ee;
+    --surface: #ffffff;
+    --surface-2: #e6e9e6;
+    --ink: #1c2321;
+    --ink-soft: #454e4b;
+    --muted: #6b7570;
+    --line: #d5d9d4;
+    --line-strong: #b9c0ba;
+    --accent: #c96a1a;
+    --accent-ink: #ffffff;
+    --accent-wash: #fbe9d7;
+    --good: #3f7a52;
+    --good-wash: #e3f0e6;
+    --focus: #2f6fb0;
+    --shadow: 0 1px 2px rgba(20, 24, 22, 0.06), 0 6px 20px -8px rgba(20, 24, 22, 0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14181a;
+      --surface: #1b2022;
+      --surface-2: #222829;
+      --ink: #e9ece9;
+      --ink-soft: #c2c9c4;
+      --muted: #92a09a;
+      --line: #2c3436;
+      --line-strong: #3a4345;
+      --accent: #e69a4e;
+      --accent-ink: #201002;
+      --accent-wash: #3a2712;
+      --good: #7ec293;
+      --good-wash: #1c2c20;
+      --focus: #7db3e8;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #14181a;
+    --surface: #1b2022;
+    --surface-2: #222829;
+    --ink: #e9ece9;
+    --ink-soft: #c2c9c4;
+    --muted: #92a09a;
+    --line: #2c3436;
+    --line-strong: #3a4345;
+    --accent: #e69a4e;
+    --accent-ink: #201002;
+    --accent-wash: #3a2712;
+    --good: #7ec293;
+    --good-wash: #1c2c20;
+    --focus: #7db3e8;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height: 1.6;
+  }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  code, .mono, .num, .stat-value {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  /* ── 헤더 ── */
+
+  .roadmap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 22px;
+  }
+
+  .roadmap span, .roadmap a {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    background: var(--surface);
+    text-decoration: none;
+  }
+
+  .roadmap a:hover {
+    color: var(--ink);
+    border-color: var(--line-strong);
+  }
+
+  .roadmap span.current {
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    background: var(--accent);
+    font-weight: 600;
+  }
+
+  h1 {
+    font-size: clamp(26px, 4vw, 34px);
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .lede {
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    max-width: 62ch;
+    margin: 0 0 28px;
+  }
+
+  .lede strong { color: var(--ink); }
+
+  /* ── 진행 바 ── */
+
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 34px;
+  }
+
+  .progress-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .progress-top .label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .progress-top .stat-value {
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .progress-track {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: inherit;
+    transition: width 0.35s ease;
+  }
+
+  .progress-note {
+    margin: 12px 0 0;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-fill { transition: none; }
+  }
+
+  /* ── 섹션 ── */
+
+  section.group {
+    margin-bottom: 36px;
+  }
+
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .group-head .num {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-wash);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+
+  .group-head h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .group-sub {
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 14px 0;
+  }
+
+  .items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .item {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .item:has(.check:checked) {
+    border-color: var(--good);
+    background: var(--good-wash);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .item { transition: none; }
+  }
+
+  .check-col {
+    display: flex;
+    justify-content: center;
+    padding-top: 2px;
+  }
+
+  .check {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    flex-shrink: 0;
+  }
+
+  .check:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .check::after {
+    content: "";
+    width: 10px;
+    height: 6px;
+    border-left: 2px solid var(--accent-ink);
+    border-bottom: 2px solid var(--accent-ink);
+    transform: rotate(-45deg) translateY(-1px);
+    opacity: 0;
+  }
+
+  .check:checked {
+    background: var(--good);
+    border-color: var(--good);
+  }
+
+  .check:checked::after { opacity: 1; }
+
+  .item-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0 0 4px;
+  }
+
+  .tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+
+  .tag.required { background: var(--accent-wash); color: var(--accent); }
+  .tag.free { background: var(--good-wash); color: var(--good); }
+
+  .item p {
+    margin: 0 0 8px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+
+  .item p:last-child { margin-bottom: 0; }
+
+  .item .warn {
+    color: var(--accent);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 7px 13px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+    background: var(--surface);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .btn.big {
+    font-size: 14.5px;
+    padding: 12px 22px;
+  }
+
+  .btn .arrow { font-size: 15px; line-height: 1; }
+
+  /* ── 다운로드 카드 ── */
+
+  .download-card {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+  }
+
+  .download-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .download-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .download-card > p {
+    margin: 0 0 4px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+
+  .tiny {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 10px 0 0;
+  }
+
+  .filetable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+
+  .filetable th, .filetable td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .filetable th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .filetable td:last-child, .filetable th:last-child { text-align: right; }
+
+  .install-details {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .install-details summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .install-details summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .install-details[open] summary {
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .install-list {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .install-list strong {
+    color: var(--ink);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.95em;
+  }
+
+  .kv {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 12px;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+
+  code {
+    background: var(--surface-2);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+  }
+
+  /* ── 하단 ── */
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 16px 18px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+
+  .callout strong { color: var(--ink); }
+
+  footer {
+    margin-top: 44px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+
+<div class="wrap">
+
+  <nav class="roadmap" aria-label="실습 진행 순서">
+    <span class="current">0 · 사전 준비</span>
+    <a href="https://claude.ai/code/artifact/c9f7a745-f324-40ef-9994-74ad40079255#part1" target="_blank" rel="noopener">1 · 수집</a>
+    <a href="https://claude.ai/code/artifact/c9f7a745-f324-40ef-9994-74ad40079255#part2" target="_blank" rel="noopener">2 · 메일 발송</a>
+  </nav>
+
+  <h1>DART·뉴스 정보 크롤링 및 메일발송 프로그램, 시작 전에</h1>
+  <p class="lede">
+    당일 발급받으면 2시간 중 40분이 그냥 날아갑니다. 아래 <span id="itemCountWord">체크리스트</span>를
+    <strong>교육 전에 미리</strong> 끝내 두면 본 실습 시간에는 코드에만 집중할 수 있습니다. 항목당 5~10분입니다.
+  </p>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span class="label">준비 진행률</span>
+      <span class="stat-value"><span id="doneCount">0</span> / <span id="totalCount">6</span> 완료</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <p class="progress-note" id="progressNote">체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전</p>
+  </div>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">A</span>
+      <h2>설치</h2>
+    </div>
+    <p class="group-sub">파일 하나 더블클릭이면 끝난다. 직접 뭘 입력할 건 없다.</p>
+
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="install"></span>
+        <span>
+          <span class="item-title">
+            <code>파이썬 설치.bat</code> 더블클릭
+            <span class="tag required">이것만 하면 끝</span>
+          </span>
+          <p class="tiny">강사가 준 실습 폴더 안에 있다.
+            <strong>더블클릭하면 파이썬과 필요한 부품까지 알아서 다 깔린다.</strong>
+            2~3분 걸리고, 검은 창에 글자가 올라가는 동안 <strong>창을 닫지 말 것.</strong></p>
+          <p class="tiny"><strong><code>준비 끝!</code> 이라고 나오면 된 것이다.</strong>
+            이미 깔려 있는 건 알아서 건너뛴다.</p>
+          <p class="tiny warn">파란 경고창 <code>Windows의 PC 보호</code> 가 뜨면
+            <code>추가 정보</code> → <code>실행</code> 을 누른다. 정상이다.</p>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">B</span>
+      <h2>인증키 발급 (DART 하나만)</h2>
+    </div>
+
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="dart"></span>
+        <span>
+          <span class="item-title">
+            DART 인증키
+            <span class="tag required">필수</span>
+            <span class="tag free">무료</span>
+          </span>
+          <ul class="install-list">
+            <li>1. 아래 버튼으로 접속 → 회원가입(이미 있으면 로그인)</li>
+            <li>2. 상단 메뉴 <strong>오픈API 이용안내 → 인증키 신청/관리</strong> 클릭</li>
+            <li>3. "인증키 신청" 탭에서 이용자 정보 입력 후 <strong>신청하기</strong></li>
+            <li>4. 같은 화면에 뜨는 인증키를 복사</li>
+          </ul>
+          <div class="actions">
+            <a class="btn primary" href="https://opendart.fss.or.kr" target="_blank" rel="noopener">발급받으러 가기</a>
+          </div>
+        </span>
+      </label>
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="news-nokey"></span>
+        <span>
+          <span class="item-title">
+            뉴스 검색 — 발급받을 것 없음
+            <span class="tag free">무료</span>
+          </span>
+          <p class="tiny">뉴스는 <strong>구글 뉴스</strong>에서 가져온다. 가입도, 인증키도, 하루 호출
+            한도도 없다 — 그래서 <strong>미리 준비할 게 없다.</strong> 실습 때 키워드만 적어 넣으면 된다.</p>
+        </span>
+      </label>
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="envfile"></span>
+        <span>
+          <span class="item-title">
+            발급받은 DART 인증키, 잘 보관해두기
+            <span class="tag required">필수</span>
+          </span>
+          <p class="tiny">메모장 같은 곳에 붙여넣어 둔다 — 실습 때 프로그램 창에 직접 채워넣게 된다.</p>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">C</span>
+      <h2>아웃룩 확인</h2>
+    </div>
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="outlook-check"></span>
+        <span>
+          <span class="item-title">
+            아웃룩 로그인 확인
+            <span class="tag required">필수</span>
+          </span>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">D</span>
+      <h2>모니터링 키워드 정하기</h2>
+    </div>
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="keywords"></span>
+        <span>
+          <span class="item-title">
+            키워드 3개
+            <span class="tag required">필수</span>
+          </span>
+          <p class="tiny">이것도 잘 적어둔다 — 실습 때 프로그램에 직접 채워넣게 된다.</p>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <div class="callout">
+    <strong>막히면?</strong> 에러 메시지 전문을 그대로 복사해서 Claude에게 붙여넣는 것이 가장 빠릅니다.
+    DART <code>[013]</code>은 오류가 아니라 그 기간에 공시가 없다는 뜻이니 당황하지 않아도 됩니다.
+  </div>
+
+  <footer>
+    바이브 코딩 실습 · 사전 준비 페이지 · <code>.env</code> 파일은 절대 공유하지 마세요 (키·인증 정보가 들어갑니다)
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var STORAGE_KEY = "issuebot-prep-checklist";
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check"));
+  var doneCountEl = document.getElementById("doneCount");
+  var totalCountEl = document.getElementById("totalCount");
+  var fillEl = document.getElementById("progressFill");
+  var noteEl = document.getElementById("progressNote");
+  var itemCountWordEl = document.getElementById("itemCountWord");
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      /* 저장 안 되면 그냥 세션 동안만 체크 상태 유지 */
+    }
+  }
+
+  function render() {
+    var total = boxes.length;
+    var done = boxes.filter(function (b) { return b.checked; }).length;
+    totalCountEl.textContent = String(total);
+    doneCountEl.textContent = String(done);
+    if (itemCountWordEl) itemCountWordEl.textContent = total + "가지";
+    fillEl.style.width = (total ? (done / total) * 100 : 0) + "%";
+    noteEl.textContent = done === 0
+      ? "체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전"
+      : done === total
+        ? "체크박스는 이 브라우저에만 저장됩니다 · 준비 끝, 바로 실습 가능"
+        : "체크박스는 이 브라우저에만 저장됩니다 · 진행 중";
+  }
+
+  var state = loadState();
+  boxes.forEach(function (box) {
+    var id = box.dataset.id;
+    if (state[id]) box.checked = true;
+    box.addEventListener("change", function () {
+      state[id] = box.checked;
+      saveState(state);
+      render();
+    });
+  });
+
+  render();
+})();
+</script>

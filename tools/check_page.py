@@ -81,6 +81,14 @@ def main():
             if base64.b64decode(embedded.group(1)) != f.read():
                 fail("박혀있는 main.py 가 지금 저장소의 main.py 와 다르다 — build_page.py 를 다시 실행할 것")
 
+    index = os.path.join(REPO, "index.html")
+    if not os.path.exists(index):
+        fail("index.html 이 없다 — build_page.py 를 다시 실행할 것")
+    else:
+        with open(index, encoding="utf-8") as f:
+            if f.read() != page:
+                fail("index.html 이 실습 페이지와 다르다 — build_page.py 를 다시 실행할 것")
+
     if problems:
         print(f"문제 {len(problems)}건")
         for p in problems:

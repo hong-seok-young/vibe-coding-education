@@ -1,0 +1,1874 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"></noscript>
+<style>
+  :root {
+    --paper: #eef0ee;
+    --surface: #ffffff;
+    --surface-2: #e6e9e6;
+    --ink: #1c2321;
+    --ink-soft: #454e4b;
+    --muted: #6b7570;
+    --line: #d5d9d4;
+    --line-strong: #b9c0ba;
+    --accent: #c96a1a;
+    --accent-ink: #ffffff;
+    --accent-wash: #fbe9d7;
+    --good: #3f7a52;
+    --good-wash: #e3f0e6;
+    --focus: #2f6fb0;
+    --shadow: 0 1px 2px rgba(20, 24, 22, 0.06), 0 6px 20px -8px rgba(20, 24, 22, 0.12);
+    --toc-w: 250px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14181a;
+      --surface: #1b2022;
+      --surface-2: #222829;
+      --ink: #e9ece9;
+      --ink-soft: #c2c9c4;
+      --muted: #92a09a;
+      --line: #2c3436;
+      --line-strong: #3a4345;
+      --accent: #e69a4e;
+      --accent-ink: #201002;
+      --accent-wash: #3a2712;
+      --good: #7ec293;
+      --good-wash: #1c2c20;
+      --focus: #7db3e8;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #14181a;
+    --surface: #1b2022;
+    --surface-2: #222829;
+    --ink: #e9ece9;
+    --ink-soft: #c2c9c4;
+    --muted: #92a09a;
+    --line: #2c3436;
+    --line-strong: #3a4345;
+    --accent: #e69a4e;
+    --accent-ink: #201002;
+    --accent-wash: #3a2712;
+    --good: #7ec293;
+    --good-wash: #1c2c20;
+    --focus: #7db3e8;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height: 1.6;
+  }
+
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  /* ── 플로팅 목차 ── */
+
+  .toc-toggle {
+    display: none;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 30;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .toc-toggle:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .toc-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 12, 11, 0.4);
+    z-index: 24;
+  }
+
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--toc-w);
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    padding: 22px 14px 30px;
+    z-index: 25;
+  }
+
+  .toc-brand {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    padding: 0 10px;
+    margin-bottom: 4px;
+  }
+
+  .toc-brand .sub {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .toc-close {
+    display: none;
+    position: absolute;
+    top: 14px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .toc-mini-progress {
+    margin: 14px 10px 16px;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    border-radius: 10px;
+  }
+
+  .toc-mini-progress .n {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .toc-mini-track {
+    margin-top: 6px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .toc-mini-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: inherit;
+    transition: width 0.3s ease;
+  }
+
+  .toc-group-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 10px 4px;
+  }
+
+  .toc-link {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    position: relative;
+  }
+
+  .toc-link:hover { background: var(--surface-2); color: var(--ink); }
+
+  .toc-link:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+
+  .toc-link.current {
+    background: var(--accent-wash);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .toc-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line-strong);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .toc-link.done .toc-badge {
+    background: var(--good);
+    border-color: var(--good);
+    color: #fff;
+  }
+
+  .toc-link.done .toc-badge::before { content: "✓"; }
+  .toc-link.done .toc-badge > * { display: none; }
+
+  @media (max-width: 900px) {
+    .toc-toggle { display: flex; }
+    .toc-backdrop.show { display: block; }
+    .toc {
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+      box-shadow: var(--shadow);
+    }
+    .toc.open { transform: translateX(0); }
+    .toc-close { display: block; }
+    .content-outer { margin-left: 0 !important; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toc { transition: none; }
+  }
+
+  /* ── 본문 레이아웃 ── */
+
+  .content-outer {
+    margin-left: var(--toc-w);
+    min-height: 100vh;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 90px;
+  }
+
+  h1 {
+    font-size: clamp(24px, 4vw, 30px);
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .lede {
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 62ch;
+    margin: 0 0 20px;
+  }
+
+  .lede strong { color: var(--ink); }
+
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+  }
+
+  .progress-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .progress-top .label { font-size: 13px; color: var(--muted); }
+
+  .progress-top .stat-value {
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  .progress-track {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: inherit;
+    transition: width 0.35s ease;
+  }
+
+  .progress-note { margin: 12px 0 0; font-size: 12.5px; color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-fill, .toc-mini-fill { transition: none; }
+  }
+
+  /* ── 페이지 전환 ── */
+
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.15s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page.active { animation: none; }
+  }
+
+  /* prep 페이지 내부 (기존 체크리스트 스타일) */
+
+  section.group { margin-bottom: 0; }
+
+  .group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+
+  .group-head .num {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-wash);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+
+  .group-head h2 { font-size: 17px; }
+
+  .group-sub { color: var(--muted); font-size: 13.5px; margin: 0 0 14px 0; }
+
+  .page-inner > section.group { margin-bottom: 30px; }
+
+  .items { display: flex; flex-direction: column; gap: 10px; }
+
+  .item {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .item:has(.check:checked) { border-color: var(--good); background: var(--good-wash); }
+
+  @media (prefers-reduced-motion: reduce) { .item { transition: none; } }
+
+  .check-col { display: flex; justify-content: center; padding-top: 2px; }
+
+  .check, .page-check {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+    flex-shrink: 0;
+  }
+
+  .check:focus-visible, .page-check:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .check::after, .page-check::after {
+    content: "";
+    width: 10px;
+    height: 6px;
+    border-left: 2px solid var(--accent-ink);
+    border-bottom: 2px solid var(--accent-ink);
+    transform: rotate(-45deg) translateY(-1px);
+    opacity: 0;
+  }
+
+  .check:checked, .page-check:checked { background: var(--good); border-color: var(--good); }
+  .check:checked::after, .page-check:checked::after { opacity: 1; }
+
+  .item-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0 0 4px;
+  }
+
+  .tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+
+  .tag.required { background: var(--accent-wash); color: var(--accent); }
+  .tag.free { background: var(--good-wash); color: var(--good); }
+
+  .item p { margin: 0 0 8px; font-size: 13.5px; color: var(--ink-soft); }
+  .item p:last-child { margin-bottom: 0; }
+  .item .warn { color: var(--accent); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 7px 13px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+    background: var(--surface);
+    cursor: pointer;
+  }
+
+  .btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn .arrow { font-size: 15px; line-height: 1; }
+
+  .tiny { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+
+  .filetable { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+  .filetable th, .filetable td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .filetable th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .filetable td:last-child, .filetable th:last-child { text-align: right; }
+
+  .install-details { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .install-details summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .install-details summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .install-details[open] summary { color: var(--ink); margin-bottom: 8px; }
+
+  .install-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 13px; color: var(--ink-soft); }
+  .install-list strong { color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.95em; }
+
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 13px; margin-top: 8px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+
+  code {
+    background: var(--surface-2);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.92em;
+  }
+
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 16px 18px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin-top: 22px;
+  }
+
+  .callout strong { color: var(--ink); }
+  .callout a { color: var(--accent); }
+
+  /* ── 실습 STEP 페이지 ── */
+
+  .page-head { margin-bottom: 18px; }
+
+  .page-eyebrow {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+
+  .page-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .page-check-wrap { display: flex; }
+
+  .page-title-row h2 { flex: 1; min-width: 160px; }
+
+  .step-time {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    flex-shrink: 0;
+  }
+
+  .step-desc { font-size: 14px; color: var(--ink-soft); margin: 0; }
+
+  .cmd-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    font-size: 12.5px;
+    flex-wrap: wrap;
+  }
+
+  .cmd-label { color: var(--muted); flex-shrink: 0; }
+  .cmd-text { font-family: "IBM Plex Mono", ui-monospace, monospace; color: var(--ink); flex: 1; min-width: 140px; }
+
+  .prompt-box { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+
+  .prompt-box-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--surface-2);
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .prompt-text {
+    margin: 0;
+    padding: 16px;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--ink);
+  }
+
+  .copy-btn {
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover { color: var(--ink); }
+  .copy-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .copy-btn.copied { color: var(--good); border-color: var(--good); }
+
+  .workflow-note {
+    background: var(--accent-wash);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+  }
+
+  .workflow-note-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 8px;
+  }
+
+  .workflow-note ol {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .workflow-note li { font-size: 13px; color: var(--ink-soft); }
+  .workflow-note strong { color: var(--ink); }
+  .workflow-note code { background: var(--surface); }
+
+  .criteria-box { background: var(--good-wash); border-radius: 10px; padding: 14px 16px; margin-bottom: 4px; }
+
+  .criteria-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--good);
+    margin: 0 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .criteria-box ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+
+  .criteria-box li { font-size: 13.5px; color: var(--ink-soft); padding-left: 22px; position: relative; }
+
+  .criteria-box li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--good);
+    font-weight: 700;
+  }
+
+  .answer-details { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .answer-details summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--ink-soft); }
+  .answer-details summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .answer-details[open] summary { color: var(--ink); margin-bottom: 12px; }
+
+  .code-box { position: relative; }
+  .code-box .copy-btn { position: absolute; top: 8px; right: 8px; }
+
+  .code-block {
+    margin: 0;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--ink);
+    white-space: pre;
+  }
+
+  /* ── 페이지 이동 바 ── */
+
+  .page-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 34px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  .page-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 9px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .page-nav-btn:hover { background: var(--surface-2); }
+  .page-nav-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .page-nav-btn:disabled { opacity: 0.35; cursor: default; }
+  .page-nav-btn:disabled:hover { background: var(--surface); }
+  .page-nav-btn.next { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .page-nav-btn.next:hover { filter: brightness(1.05); }
+
+  .page-nav-pos {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  footer {
+    margin-top: 44px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<button class="toc-toggle" id="tocToggle" aria-label="목차 열기" aria-expanded="false">☰</button>
+<div class="toc-backdrop" id="tocBackdrop"></div>
+<nav class="toc" id="toc" aria-label="실습 목차">
+  <button class="toc-close" id="tocClose" aria-label="목차 닫기">✕</button>
+  <div class="toc-brand">DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기<span class="sub">사전 준비부터 발송까지</span></div>
+
+  <div class="toc-mini-progress">
+    <span class="n"><span id="tocDone">0</span> / <span id="tocTotal">0</span> 완료</span>
+    <div class="toc-mini-track"><div class="toc-mini-fill" id="tocFill"></div></div>
+  </div>
+
+  <a class="toc-link" data-page="prep" href="#prep"><span class="toc-badge">0</span>사전 준비</a>
+
+  <div class="toc-group-label">실습 1 · 수집</div>
+      <a class="toc-link" data-page="s0" href="#s0"><span class="toc-badge">0</span>뼈대</a>
+      <a class="toc-link" data-page="s1" href="#s1"><span class="toc-badge">1</span>구글 뉴스</a>
+      <a class="toc-link" data-page="s2" href="#s2"><span class="toc-badge">2</span>DART</a>
+      <a class="toc-link" data-page="s3" href="#s3"><span class="toc-badge">3</span>정리</a>
+
+  <div class="toc-group-label">실습 2 · 메일 발송</div>
+      <a class="toc-link" data-page="s4" href="#s4"><span class="toc-badge">4</span>메일 본문</a>
+      <a class="toc-link" data-page="s5" href="#s5"><span class="toc-badge">5</span>아웃룩 발송</a>
+      <a class="toc-link" data-page="s6" href="#s6"><span class="toc-badge">6</span>완성</a>
+
+  <div class="toc-group-label">참고</div>
+      <a class="toc-link" data-page="stuck" href="#stuck"><span class="toc-badge">!</span>막히면 여기</a>
+</nav>
+
+<div class="content-outer">
+  <div class="wrap">
+
+    <div class="progress-card">
+      <div class="progress-top">
+        <span class="label">전체 진행률</span>
+        <span class="stat-value"><span id="doneCount">0</span> / <span id="totalCount">0</span> 완료</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <p class="progress-note" id="progressNote">체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전</p>
+    </div>
+
+  <section class="page" data-page="prep" id="prep">
+    <div class="page-inner">
+      <h1>DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기</h1>
+
+      <div class="group-head" style="margin-top: 26px;">
+        <span class="num">0</span>
+        <h2>사전 준비</h2>
+      </div>
+      <p class="group-sub">실습 전 준비해야 할 사항</p>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">A</span>
+      <h2>설치</h2>
+    </div>
+    <p class="group-sub">파일 하나 더블클릭이면 끝난다. 직접 뭘 입력할 건 없다.</p>
+
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="install"></span>
+        <span>
+          <span class="item-title">
+            <code>파이썬 설치.bat</code> 더블클릭
+            <span class="tag required">이것만 하면 끝</span>
+          </span>
+          <p class="tiny">강사가 준 실습 폴더 안에 있다.
+            <strong>더블클릭하면 파이썬과 필요한 부품까지 알아서 다 깔린다.</strong>
+            2~3분 걸리고, 검은 창에 글자가 올라가는 동안 <strong>창을 닫지 말 것.</strong></p>
+          <p class="tiny"><strong><code>준비 끝!</code> 이라고 나오면 된 것이다.</strong>
+            이미 깔려 있는 건 알아서 건너뛴다.</p>
+          <p class="tiny warn">파란 경고창 <code>Windows의 PC 보호</code> 가 뜨면
+            <code>추가 정보</code> → <code>실행</code> 을 누른다. 정상이다.</p>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">B</span>
+      <h2>인증키 발급 (DART 하나만)</h2>
+    </div>
+
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="dart"></span>
+        <span>
+          <span class="item-title">
+            DART 인증키
+            <span class="tag required">필수</span>
+            <span class="tag free">무료</span>
+          </span>
+          <ul class="install-list">
+            <li>1. 아래 버튼으로 접속 → 회원가입(이미 있으면 로그인)</li>
+            <li>2. 상단 메뉴 <strong>오픈API 이용안내 → 인증키 신청/관리</strong> 클릭</li>
+            <li>3. "인증키 신청" 탭에서 이용자 정보 입력 후 <strong>신청하기</strong></li>
+            <li>4. 같은 화면에 뜨는 인증키를 복사</li>
+          </ul>
+          <div class="actions">
+            <a class="btn primary" href="https://opendart.fss.or.kr" target="_blank" rel="noopener">발급받으러 가기</a>
+          </div>
+        </span>
+      </label>
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="news-nokey"></span>
+        <span>
+          <span class="item-title">
+            뉴스 검색 — 발급받을 것 없음
+            <span class="tag free">무료</span>
+          </span>
+          <p class="tiny">뉴스는 <strong>구글 뉴스</strong>에서 가져온다. 가입도, 인증키도, 하루 호출
+            한도도 없다 — 그래서 <strong>미리 준비할 게 없다.</strong> 실습 때 키워드만 적어 넣으면 된다.</p>
+        </span>
+      </label>
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="envfile"></span>
+        <span>
+          <span class="item-title">
+            발급받은 DART 인증키, 잘 보관해두기
+            <span class="tag required">필수</span>
+          </span>
+          <p class="tiny">메모장 같은 곳에 붙여넣어 둔다 — 실습 때 프로그램 창에 직접 채워넣게 된다.</p>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">C</span>
+      <h2>아웃룩 확인</h2>
+    </div>
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="outlook-check"></span>
+        <span>
+          <span class="item-title">
+            아웃룩 로그인 확인
+            <span class="tag required">필수</span>
+          </span>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">D</span>
+      <h2>모니터링 키워드 정하기</h2>
+    </div>
+    <div class="items">
+
+      <label class="item">
+        <span class="check-col"><input type="checkbox" class="check" data-id="keywords"></span>
+        <span>
+          <span class="item-title">
+            키워드 3개
+            <span class="tag required">필수</span>
+          </span>
+          <p class="tiny">이것도 잘 적어둔다 — 실습 때 프로그램에 직접 채워넣게 된다.</p>
+        </span>
+      </label>
+
+    </div>
+  </section>
+
+
+  <div class="callout">
+    <p><strong>설치 파일이 회사 정책에 막히면</strong> — 아래 순서로 대신 준비한다.
+      여기까지 왔으면 강사에게 알려주는 것이 가장 빠르다.</p>
+    <ol style="margin:8px 0 0; padding-left:20px;">
+      <li><a href="https://www.python.org/ftp/python/pymanager/python-manager-26.3.msix">파이썬 설치 관리자</a>를
+        받아 더블클릭해 설치한 뒤, 명령 프롬프트(cmd)에서 <code>py install 3</code></li>
+      <li>이어서 <code>pip install feedparser pywin32</code>
+        (인증서 오류가 나면 <code>pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org feedparser pywin32</code>)</li>
+    </ol>
+  </div>
+    </div>
+  </section>
+
+  <section class="page" data-page="s0" id="s0">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 1 · 수집</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s0">
+        </label>
+        <h2>STEP 0 · 프로그램 창 만들기</h2>
+        <span class="step-time">10분</span>
+      </div>
+      <p class="step-desc">터미널 대신 더블클릭하면 뜨는 진짜 프로그램 창을 만든다. 창이 뜨면 다음 단계로 넘어가도 된다. 결과 칸을 뉴스·DART·진행 상황 셋으로 나누는 건, 한 칸에 다 쌓으면 두 수집을 번갈아 눌렀을 때 방금 뭘 가져왔는지 알 수 없기 때문이다. 그리고 이 단계에서 정하는 「에러는 화면에 사람 말로」 규칙이 이 실습의 성공률을 가장 크게 좌우한다.</p>
+    </div>
+
+    <div class="workflow-note">
+      <p class="workflow-note-title">여기서부터는 진짜로 코드를 짠다 — AI는 이렇게 쓴다</p>
+      <ol>
+        <li>여기서 말하는 "AI"는 사내에서 쓰는 <strong>대화형 챗봇</strong>이다. 프롬프트를 넣으면
+          그에 맞는 <strong>파이썬 코드 파일(.py)을 다운로드</strong>할 수 있게 준다 — 이 페이지처럼
+          직접 실행해주지는 않고, 내 PC의 파일을 열어보거나 고쳐주지도 않는다.</li>
+        <li>아래 <strong>프롬프트를 복사</strong>해서 그 AI 채팅창에 그대로 붙여넣는다.</li>
+        <li>AI가 내려주는 파일을 받는다. <strong>지금은 이 단계가 처음이라 내 PC에 아무 파일도
+          없다</strong> — 실습용 폴더를 하나 정해두고(바탕화면에 새로 만들어도 된다) 받은 파일을
+          그 안으로 옮겨둔다. 어디에 어떤 이름으로 저장하고 어떻게 실행하는지는 AI가 알려주니
+          그대로 따라 하면 된다.</li>
+        <li><strong>다음 단계부터는 매번 파일을 새로 받는다.</strong> AI는 파일을 내려주기만 하니,
+          같은 이름으로 또 받으면 브라우저가 <code>main (2).py</code>, <code>main (3).py</code>
+          처럼 뒤에 번호를 붙여 저장한다. <strong>이름을 맞추려고 애쓸 필요 없다 — 방금 받은
+          가장 최신 파일을 실행하면 된다.</strong> 단 <strong>폴더는 처음 정한 그대로 계속 쓴다</strong>
+          — 창에 입력해둔 인증키 같은 값이 프로그램 파일과 같은 폴더에 저장되기 때문에, 폴더를
+          옮겨 다니면 매번 처음부터 다시 입력해야 한다.</li>
+        <li><strong>다음 단계로 넘어갈 때도 같은 대화창에서 계속 이어서 물어봐야 한다.</strong>
+          새 대화를 시작하면 AI가 지금까지 짜준 코드를 기억하지 못한다. AI는 내 PC의 파일을 직접
+          열어보지 못하니, 매번 "지금까지 코드 전체를 다시 통째로 달라"고 요청해서 파일을 새로
+          받는 식으로 진행한다 (아래 프롬프트마다 이미 그렇게 요청하도록 되어 있다).</li>
+        <li>이 AI 툴은 질문마다 답하는 모델이 자동으로 바뀐다("스마트 라우팅"). 어떤 모델은 파일을
+          바로 첨부해주고, 어떤 모델은 파일 대신 채팅창에 코드를 텍스트로 그대로 보여준다. <strong>파일
+          첨부 대신 텍스트로 나오면, 화면 위쪽에서 모델을 Gemini로 바꾼 뒤 같은 프롬프트를 다시
+          넣어본다</strong> — 그래도 안 되면 이 페이지의 "정답 코드 파일 받기" 버튼을 대신 쓴다.</li>
+      </ol>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s0">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s0">파이썬으로 뉴스랑 DART 공시를 모아서 메일로 보내는 프로그램을 만들 거야. 나는 코딩을 전혀
+몰라. 윈도우 PC 를 쓰고, 아웃룩에 회사 메일로 로그인해둔 상태야.
+
+터미널이 아니라 더블클릭하면 창이 뜨는 프로그램으로 만들어줘.
+
+위쪽에 입력 칸 네 개 — 키워드(쉼표로 여러 개), 지켜볼 회사 이름(쉼표로 여러 개), 메일 받을
+사람, DART 인증키. 입력한 값은 창을 닫았다 다시 열어도 남아있게 저장해줘.
+
+그 아래에 버튼 네 개 — &quot;뉴스 수집하기&quot;, &quot;DART 수집하기&quot;, &quot;메일 보내기&quot;, &quot;전체 실행&quot;.
+
+그 아래는 결과 보는 곳인데, 하나로 합치지 말고 세 칸으로 나눠줘 — &quot;뉴스 수집 결과&quot;,
+&quot;DART 수집 결과&quot;, 그리고 진행 상황이나 에러가 들어갈 작은 &quot;진행 상황&quot; 칸. 수집 버튼은 각자
+자기 칸에만 쓰게 해줘. 세 칸 다 스크롤되고, 안의 글자는 고칠 수 없게.
+
+나중에 항목이 들어오면 그 제목을 눌러서 원문을 브라우저로 열 수 있게 해줘. 제목은 파란색
+밑줄로, 마우스를 올리면 손가락 모양으로.
+
+기사·공시 한 건을 담을 형태도 만들어줘 — 출처, 제목, 원문 링크, 올라온 날짜와 시각, 짧은
+메모. 날짜는 한국 시간 기준 &quot;09/08 14:30&quot; 형식이고, 시각을 모르는 항목은 날짜만.
+
+그리고 앞으로 계속 지킬 규칙이 넷 있어. 이걸 안 지키면 나는 뭐가 잘못됐는지 알 수가 없어.
+
+첫째, 에러가 나면 절대 조용히 넘어가지 마. 프로그램이 아는 모든 실패를 &quot;진행 상황&quot; 칸에
+코딩 모르는 사람이 읽을 수 있는 말로 적어줘. 터미널에만 찍히면 나는 볼 수가 없어.
+
+둘째, 0건일 때는 &quot;왜 0건인지&quot; 를 구분해서 알려줘. 그냥 &quot;0건&quot; 은 쓸모가 없어.
+
+셋째, 버튼을 누른 동안 창이 멈추지 않게 뒤에서 작업해줘. 작업 중에는 버튼이 안 눌리다가
+끝나면 다시 눌리게.
+
+넷째, 수집량과 화면 출력량에 상한을 둬. 상한이 없으면 결과 칸이 수천 줄이 되어 창이 멈춰.
+화면에는 방금 가져온 것만 앞에서 열 건까지 보여주고, 나머지는 &quot;이 밖에 몇 건 더&quot; 로 한 줄.
+
+지금은 버튼을 눌러도 진행 상황 칸에 안내만 나오면 돼. 창이 열리면 진행 상황 칸 첫 줄에
+실행 중인 파이썬 버전을 한 줄 보여줘.
+
+코드는 채팅창에 쓰지 말고 .py 파일로 첨부해줘. 파일을 어디에 어떤 이름으로 저장하고 어떻게 실행하면 창이 뜨는지도 순서대로 알려줘. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
+          <li>받은 파일을 AI가 알려준 대로 저장하고 실행하면, 검은 터미널 창이 아니라 진짜 프로그램 창이 뜬다</li>
+          <li>입력 칸이 네 개이고, 버튼이 네 개다</li>
+          <li>결과 보는 곳이 &quot;뉴스 수집 결과&quot; / &quot;DART 수집 결과&quot; / &quot;진행 상황&quot; 세 칸으로 나뉘어 있다</li>
+          <li>진행 상황 칸 맨 위에 실행 중인 파이썬 버전이 한 줄 표시된다</li>
+          <li>입력 칸에 아무 값이나 써넣고 창을 닫았다가 다시 열면, 써넣은 값이 그대로 남아있다</li>
+          <li>버튼 네 개를 눌러보면 에러 없이 진행 상황 칸에 뭔가 나온다</li>
+      </ul>
+    </div>
+
+
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 0.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s1" id="s1">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 1 · 수집</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s1">
+        </label>
+        <h2>STEP 1 · 뉴스 수집 버튼 연결하기</h2>
+        <span class="step-time">15분</span>
+      </div>
+      <p class="step-desc">&#x27;뉴스 수집하기&#x27; 버튼을 누르면 실제로 구글 뉴스에서 키워드에 걸리는 기사를 가져오게 만든다. 인증키가 필요 없어서 첫 성공을 가장 빨리 볼 수 있다. 다만 여기서 사내망 특유의 벽을 한 번 넘어야 한다 — 브라우저로는 뉴스가 잘 보이는데 프로그램만 막히는 상황이라, 어느 방식으로 인터넷에 접속할지 프롬프트에서 못 박아줘야 한다.</p>
+    </div>
+
+      <div class="cmd-box">
+        <span class="cmd-label">터미널에 먼저 입력 — 사전 준비에서 이미 받아뒀으면 넘어가기</span>
+        <code class="cmd-text" id="cmd-s1">pip install feedparser</code>
+        <button class="copy-btn" data-copy="cmd-s1">복사</button>
+      </div>
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s1">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s1">&quot;뉴스 수집하기&quot; 버튼이 실제로 구글 뉴스에서 기사를 가져오게 해줘. 구글 뉴스는 인증키 없이
+검색 결과를 받아올 수 있어. 입력한 키워드마다 한국 기준으로 검색해서, 키워드당 최신 열
+건까지만.
+
+먼저 우리 회사 사정 하나. 보안 장비가 인터넷 통신을 중간에서 열어보는 환경이라, 파이썬으로
+뭘 받아오려고 하면 이런 에러가 난다고 해.
+
+CERTIFICATE_VERIFY_FAILED
+
+브라우저로는 잘 보이는데 프로그램만 이렇게 돼. 강사님이 이유와 방법을 적어줬어. 이 부분은
+그대로 해줘.
+
+「인터넷에서 자료를 받아올 때 requests 를 쓰지 마라. requests 는 certifi 라는 자기 목록만
+신뢰하는데 거기에 회사 인증서가 없어서 첫 접속부터 실패한다. 파이썬에 원래 들어있는 urllib
+이나 그것을 쓰는 feedparser 를 써라. 이쪽은 윈도우 인증서 저장소를 보기 때문에 회사 인증서가
+이미 신뢰돼 있어 그냥 된다. 인증서 검증을 끄는 방법은 쓰지 마라.」
+
+키워드 칸이 비어있으면 뉴스 칸에 &quot;키워드가 없어 건너뜀&quot; 만 알려주고 끝내.
+
+못 가져올 때는 두 경우를 구분해서 뉴스 칸에 알려주고, 다음 키워드로 계속 진행해줘 — 회사
+네트워크가 막아서 아예 못 받아온 경우, 그리고 받아왔는데 그 키워드로 걸리는 기사가 없는 경우.
+
+가져온 건 앞에서 만든 형태로 담아줘. 출처는 &quot;뉴스&quot; 로, 날짜는 한국 시간으로 바꿔서. 받아온
+자료의 시간은 세계 표준시라서 그대로 쓰면 아홉 시간 어긋나.
+
+뉴스 칸에는 방금 가져온 것만 최신순으로 보여주고, 제목을 누르면 원문이 열리게. 키워드마다
+&quot;몇 건 가져왔고 검색 결과 전체는 몇 건이었는지&quot; 를 진행 상황 칸에 알려줘.
+
+버튼을 누른 동안 창이 멈추지 않게 뒤에서 작업해줘.
+
+코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
+          <li>키워드를 하나 넣고 버튼을 누르면 뉴스 칸에 기사 제목이 나온다</li>
+          <li>제목을 누르면 브라우저에서 그 기사가 열린다</li>
+          <li>날짜가 &quot;09/08 14:30&quot; 처럼 한국 시간으로 보인다 (지금 시각과 대충 맞아야 한다)</li>
+          <li>키워드당 열 건까지만 나온다</li>
+          <li>진행 상황 칸에 &quot;몇 건 가져왔고 검색 결과는 몇 건&quot; 이 찍힌다</li>
+          <li>버튼을 누른 뒤에도 창을 움직이거나 스크롤할 수 있다</li>
+          <li>키워드를 비우고 누르면 &quot;키워드가 없어 건너뜀&quot; 이 나온다</li>
+      </ul>
+    </div>
+
+
+    <details class="answer-details">
+      <summary>그래도 뉴스 칸에 CERTIFICATE 어쩌고 하는 에러가 뜨면</summary>
+      <p class="tiny" style="margin-top: 4px;">AI 가 강사님 쪽지를 무시하고 <code>requests</code> 를 쓴 것이다. 실제로 자주 일어난다 — 같은 프롬프트를 줘도 어느 라이브러리를 고르느냐에 따라 성패가 갈린다.</p>
+      <div class="prompt-box" style="margin-top: 10px;">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 이어서 넣기</span>
+          <button class="copy-btn" data-copy="trouble-s1">복사</button>
+        </div>
+        <pre class="prompt-text" id="trouble-s1">아직 CERTIFICATE_VERIFY_FAILED 에러가 나. 지금 코드가 인터넷에서 자료를 받아올 때 requests 를
+쓰고 있는지 봐줘. 쓰고 있으면 feedparser 로 바꿔줘. feedparser 는 파이썬에 원래 들어있는
+urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 우리 회사 환경에서 그냥 된다고
+강사님이 그랬어. 인증서 검증을 끄는 방법은 쓰지 말아줘.</pre>
+      </div>
+    </details>
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 1.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s2" id="s2">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 1 · 수집</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s2">
+        </label>
+        <h2>STEP 2 · DART 수집 버튼 연결하기</h2>
+        <span class="step-time">20분</span>
+      </div>
+      <p class="step-desc">&#x27;DART 수집하기&#x27; 버튼을 누르면 전자공시시스템에서 공시를 가져오게 만든다. 이 실습에서 가장 함정이 많은 구간이다 — DART 는 회사 이름으로 검색하는 기능이 없는데도 회사명을 보내면 에러 없이 정상이라고 응답한다. 그래서 프로그램도 수강생도 필터가 걸린 줄 착각하게 된다. 정확해야 하는 부분은 프롬프트에서 그대로 받아 적게 한다.</p>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s2">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s2">&quot;DART 수집하기&quot; 버튼이 전자공시시스템(DART)에서 최근 일주일 공시 목록을 가져오게 해줘.
+
+인증키가 없으면 DART 칸에 &quot;DART 인증키가 없어 건너뜀&quot; 만 알려주고 넘어가.
+
+여기는 함정이 많아서 강사님이 적어준 걸 그대로 옮길게. 이 부분은 그대로 해줘.
+
+「첫째. DART 에는 회사 이름으로 찾아달라고 요청하는 기능이 없다. 회사 이름을 같이 보내도
+에러가 나지 않고 정상 이라고 응답이 오는데, 실제로는 그 값을 무시하고 전체를 준다. 있지도
+않은 회사 이름을 보내도 정상 이라고 온다. 그래서 요청으로 거르려 하지 말고, 그 기간 공시를
+끝까지 받은 다음 프로그램에서 직접 골라내라.
+
+둘째. 한 번에 받을 수 있는 최대 건수는 100건이다. 그보다 크게 요청해도 에러 없이 100건만
+온다. 응답에 들어있는 전체 페이지 수를 보고 마지막 페이지까지 넘겨가며 다 받아라. 최근
+일주일이면 보통 2,700건 전후에 28페이지이고 15초쯤 걸린다. 지금 몇 페이지째인지 진행 상황
+칸에 적어라. 중간에서 끊으면 뒷페이지에 있던 그 회사 공시를 놓치고 없다고 하게 된다.
+
+셋째. 목록을 받는 곳은 opendart.fss.or.kr 이지만 문서를 여는 주소는 dart.fss.or.kr 이다.
+원문 주소는 dart.fss.or.kr/dsaf001/main.do?rcpNo=접수번호 형식이다. 받은 자료에서 접수번호
+항목의 이름은 rcept_no 지만, 주소에 쓸 이름은 rcpNo 다. 이걸 틀리면 「거부」 라고만 뜨는
+페이지가 열린다.
+
+넷째. 응답에 들어있는 상태 값으로 이유를 구분하라. 000 은 정상, 013 은 그 기간에 공시가
+아예 없음(주말이나 공휴일이면 정상이다), 010 과 011 은 인증키 문제, 020 은 요청 한도
+초과다.」
+
+지켜볼 회사를 적어뒀으면 그 회사 것만 남겨줘 — 이름이 정확히 같지 않아도 그 글자가 들어가면
+걸리게. 회사를 안 적었으면 최신 50건만 담고 &quot;전체 몇 건 중 50건만 담았다&quot; 고 알려줘.
+
+담을 때 제목은 &quot;[회사명] 보고서 이름&quot;, 링크는 위 형식의 원문 주소, 날짜는 접수일, 메모는
+제출인, 출처는 &quot;DART&quot;.
+
+0건일 때는 이유를 구분해서 DART 칸에 알려줘 — 그 기간에 공시가 아예 없었는지, 공시는
+있었는데 그 회사 것이 없었는지, 인증키 문제인지. 회사 것이 없었던 경우에는 &quot;공시 몇 건을
+살펴봤는데 그중 그 회사 건은 없었다&quot; 처럼 살펴본 전체 건수도 같이 보여줘.
+
+회사를 여러 개 적었으면 &quot;GS건설 1건 / 삼성물산 1건&quot; 처럼 회사별 건수를 한 줄로 요약해줘.
+
+결과는 DART 칸에만, 방금 가져온 것만 최신순으로, 제목을 누르면 원문이 열리게. 이 버튼도
+창이 멈추지 않게 뒤에서 작업해줘.
+
+코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
+          <li>인증키를 넣고 버튼을 누르면 진행 상황 칸에 &quot;몇 페이지 중 몇 페이지&quot; 가 올라간다</li>
+          <li>지켜볼 회사를 적었으면 DART 칸에 그 회사 공시만 나온다</li>
+          <li>제목을 누르면 브라우저에 공시 원문이 열린다 (「거부」 라고만 뜨면 주소 형식이 틀린 것이다)</li>
+          <li>회사를 여러 개 적으면 &quot;어느 회사 몇 건&quot; 요약이 한 줄 나온다</li>
+          <li>인증키를 일부러 틀리게 넣으면 &quot;인증키에 문제가 있다&quot; 고 알려준다</li>
+          <li>회사를 비우고 누르면 최신 50건만 담고 전체 건수를 알려준다</li>
+          <li>버튼을 누른 뒤에도 창이 멈추지 않는다</li>
+      </ul>
+    </div>
+
+
+    <details class="answer-details">
+      <summary>공시가 나오긴 하는데 내가 적은 회사 것이 아니면</summary>
+      <p class="tiny" style="margin-top: 4px;">회사 이름을 요청에 실어 보낸 것이다. DART 는 그 값을 무시하고 전체를 주면서도 「정상」 이라고 응답하기 때문에, 에러가 없는데 결과가 엉뚱하다.</p>
+      <div class="prompt-box" style="margin-top: 10px;">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 이어서 넣기</span>
+          <button class="copy-btn" data-copy="trouble-s2">복사</button>
+        </div>
+        <pre class="prompt-text" id="trouble-s2">DART 결과에 내가 적은 회사가 아닌 다른 회사 공시가 나와. 지금 코드가 회사 이름을 DART 에
+요청할 때 같이 보내고 있는지 봐줘. 보내고 있으면 빼줘. DART 에는 회사 이름으로 찾는 기능이
+없어서 그 값을 무시하고 전체를 주는데 응답은 정상 이라고 온다고 강사님이 그랬어. 대신 그
+기간 공시를 마지막 페이지까지 다 받은 다음, 회사 이름이 들어간 것만 프로그램에서 직접
+골라내줘. 지금 몇 페이지째인지도 진행 상황 칸에 보여줘.</pre>
+      </div>
+    </details>
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 2.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s3" id="s3">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 1 · 수집</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s3">
+        </label>
+        <h2>STEP 3 · 정리 — 중복 제거·최신순</h2>
+        <span class="step-time">5분</span>
+      </div>
+      <p class="step-desc">두 곳에서 모은 항목을 합칠 때 자동으로 정리되게 만든다. 나중에 소스를 더 붙여도 이 부분이 그대로 중복을 걸러준다.</p>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s3">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s3">모은 항목들을 합칠 때 자동으로 정리되게 해줘. 제목이 비어있는 건 빼고, 제목이 똑같으면 링크가
+달라도 같은 소식으로 봐서 하나만 남기고, 최신 것부터 정렬하되 날짜가 없는 건 맨 뒤로.
+
+수집 버튼 둘 다 새로 가져온 걸 합칠 때 이 정리를 거치게 해줘 (각자 자기 칸에 쓰는 건
+그대로).
+
+한 가지 더. 공시는 접수 날짜만 알 수 있고 몇 시인지는 몰라. 그런데 지금 0시로 채워져서 같은
+날 뉴스보다 늘 아래로 밀려. 시각을 모르는 항목은 날짜만 보여줘.
+
+그리고 결과 칸 맨 아래에 &quot;뉴스 몇 건 · DART 몇 건&quot; 처럼 지금까지 모은 걸 출처별로 한 줄
+요약해줘.
+
+코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
+          <li>뉴스와 DART 를 차례로 눌러도 각자 자기 칸에만 결과가 나온다</li>
+          <li>결과 칸 맨 아래에 &quot;뉴스 몇 건 · DART 몇 건&quot; 요약이 나온다</li>
+          <li>같은 버튼을 두 번 눌러도 모은 전체 건수가 두 배로 늘지 않는다</li>
+          <li>공시가 같은 날 뉴스보다 무조건 아래로 밀리지 않는다</li>
+      </ul>
+    </div>
+
+
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 3.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s4" id="s4">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 2 · 메일 발송</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s4">
+        </label>
+        <h2>STEP 4 · 메일 본문 만들기</h2>
+        <span class="step-time">10분</span>
+      </div>
+      <p class="step-desc">정리된 항목을 사람이 읽기 좋은 메일 본문으로 바꾼다. 아직 보내지는 않는다.</p>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s4">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s4">모은 항목들을 사람이 보기 좋은 메일 본문(디자인이 들어간 형태)으로 만드는 부분을 준비해줘.
+
+맨 위에 &quot;오늘의 이슈 리포트&quot;, 오늘 날짜(한국어, 예: 2026년 09월 08일), 총 몇 건인지,
+&quot;뉴스 몇 건 · DART 몇 건&quot; 요약 한 줄.
+
+본문은 출처별로 나눠줘 — 뉴스끼리, 공시끼리 묶어서 각각 소제목을 달고 그 안에서 최신순.
+섞어놓으면 읽기 어렵고, 공시는 시각을 몰라서 같은 날 뉴스보다 늘 아래로 밀려. 항목마다
+제목(누르면 원문으로 가는 링크)과 날짜·시각.
+
+전체 40건까지만 담고 더 있으면 &quot;이 밖에 몇 건이 더 있습니다&quot; 라고 알려줘. 메일은 별도 디자인
+파일을 못 불러오니까 디자인은 본문 안에 직접 넣어줘.
+
+아직 보내지는 말고 본문 만드는 부분만 — 버튼 연결은 다음 단계에서 할 거야.
+
+코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
+          <li>이 단계에서는 화면에 눈에 보이는 변화가 없어도 된다 — 프로그램이 여전히 에러 없이 실행되면 통과다</li>
+          <li>&quot;메일 보내기&quot; 를 눌러도 아직 아무것도 안 가거나 안내만 나온다</li>
+          <li>받은 파일에 메일 본문을 만드는 부분이 들어있다</li>
+      </ul>
+    </div>
+
+
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 4.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s5" id="s5">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 2 · 메일 발송</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s5">
+        </label>
+        <h2>STEP 5 · 메일 보내기 — 아웃룩 자동 발송</h2>
+        <span class="step-time">20분</span>
+      </div>
+      <p class="step-desc">이미 로그인해둔 아웃룩을 원격 조작해서 완전 자동으로 메일을 보낸다. 이 실습에서 가장 많이 막히는 구간이다. 일반인이 &quot;메일로 보내줘&quot; 라고 하면 AI 는 거의 항상 SMTP 를 쓰는데, 사내망에서는 그게 안 되면서 에러도 안 나고 몇십 초 매달려 있다가 죽는다.</p>
+    </div>
+
+      <div class="cmd-box">
+        <span class="cmd-label">터미널에 먼저 입력 — 사전 준비에서 이미 받아뒀으면 넘어가기</span>
+        <code class="cmd-text" id="cmd-s5">pip install pywin32</code>
+        <button class="copy-btn" data-copy="cmd-s5">복사</button>
+      </div>
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s5">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s5">&quot;메일 보내기&quot; 버튼을 눌렀을 때, 모은 항목으로 만든 메일을 실제로 발송하게 해줘.
+
+보내는 방법은 강사님이 적어준 대로 해줘. 이 부분은 그대로.
+
+「메일을 SMTP 로 보내지 마라. 회사 보안장비가 암호화 통신으로 올라가는 단계에서 연결을
+끊어버려서, 포트는 열려 있는데 응답이 오지 않고 몇십 초 매달린 뒤 죽는다. 에러 메시지도
+제대로 나오지 않는다. 게다가 SMTP 는 계정 비밀번호를 프로그램에 적어야 한다.
+
+대신 윈도우에 이미 로그인되어 있는 데스크톱 아웃룩을 조작해라. pywin32 의
+win32com.client 로 Outlook.Application 을 붙잡고, CreateItem(0) 으로 새 메일을 만들어
+받는 사람과 제목과 본문을 채운 뒤 Send() 로 보내면 된다. 이 방식은 이미 로그인된 아웃룩을
+쓰기 때문에 비밀번호가 아예 필요 없다.
+
+본문은 반드시 HTMLBody 에 넣어라. Body 에 넣으면 링크가 「제목 다음에 주소가 따라오는」
+글자로 깨져서 눌러도 열리지 않는다.」
+
+받는 사람이 여러 명이면 전부, 제목은 &quot;[이슈 리포트] 오늘 날짜 · N건&quot; 형식으로.
+
+진행 상황 칸에 알려주고 끝내는 경우가 넷 있어 — 모은 항목이 하나도 없을 때(&quot;보낼 항목이
+없습니다. 먼저 수집하세요&quot;), 받는 사람이 비어있을 때, 윈도우가 아닌 컴퓨터일 때, 그리고
+아웃룩 조작에 필요한 게 설치 안 됐을 때(이때는 설치 방법도 알려줘).
+
+그리고 자동 발송이 안 되는 경우도 있어. 회사에서 &quot;새 아웃룩&quot; 을 쓰는 사람은 이 방식 자체가
+지원되지 않아. 그때는 제목과 받는 사람과 본문이 이미 채워진 새 메일 작성 창을 열어줘서 내가
+보내기만 누르면 되게 해줘. 자동 발송을 먼저 시도해서 성공하면 &quot;자동 발송 완료&quot;, 안 되면 그
+사실을 알린 뒤 메일 창을 열고 &quot;보내기만 누르면 된다&quot; 고 알려줘.
+
+이 버튼도 창이 멈추지 않게 해줘.
+
+코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
+          <li>&quot;메일 보내기&quot; 를 누르면 진행 상황 칸에 &quot;자동 발송 완료&quot; 가 나온다</li>
+          <li>내 메일함에 실제로 메일이 도착한다 (아웃룩 보낸 편지함에도 남는다)</li>
+          <li>메일 안의 기사 제목을 누르면 원문이 열린다 (주소가 글자로 보이면 HTMLBody 가 아니라 Body 를 쓴 것이다)</li>
+          <li>메일이 뉴스와 공시로 나뉘어 있고 각 소제목에 건수가 붙어있다</li>
+          <li>수집하지 않고 바로 누르면 &quot;보낼 항목이 없습니다&quot; 가 나온다</li>
+          <li>받는 사람을 비우고 누르면 그 사실을 알려준다</li>
+      </ul>
+    </div>
+
+
+    <details class="answer-details">
+      <summary>아무 반응이 없거나 한참 기다리다 실패하면</summary>
+      <p class="tiny" style="margin-top: 4px;">AI 가 강사님 쪽지를 무시하고 SMTP 로 보내려 한 것이다. 포트는 열려 있어서 코드는 맞아 보이는데, 암호화 통신으로 올라가는 순간 보안장비가 끊어버린다.</p>
+      <div class="prompt-box" style="margin-top: 10px;">
+        <div class="prompt-box-head">
+          <span class="prompt-label">이 프롬프트를 이어서 넣기</span>
+          <button class="copy-btn" data-copy="trouble-s5">복사</button>
+        </div>
+        <pre class="prompt-text" id="trouble-s5">메일 보내기를 누르면 한참 멈춰 있다가 실패해. 지금 코드가 smtplib 나 SMTP 로 메일을 보내려고
+하는지 봐줘. 그러면 그 부분을 빼고, 윈도우에 이미 로그인된 데스크톱 아웃룩을 조작하는 방식으로
+바꿔줘. pywin32 의 win32com.client 로 Outlook.Application 을 붙잡고 CreateItem(0) 으로 새
+메일을 만들어 Send() 하는 방식이야. 본문은 HTMLBody 에 넣어줘.</pre>
+      </div>
+    </details>
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 5.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="s6" id="s6">
+    <div class="page-head">
+      <span class="page-eyebrow">실습 2 · 메일 발송</span>
+      <div class="page-title-row">
+        <label class="page-check-wrap">
+          <input type="checkbox" class="check page-check" data-id="s6">
+        </label>
+        <h2>STEP 6 · 전체 실행 버튼 — 완성</h2>
+        <span class="step-time">10분</span>
+      </div>
+      <p class="step-desc">지금까지 만든 버튼들을 하나로 잇는다. 여기까지 되면 완성이다.</p>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-box-head">
+        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <button class="copy-btn" data-copy="prompt-s6">복사</button>
+      </div>
+      <pre class="prompt-text" id="prompt-s6">&quot;전체 실행&quot; 버튼을 완성해줘. 누르면 뉴스 수집 다음에 DART 수집, 그다음 메일 보내기를 순서대로
+한 번에 실행해줘. 수집된 게 없으면 메일은 보내지 말고 진행 상황 칸에 알려줘.
+
+그리고 여러 버튼을 동시에 눌러도 꼬이지 않게 해줘 — 어떤 작업이 진행 중이면 다른 버튼도 잠시
+안 눌리다가 끝나면 다시 눌리게. 진행 중에 또 누르면 &quot;아직 앞의 작업이 끝나지 않았습니다&quot; 라고
+알려줘.
+
+마지막으로, 어디서든 예상 못 한 문제가 생겨도 프로그램이 그냥 죽지 않고 진행 상황 칸에 무슨
+문제인지 적어주게 해줘. 여기까지 되면 완성이야.
+
+코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
+          <li>&quot;전체 실행&quot; 을 누르면 뉴스 → DART → 메일까지 한 번에 진행된다</li>
+          <li>진행 중에는 다른 버튼이 눌리지 않고, 끝나면 다시 눌린다</li>
+          <li>메일이 도착하고 그 안에 뉴스와 공시가 모두 들어있다</li>
+          <li>인증키를 비우고 전체 실행을 하면 뉴스만 모아서 메일이 간다</li>
+      </ul>
+    </div>
+
+
+    <details class="answer-details">
+      <summary>안 되면? 정답 코드 파일 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
+        <code># STEP 6.</code> 로 시작하는 부분과 비교해본다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-mainpy-btn">
+          <span class="arrow">⬇</span> main.py 받기
+        </button>
+      </div>
+    </details>
+  </section>
+
+  <section class="page" data-page="stuck" id="stuck">
+    <div class="page-head">
+      <span class="page-eyebrow">참고</span>
+      <div class="page-title-row">
+        <h2>막히면 여기</h2>
+      </div>
+      <p class="step-desc">실제로 사내 PC에서 끝까지 돌려보며 부딪힌 것들이다.
+        증상만 보고 바로 찾아갈 수 있게 정리했다.</p>
+    </div>
+
+    <div class="workflow-note">
+      <p class="workflow-note-title">먼저 이것부터 — 에러 문장을 그대로 AI에게 붙여넣기</p>
+      <p class="tiny">아래를 다 읽을 필요 없다. <strong>프로그램 창이나 검은 창에 나온 문장을
+        통째로 복사해서 AI 채팅창에 붙여넣고 "이거 왜 이래?"라고 물어보는 것이 가장 빠르다.</strong>
+        아래는 그렇게 해도 안 풀릴 때, 혹은 강사가 원인을 빨리 짚어야 할 때 보는 목록이다.</p>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">수집이 안 될 때</p>
+      <ul>
+        <li><strong>뉴스 결과 칸에 <code>CERTIFICATE_VERIFY_FAILED</code></strong>
+          — 회사 보안 장비가 인터넷 통신을 중간에서 열어보고 자기 인증서로 다시 서명해
+          넘겨준다. 크롬은 회사가 윈도우에 심어둔 인증서를 보기 때문에 잘 되는데,
+          프로그램만 막히는 이유다.
+          <strong>원인은 거의 항상 라이브러리 선택이다.</strong> <code>requests</code> 는
+          윈도우 인증서 저장소를 보지 않고 <code>certifi</code> 라는 자기 목록만 보는데,
+          거기에 회사 인증서가 없다. 반면 파이썬에 원래 들어있는 <code>urllib</code> 과
+          그것을 쓰는 <code>feedparser</code> 는 윈도우 저장소를 보므로 그냥 된다
+          (측정값: <code>urllib</code> 은 루트 인증서 67개 = 윈도우 저장소,
+          <code>requests</code> 는 121개 = certifi 번들).
+          <strong>STEP 1 의 "막히면" 안내</strong>를 펼쳐서 프롬프트를 이어 넣는다.
+          코드에 <code>import requests</code> 가 보이면 그게 원인이다.
+          인증서 검사를 아예 끄는 방식은 쓰지 않는다.</li>
+        <li><strong>수집하고 나면 프로그램이 느려지거나 멈춘다</strong> — 결과 칸에 넣은 줄이
+          너무 많은 것이다. 원인은 둘 중 하나다. ① <strong>DART 를 회사명 없이 돌렸다</strong> —
+          일주일치 공시는 수천 건이라 그게 전부 쏟아진다. 회사명을 넣고 다시 누른다.
+          ② <strong>AI가 버튼을 누를 때마다 지금까지 모은 걸 전부 다시 늘어놓게 만들었다</strong> —
+          STEP 1·2 프롬프트에 "새로 가져온 것만 보여줘"가 들어가 있지만 AI가 무시할 때가 있다.
+          <strong>STEP 3</strong> 을 먼저 적용하면 정리된다.
+          결과 칸을 비우고 싶으면 프로그램을 껐다 켜면 된다 — 입력값은 남아있다.</li>
+        <li><strong>뉴스가 전부 <code>검색 실패</code></strong> — 회사가 구글 뉴스를 막았을 수 있다.
+          <code>한국뉴스_점검.py</code> 를 실행하면 구글만 막힌 건지 네트워크 전체가 막힌
+          건지 구분해준다. 네트워크 전체가 막힌 게 아니라면 키워드를 바꿔 다시 눌러본다.</li>
+        <li><strong>뉴스가 <code>0건</code></strong> (실패는 아님) — 그 키워드로 걸리는 기사가 없는
+          것이다. 더 넓은 단어로 바꿔본다.</li>
+        <li><strong>DART 가 <code>0건</code></strong> — 이유가 세 가지다. ① 그 기간에 공시가 아예
+          없다(주말·공휴일이면 정상) ② 공시는 많았지만 그 회사 것이 없다 ③ 인증키 문제.
+          프로그램이 이 셋을 구분해 알려주게 만들어 두었으니 DART 결과 칸의 문장을 먼저 읽는다.
+          <code>dart_점검.py</code> 를 실행하면 기간을 1일/3일/7일로 늘려가며 각각 몇 건인지
+          보여준다.</li>
+        <li><strong>결과가 엉뚱한 칸에 들어간다 / 제목을 눌러도 원문이 안 열린다</strong>
+          — AI가 STEP 0 의 칸 나누기나 링크 연결을 빠뜨린 것이다. 다음을 이어서 넣는다 —
+          <em>"뉴스 수집 결과는 뉴스 칸에만, DART 수집 결과는 DART 칸에만 들어가게 해줘.
+          그리고 두 칸 모두 항목 제목을 누르면 그 원문이 브라우저에서 열리게 하고, 제목은
+          파란색에 밑줄로 보여줘. 전체를 통째로 다시 줘."</em></li>
+        <li><strong>DART 에서 회사가 안 걸린다</strong> — <strong>정식 명칭으로</strong> 넣는다.
+          <code>현대차</code> 는 DART 에 등록된 이름(현대자동차)과 달라서 안 걸린다.
+          <strong>짧게 넣는 것은 해결책이 아니다</strong> — <code>삼성</code> 으로 넣으면 최근
+          일주일에 140건이 걸리는데 그중 94건이 삼성자산운용 ETF 투자설명서이고 정작
+          삼성전자는 0건이었다(실측). 노이즈만 폭증한다. <code>dart_점검.py</code> 를 실행하면
+          걸린 회사별 건수를 찍어주니, 거기서 실제 등록된 이름을 확인해 그대로 넣는다.</li>
+      </ul>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">메일이 안 갈 때</p>
+      <ul>
+        <li><strong><code>클래식 아웃룩 자동 발송이 안 됩니다</code></strong> — "새 아웃룩"만 깔린
+          PC에서 정상적으로 뜨는 메시지다. 오류가 아니다. 프로그램이 대신 메일 창을
+          열어주니 <strong>[보내기]만 누르면 된다.</strong></li>
+        <li><strong>메일 창도 안 뜬다</strong> — 아웃룩이 꺼져 있거나 로그인이 안 된 경우가
+          대부분이다. 아웃룩을 먼저 켜서 로그인 화면이 없는지 확인한다.</li>
+        <li><strong><code>pywin32 가 설치되어 있지 않습니다</code></strong> — 사전 준비의 설치
+          파일을 안 돌렸거나, <strong>다른 파이썬 버전에 깔린 경우</strong>다. 여러 버전이 깔린
+          PC에서 흔하다. 사전 준비의 <code>파이썬 설치.bat</code> 을 다시 더블클릭하면 된다.</li>
+        <li><strong>받는 사람이 없다고 나온다</strong> — 창의 "메일 받을 사람" 칸이 비어 있다.</li>
+      </ul>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">AI 쪽에서 막힐 때</p>
+      <ul>
+        <li><strong>프로그램 창이 아예 안 뜨고 검은 창만 깜빡한다 /
+          <code>SyntaxError</code></strong>
+          — <strong>AI가 첨부한 파일이 깨진 것이다.</strong> 파일로 만들어지는 과정에서
+          <strong>역슬래시(<code>\</code>)가 전부 사라지는</strong> 일이 있다. 줄바꿈을 뜻하는
+          <code>\n</code> 이 통째로 없어지면서 글자가 두 줄로 찢어지고, 파이썬은 거기서 읽기를
+          멈춘다. <strong>실제로 발생한 사례다</strong> — 같은 대화에서 첫 파일은 정상이었고 두 번째
+          파일만 깨졌으니, 언제 터질지 모른다고 보면 된다. 코드를 볼 필요 없이 아래를 그대로
+          넣으면 된다 —
+          <em>"받은 파일을 실행하니 SyntaxError 가 떴어. 파일에서 역슬래시가 전부 사라져서 글자가
+          찢어진 것 같아. 코드 안에 역슬래시를 아예 쓰지 않는 방식으로 바꿔줘 — 줄바꿈은
+          chr(10), 탭은 chr(9) 로. 그렇게 전체를 통째로 다시 줘."</em>
+          각 STEP 프롬프트 맨 끝에 이걸 미리 막는 문장이 들어가 있지만 AI가 무시할 때가 있다.
+          <strong>압축을 안 푼 채 실행한 경우와 증상이 똑같으니</strong>, 검은 창 마지막 줄에
+          <code>SyntaxError</code> 가 있는지로 구분한다.</li>
+        <li><strong>파일을 안 주고 채팅창에 코드만 보여준다</strong> — 이 AI 툴은 질문마다 답하는
+          모델이 자동으로 바뀐다. 화면 위쪽에서 <strong>모델을 Gemini 로 바꾼 뒤 같은 프롬프트를
+          다시</strong> 넣어본다. 그래도 안 되면 각 STEP 의 <strong>"정답 코드 파일 받기"</strong> 버튼을
+          쓴다.</li>
+        <li><strong>앞 단계에서 되던 기능이 사라졌다</strong> — AI가 바뀐 부분만 주면서 나머지를
+          빠뜨린 것이다. "앞 단계까지 되던 기능을 하나도 빼지 말고 전체를 통째로 다시 줘"라고
+          다시 요청한다. (각 프롬프트에 이미 그렇게 적혀 있다)</li>
+        <li><strong>새 대화창에서 물어봤더니 엉뚱한 걸 준다</strong> — AI는 앞서 짜준 코드를
+          기억하지 못한다. <strong>처음부터 끝까지 같은 대화창에서</strong> 이어 물어봐야 한다.</li>
+        <li><strong>받은 파일이 <code>main (2).py</code>, <code>main (3).py</code> 로 쌓인다</strong>
+          — 정상이다. 이름을 맞추려 애쓰지 말고 <strong>방금 받은 가장 최신 파일</strong>을 실행한다.
+          단 <strong>폴더는 처음 정한 그대로</strong> 쓴다 — 입력해둔 인증키가 프로그램 파일과 같은
+          폴더에 저장되기 때문이다.</li>
+      </ul>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">사전 준비가 안 될 때</p>
+      <ul>
+        <li><strong>검은 창이 깜빡하고 바로 닫힌다</strong> — 압축을 안 푼 채 ZIP 안에서 실행한
+          경우가 대부분이다. 압축을 먼저 푼다.</li>
+        <li><strong>파란 경고창 <code>Windows의 PC 보호</code></strong> —
+          <code>추가 정보</code> → <code>실행</code> 을 누르면 된다.</li>
+        <li><strong>부품 받기가 인증서 오류로 실패</strong> — 설치 파일이 자동으로 한 번 더
+          시도하게 되어 있다. 그래도 안 되면 사전 준비 페이지 맨 아래 「막히면」 안내를 따른다.</li>
+        <li><strong>설치 파일 자체가 회사 정책에 막힌다</strong> — 개인이 풀 수 없는 경우가 있다.
+          <strong>화면을 캡처해서 강사에게 보여주는 것</strong>이 가장 빠르다.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <p><strong>점검용 파일 두 개</strong> — 실습 폴더의 <code>news-report-bot</code> 안에 있다.
+        수집이 왜 안 되는지 프로그램과 따로 확인해볼 때 쓴다.</p>
+      <ul style="margin:8px 0 0; padding-left:20px;">
+        <li><code>한국뉴스_점검.py</code> — 구글 뉴스가 이 네트워크에서 실제로 되는지,
+          그리고 requests 와 urllib 중 무엇이 막히는지 보여준다. 그냥 실행하면 된다.</li>
+        <li><code>dart_점검.py</code> — DART 가 왜 0건인지 짚어준다. 파일을 열어 인증키와
+          회사 이름을 채운 뒤 실행한다.</li>
+      </ul>
+    </div>
+  </section>
+
+    <div class="page-nav">
+      <button class="page-nav-btn" id="pageNavPrev">← 이전</button>
+      <span class="page-nav-pos" id="pageNavPos">1 / 9</span>
+      <button class="page-nav-btn next" id="pageNavNext">다음 →</button>
+    </div>
+
+
+  <footer>
+    바이브 코딩 실습 · DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기 ·
+    프로그램 창에 입력한 인증키는 <code>settings.json</code> 에 저장됩니다 — 이 파일은 공유하지 마세요 ·
+    프롬프트는 예시입니다, 표현을 바꿔서 시도해봐도 좋습니다
+  </footer>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PAGE_IDS = ["prep", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "stuck"];
+  var STORAGE_KEY = "issuebot-checklist";
+  var STATE_KEY = "issuebot-current-page";
+
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check, .page-check"));
+  var pages = Array.prototype.slice.call(document.querySelectorAll(".page"));
+  var tocLinks = Array.prototype.slice.call(document.querySelectorAll(".toc-link"));
+  var doneCountEl = document.getElementById("doneCount");
+  var totalCountEl = document.getElementById("totalCount");
+  var fillEl = document.getElementById("progressFill");
+  var noteEl = document.getElementById("progressNote");
+  var itemCountWordEl = document.getElementById("itemCountWord");
+  var tocDoneEl = document.getElementById("tocDone");
+  var tocTotalEl = document.getElementById("tocTotal");
+  var tocFillEl = document.getElementById("tocFill");
+  var navPrevBtn = document.getElementById("pageNavPrev");
+  var navNextBtn = document.getElementById("pageNavNext");
+  var navPosEl = document.getElementById("pageNavPos");
+
+  var toc = document.getElementById("toc");
+  var tocToggle = document.getElementById("tocToggle");
+  var tocClose = document.getElementById("tocClose");
+  var tocBackdrop = document.getElementById("tocBackdrop");
+
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+
+  function saveState(state) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) { /* 저장 안 되면 세션 동안만 유지 */ }
+  }
+
+  function render() {
+    var total = boxes.length;
+    var done = boxes.filter(function (b) { return b.checked; }).length;
+    totalCountEl.textContent = String(total);
+    doneCountEl.textContent = String(done);
+    tocTotalEl.textContent = String(total);
+    tocDoneEl.textContent = String(done);
+    var pct = total ? (done / total) * 100 : 0;
+    fillEl.style.width = pct + "%";
+    tocFillEl.style.width = pct + "%";
+    if (itemCountWordEl) itemCountWordEl.textContent = "6가지";
+    noteEl.textContent = done === 0
+      ? "체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전"
+      : done === total
+        ? "체크박스는 이 브라우저에만 저장됩니다 · 전부 완료, 수고했다"
+        : "체크박스는 이 브라우저에만 저장됩니다 · 진행 중";
+
+    tocLinks.forEach(function (link) {
+      var pageId = link.dataset.page;
+      var pageEl = document.getElementById(pageId);
+      if (!pageEl) return;
+      var pageBoxes = pageEl.querySelectorAll(".check, .page-check");
+      var allDone = pageBoxes.length > 0 &&
+        Array.prototype.every.call(pageBoxes, function (b) { return b.checked; });
+      link.classList.toggle("done", allDone);
+    });
+  }
+
+  var state = loadState();
+  boxes.forEach(function (box) {
+    var id = box.dataset.id;
+    if (state[id]) box.checked = true;
+    box.addEventListener("change", function () {
+      state[id] = box.checked;
+      saveState(state);
+      render();
+    });
+    box.addEventListener("click", function (e) { e.stopPropagation(); });
+  });
+
+  /* ── 페이지 전환 ── */
+
+  function currentIndex() {
+    var active = document.querySelector(".page.active");
+    if (!active) return 0;
+    var idx = PAGE_IDS.indexOf(active.dataset.page);
+    return idx === -1 ? 0 : idx;
+  }
+
+  function goTo(pageId, opts) {
+    opts = opts || {};
+    if (PAGE_IDS.indexOf(pageId) === -1) pageId = PAGE_IDS[0];
+
+    pages.forEach(function (p) { p.classList.toggle("active", p.dataset.page === pageId); });
+    tocLinks.forEach(function (l) { l.classList.toggle("current", l.dataset.page === pageId); });
+
+    var idx = PAGE_IDS.indexOf(pageId);
+    navPrevBtn.disabled = idx <= 0;
+    navNextBtn.disabled = idx >= PAGE_IDS.length - 1;
+    navNextBtn.textContent = idx >= PAGE_IDS.length - 1 ? "완료" : "다음 →";
+    navPosEl.textContent = (idx + 1) + " / " + PAGE_IDS.length;
+
+    if (!opts.skipHash) {
+      if (history.replaceState) history.replaceState(null, "", "#" + pageId);
+      else location.hash = pageId;
+    }
+    try { sessionStorage.setItem(STATE_KEY, pageId); } catch (e) {}
+
+    if (!opts.skipScroll) window.scrollTo(0, 0);
+    closeToc();
+  }
+
+  tocLinks.forEach(function (link) {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      goTo(link.dataset.page);
+    });
+  });
+
+  navPrevBtn.addEventListener("click", function () {
+    var idx = currentIndex();
+    if (idx > 0) goTo(PAGE_IDS[idx - 1]);
+  });
+
+  navNextBtn.addEventListener("click", function () {
+    var idx = currentIndex();
+    if (idx < PAGE_IDS.length - 1) goTo(PAGE_IDS[idx + 1]);
+  });
+
+  window.addEventListener("hashchange", function () {
+    var id = location.hash.replace("#", "");
+    if (id) goTo(id, { skipHash: true });
+  });
+
+  /* ── 목차 열기/닫기 (좁은 화면) ── */
+
+  function openToc() {
+    toc.classList.add("open");
+    tocBackdrop.classList.add("show");
+    tocToggle.setAttribute("aria-expanded", "true");
+  }
+  function closeToc() {
+    toc.classList.remove("open");
+    tocBackdrop.classList.remove("show");
+    tocToggle.setAttribute("aria-expanded", "false");
+  }
+  tocToggle.addEventListener("click", function () {
+    toc.classList.contains("open") ? closeToc() : openToc();
+  });
+  tocClose.addEventListener("click", closeToc);
+  tocBackdrop.addEventListener("click", closeToc);
+
+  /* ── 초기 페이지 결정: URL 해시 > 이전 세션 > 첫 페이지 ── */
+
+  var initial = location.hash.replace("#", "");
+  if (!initial) {
+    try { initial = sessionStorage.getItem(STATE_KEY) || ""; } catch (e) { initial = ""; }
+  }
+  render();
+  goTo(initial || PAGE_IDS[0], { skipHash: !initial, skipScroll: true });
+
+  /* ── 복사 버튼 ── */
+
+  function copyText(text, btn) {
+    var settled = false;
+    var done = function () {
+      if (settled) return;
+      settled = true;
+      var original = btn.textContent;
+      btn.textContent = "복사됨!";
+      btn.classList.add("copied");
+      setTimeout(function () {
+        btn.textContent = original;
+        btn.classList.remove("copied");
+      }, 1500);
+    };
+
+    /* 클립보드 API가 권한 프롬프트 등으로 응답 없이 멈추는 경우를 대비해
+       일정 시간 안에 안 끝나면 execCommand 방식으로 바로 넘어간다. */
+    var timeoutId = setTimeout(function () { fallbackCopy(text, done); }, 600);
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { clearTimeout(timeoutId); done(); },
+        function () { clearTimeout(timeoutId); fallbackCopy(text, done); }
+      );
+    } else {
+      clearTimeout(timeoutId);
+      fallbackCopy(text, done);
+    }
+  }
+
+  function fallbackCopy(text, done) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      done();
+    } catch (e) { /* 복사 실패 시 그냥 무시 */ }
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var target = document.getElementById(btn.dataset.copy);
+      if (!target) return;
+      copyText(target.textContent, btn);
+    });
+  });
+
+  /* ── "정답 코드 파일 받기" — main.py 를 base64 로 박아뒀다가 Blob 으로 내려받는다 ── */
+  var MAIN_PY_B64 = "IiIi7J207IqIIOumrO2PrO2KuCDrtIcg4oCUIOyZhOyEseuzuCAo7Iuk7Iq1IOygleuLtSDsvZTrk5wpCgrtgqTsm4zrk5zroZwg6rWs6riAIOuJtOyKpOulvCDrqqjsnLzqs6AsIERBUlQg7JeQ7IScIOq0gOyLrCDtmozsgqwg6rO17Iuc66W8IOuqqOyVhOyEnCwg7JyI64+E7Jqw7JeQIOuhnOq3uOyduOuQnArslYTsm4Pro6nsnLzroZwg7JqU7JW9IOuplOydvOydhCDrs7Trgrjri6QuCgogICAgcGlwIGluc3RhbGwgZmVlZHBhcnNlciBweXdpbjMyCiAgICBweXRob24gbWFpbi5weQoKMjAyNi0wOS0wOCDsgqzrgrQgUEMg7JeQ7IScIOuJtOyKpCAyMOqxtCArIERBUlQg6rO17IucIDLqsbQg7IiY7KeRIC0+IOyVhOybg+ujqSDsnpDrj5kg67Cc7Iah6rmM7KeACuyLpOygnOuhnCDtmZXsnbjtlojri6QuIOqwgSBTVEVQIOyjvOyEneydgCDsi6TsirUg7Y6Y7J207KeA7J2YIFNURVAg67KI7Zi47JmAIOqwmeuLpC4KCuydtCDtlITroZzqt7jrnqjsnbQg7JmcIOydtOugh+qyjCDsg53qsrzripTsp4AgKO2UhOuhrO2UhO2KuOyXkOyEnCDsp5rslrTslbwg7ZWY64qUIOqygyk6CiAgwrcg7J247YSw64S3IOygkeyGjeyXkCByZXF1ZXN0cyDrpbwg7JOw7KeAIOyViuuKlOuLpC4g7IKs64K0IOuztOyViOyepeu5hOqwgCBIVFRQUyDrpbwg7KSR6rCE7JeQ7IScIOyXtOyWtOuztOq4sAogICAg65WM66y47JeQIHJlcXVlc3RzKGNlcnRpZmkg66qp66Gd66eMIOyLoOuisCnripQg7LKrIOygkeyGjeu2gO2EsCDsi6TtjKjtlZzri6QuIHVybGxpYiAvIGZlZWRwYXJzZXIg64qUCiAgICDsnIjrj4TsmrAg7J247Kad7IScIOyggOyepeyGjOulvCDrs7Trr4DroZwg6re464OlIOuQnOuLpC4KICDCtyBEQVJUIOuKlCDtmozsgqwg7J2066aE7Jy866GcIOqygOyDie2VmOuKlCDquLDriqXsnbQg7JeG64ukLiDtmozsgqzrqoXsnYQg67O064K064+EIHN0YXR1cyAwMDAg7KCV7IOBIOydtOudvOqzoAogICAg7J2R64u17J20IOyYpOuptOyEnCDsoITssrTrpbwg7KSA64ukLiDqt7jrnpjshJwg6riw6rCEIOyghOyytOulvCDrgZ3quYzsp4Ag67Cb7JWEIOyngeygkSDqs6jrnbzrgrjri6QuCiAgwrcg66mU7J287J2AIFNNVFAg66GcIOuquyDrs7Trgrjri6QuIO2PrO2KuOuKlCDsl7TroKQg7J6I7KeA66eMIFNUQVJUVExTIOuLqOqzhOyXkOyEnCDsl7DqsrDsnbQg64GK6ri064ukLgogICAg7J2066+4IOuhnOq3uOyduOuQnCDslYTsm4Pro6nsnYQgQ09NIOycvOuhnCDsobDsnpHtlZjrqbQg67mE67CA67KI7Zi46rCAIOyVhOyYiCDtlYTsmpQg7JeG64ukLgogIMK3IOuplOydvCDrs7jrrLjsnYAgSFRNTEJvZHkg7JeQIOuEo+uKlOuLpC4gQm9keSDsl5Ag64Sj7Jy866m0IOunge2BrOqwgCDquIDsnpDroZwg6rmo7KC4IOuIjOumrOyngCDslYrripTri6QuCiIiIgoKaW1wb3J0IGpzb24KaW1wb3J0IG9zCmltcG9ydCBzeXMKaW1wb3J0IHRocmVhZGluZwppbXBvcnQgdGtpbnRlciBhcyB0awppbXBvcnQgdXJsbGliLnBhcnNlCmltcG9ydCB1cmxsaWIucmVxdWVzdAppbXBvcnQgd2ViYnJvd3Nlcgpmcm9tIGNvbGxlY3Rpb25zIGltcG9ydCBDb3VudGVyCmZyb20gZGF0ZXRpbWUgaW1wb3J0IGRhdGUsIGRhdGV0aW1lLCB0aW1lZGVsdGEsIHRpbWV6b25lCmZyb20gZW1haWwudXRpbHMgaW1wb3J0IHBhcnNlZGF0ZV90b19kYXRldGltZQpmcm9tIHRraW50ZXIgaW1wb3J0IHNjcm9sbGVkdGV4dAoKaW1wb3J0IGZlZWRwYXJzZXIKCktTVCA9IHRpbWV6b25lKHRpbWVkZWx0YShob3Vycz05KSkKCiMg7IiY7KeRwrfstpzroKUg7IOB7ZWcIOKAlCDsl4bsnLzrqbQg6rKw6rO8IOy5uOydtCDsiJjsspwg7KSE7J20IOuQmOyWtCDssL3snbQg66mI7LaY64ukLgojIOyLpOy4oTog7IOB7ZWcIOyXhuydtCDtgqTsm4zrk5wgMeqwnCAxMDjqsbQgLT4gMzI27KSELCDtmozsgqwg7ZWE7YSwIOOAjOyCvOyEseOAjSAtPiAyODDspIQvMTgsMDQz7J6QCk1BWF9QRVJfS0VZV09SRCA9IDEwICAgICAgIyDtgqTsm4zrk5zri7kg7IiY7KeRCk5PX0NPTVBBTllfTElNSVQgPSA1MCAgICAgIyDsp4DsvJzrs7wg7ZqM7IKs66W8IOyViCDsoIHsl4jsnYQg65WMIOuLtOydhCDqs7Xsi5wKU0hPV19MSU1JVCA9IDEwICAgICAgICAgICAjIOqysOqzvCDsubjsl5Ag67O07Jes7KSEIOqxtOyImApNQUlMX0xJTUlUID0gNDAgICAgICAgICAgICMg66mU7J28IOuzuOusuOyXkCDri7TsnYQg6rG07IiYCgpORVdTX1JTUyA9ICJodHRwczovL25ld3MuZ29vZ2xlLmNvbS9yc3Mvc2VhcmNoIgojIOuqqeuhneydhCDrsJvripQg6rOzKG9wZW5kYXJ0KeqzvCDrrLjshJzrpbwg7Jes64qUIOqzsyhkYXJ0KeydtCDri6TrpbTri6QuIOq3uOumrOqzoCDrsJvsnYAg7J6Q66OM7J2YCiMg7ZWt66qpIOydtOumhOydgCByY2VwdF9ubyDsp4Drp4wg7KO87IaM7JeQIOyTuCDsnbTrpoTsnYAgcmNwTm8g64ukLiDti4DrpqzrqbQg44CM6rGw67aA44CNIO2OmOydtOyngOqwgCDsl7TrprDri6QuCkRBUlRfTElTVF9BUEkgPSAiaHR0cHM6Ly9vcGVuZGFydC5mc3Mub3Iua3IvYXBpL2xpc3QuanNvbiIKREFSVF9ET0NfVVJMID0gImh0dHBzOi8vZGFydC5mc3Mub3Iua3IvZHNhZjAwMS9tYWluLmRvP3JjcE5vPSIKREFSVF9QQUdFX0NPVU5UID0gMTAwICAgICAjIO2VnCDrsojsl5Ag67Cb7J2EIOyImCDsnojripQg7LWc64yALiDrjZQg7YGs6rKMIOyalOyyre2VtOuPhCAxMDDqsbTrp4wg7Jio64ukCgpTRVRUSU5HU19QQVRIID0gb3MucGF0aC5qb2luKG9zLnBhdGguZGlybmFtZShvcy5wYXRoLmFic3BhdGgoX19maWxlX18pKSwgInNldHRpbmdzLmpzb24iKQoKQ09MTEVDVEVEID0gW10gICAgICAgICAgICAjIOyngOq4iOq5jOyngCDrqqjsnYAg7ZWt66qpCgoKIyDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKIyBTVEVQIDAuIO2UhOuhnOq3uOueqCDssL0g66eM65Ok6riwIOKAlCDshKTsoJUg7KCA7J6lLCDqsrDqs7wg7Lm4IOyEuCDqsJwsIO2BtOumreuQmOuKlCDsoJzrqqkKIyDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKCmRlZiBsb2FkX3NldHRpbmdzKCk6CiAgICAiIiLssL3snYQg64ur7JWY64ukIOuLpOyLnCDsl7TslrTrj4Qg7J6F66Cl6rCS7J20IOuCqOyVhOyeiOqyjCDigJQg7ZSE66Gc6re4656o6rO8IOqwmeydgCDtj7TrjZTsl5Ag7KCA7J6l7ZWc64ukLiIiIgogICAgaWYgb3MucGF0aC5leGlzdHMoU0VUVElOR1NfUEFUSCk6CiAgICAgICAgdHJ5OgogICAgICAgICAgICB3aXRoIG9wZW4oU0VUVElOR1NfUEFUSCwgZW5jb2Rpbmc9InV0Zi04IikgYXMgZjoKICAgICAgICAgICAgICAgIHJldHVybiBqc29uLmxvYWQoZikKICAgICAgICBleGNlcHQgKE9TRXJyb3IsIFZhbHVlRXJyb3IpOgogICAgICAgICAgICBwYXNzCiAgICByZXR1cm4ge30KCgpkZWYgc2F2ZV9zZXR0aW5ncygpOgogICAgZGF0YSA9IGRpY3Qoa2V5d29yZHM9a3dfZW50cnkuZ2V0KCksIGNvbXBhbmllcz1jb3JwX2VudHJ5LmdldCgpLAogICAgICAgICAgICAgICAgbWFpbHRvPXRvX2VudHJ5LmdldCgpLCBkYXJ0X2tleT1rZXlfZW50cnkuZ2V0KCkpCiAgICB0cnk6CiAgICAgICAgd2l0aCBvcGVuKFNFVFRJTkdTX1BBVEgsICJ3IiwgZW5jb2Rpbmc9InV0Zi04IikgYXMgZjoKICAgICAgICAgICAganNvbi5kdW1wKGRhdGEsIGYsIGVuc3VyZV9hc2NpaT1GYWxzZSwgaW5kZW50PTIpCiAgICBleGNlcHQgT1NFcnJvciBhcyBleDoKICAgICAgICBsb2coIuyEpOygleydhCDsoIDsnqXtlZjsp4Ag66q77ZaI7Iq164uI64ukOiAlcyIgJSBleCkKCgpkZWYgbG9nKG1lc3NhZ2UpOgogICAgIiIi7KeE7ZaJIOyDge2ZqeqzvCDsl5Drn6zripQg7KCE67aAIOyXrOq4sOuhnC4g7YSw66+464SQ7JeQ66eMIOywje2eiOuptCDsiJjqsJXsg53snYAg67O8IOyImOqwgCDsl4bri6QuIiIiCiAgICBkZWYgZG8oKToKICAgICAgICBzdGF0dXNfYm94LmNvbmZpZyhzdGF0ZT0ibm9ybWFsIikKICAgICAgICBzdGF0dXNfYm94Lmluc2VydCgiZW5kIiwgbWVzc2FnZSArICJcbiIpCiAgICAgICAgc3RhdHVzX2JveC5zZWUoImVuZCIpCiAgICAgICAgc3RhdHVzX2JveC5jb25maWcoc3RhdGU9ImRpc2FibGVkIikKICAgIHJvb3QuYWZ0ZXIoMCwgZG8pCgoKZGVmIHJlbmRlcih0YXJnZXQsIGl0ZW1zLCB0YWlsPSIiKToKICAgICIiIuuwqeq4iCDqsIDsoLjsmKgg6rKD66eMLCDslZ7sl5DshJwgU0hPV19MSU1JVCDqsbTquYzsp4AuIOygnOuqqeydhCDriITrpbTrqbQg7JuQ66y47J20IOyXtOumsOuLpC4iIiIKICAgIGRlZiBkbygpOgogICAgICAgIHRhcmdldC5jb25maWcoc3RhdGU9Im5vcm1hbCIpCiAgICAgICAgdGFyZ2V0LmRlbGV0ZSgiMS4wIiwgImVuZCIpCiAgICAgICAgZm9yIGksIGl0ZW0gaW4gZW51bWVyYXRlKGl0ZW1zWzpTSE9XX0xJTUlUXSk6CiAgICAgICAgICAgIHRhZyA9ICJsaW5rJWRfJWQiICUgKGlkKHRhcmdldCksIGkpCiAgICAgICAgICAgIHRhcmdldC5pbnNlcnQoImVuZCIsICIlZC4gIiAlIChpICsgMSkpCiAgICAgICAgICAgIHRhcmdldC5pbnNlcnQoImVuZCIsIGl0ZW1bInRpdGxlIl0gKyAiXG4iLCB0YWcpCiAgICAgICAgICAgIG1lbW8gPSAoIiAgwrcgICIgKyBpdGVtWyJtZW1vIl0pIGlmIGl0ZW0uZ2V0KCJtZW1vIikgZWxzZSAiIgogICAgICAgICAgICB0YXJnZXQuaW5zZXJ0KCJlbmQiLCAiICAgICAiICsgaXRlbVsiZGF0ZSJdICsgbWVtbyArICJcbiIpCiAgICAgICAgICAgIHRhcmdldC50YWdfY29uZmlnKHRhZywgZm9yZWdyb3VuZD0iIzExNTVjYyIsIHVuZGVybGluZT1UcnVlKQogICAgICAgICAgICB0YXJnZXQudGFnX2JpbmQodGFnLCAiPEJ1dHRvbi0xPiIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBsYW1iZGEgZXYsIHU9aXRlbVsibGluayJdOiB3ZWJicm93c2VyLm9wZW4odSkpCiAgICAgICAgICAgIHRhcmdldC50YWdfYmluZCh0YWcsICI8RW50ZXI+IiwgbGFtYmRhIGV2LCB0PXRhcmdldDogdC5jb25maWcoY3Vyc29yPSJoYW5kMiIpKQogICAgICAgICAgICB0YXJnZXQudGFnX2JpbmQodGFnLCAiPExlYXZlPiIsIGxhbWJkYSBldiwgdD10YXJnZXQ6IHQuY29uZmlnKGN1cnNvcj0iIikpCiAgICAgICAgaWYgbGVuKGl0ZW1zKSA+IFNIT1dfTElNSVQ6CiAgICAgICAgICAgIHRhcmdldC5pbnNlcnQoImVuZCIsICJcbi4uLiDsnbQg67CW7JeQICVk6rG07J20IOuNlCDsnojsirXri4jri6QuXG4iCiAgICAgICAgICAgICAgICAgICAgICAgICAgJSAobGVuKGl0ZW1zKSAtIFNIT1dfTElNSVQpKQogICAgICAgIGlmIHRhaWw6CiAgICAgICAgICAgIHRhcmdldC5pbnNlcnQoImVuZCIsICJcbiIgKyB0YWlsICsgIlxuIikKICAgICAgICB0YXJnZXQuY29uZmlnKHN0YXRlPSJkaXNhYmxlZCIpCiAgICByb290LmFmdGVyKDAsIGRvKQoKCmRlZiBtYWtlX2l0ZW0oc291cmNlLCB0aXRsZSwgbGluaywgc2hvd25fZGF0ZSwgdGltZXN0YW1wLCBtZW1vPSIiKToKICAgICIiIuq4sOyCrMK36rO17IucIO2VnCDqsbTsnYQg64u064qUIO2Yle2DnC4g7Iuc6rCB7J2EIOuqqOultOuptCDrgqDsp5zrp4wg67O07Jes7KSA64ukLiIiIgogICAgcmV0dXJuIGRpY3Qoc3JjPXNvdXJjZSwgdGl0bGU9dGl0bGUsIGxpbms9bGluaywgZGF0ZT1zaG93bl9kYXRlLAogICAgICAgICAgICAgICAgdHM9dGltZXN0YW1wLCBtZW1vPW1lbW8pCgoKIyDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKIyBTVEVQIDEuIOuJtOyKpCDsiJjsp5Eg67KE7Yq8IOKAlCDqtazquIAg64m07IqkICjsnbjspp3tgqQg7JeG7J2MKQojIOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkAoKZGVmIGNvbGxlY3RfbmV3cygpOgogICAgcmF3ID0ga3dfZW50cnkuZ2V0KCkuc3RyaXAoKQogICAgaWYgbm90IHJhdzoKICAgICAgICBsb2coIu2CpOybjOuTnOqwgCDsl4bslrQg64m07Iqk64qUIOqxtOuEiOucgeuLiOuLpC4iKQogICAgICAgIHJlbmRlcihuZXdzX2JveCwgW10pCiAgICAgICAgcmV0dXJuIFtdCgogICAga2V5d29yZHMgPSBbay5zdHJpcCgpIGZvciBrIGluIHJhdy5yZXBsYWNlKCIsIiwgIiAiKS5zcGxpdCgpIGlmIGsuc3RyaXAoKV0KICAgIGl0ZW1zID0gW10KICAgIGZvciBrZXl3b3JkIGluIGtleXdvcmRzOgogICAgICAgIHF1ZXJ5ID0gdXJsbGliLnBhcnNlLnVybGVuY29kZShkaWN0KHE9a2V5d29yZCwgaGw9ImtvIiwgZ2w9IktSIiwgY2VpZD0iS1I6a28iKSkKICAgICAgICAjIGZlZWRwYXJzZXIg64qUIOuCtOu2gOyXkOyEnCB1cmxsaWIg66W8IOyTtOuLpCAtPiDsnIjrj4TsmrAg7J247Kad7IScIOyggOyepeyGjOulvCDrs7Trr4DroZwKICAgICAgICAjIOyCrOuCtCDrs7TslYjsnqXruYQg7ZmY6rK97JeQ7ISc64+EIOq3uOuDpSDrkJzri6QuIHJlcXVlc3RzIOuhnCDrsJTqvrjrqbQg7LKrIOygkeyGjeu2gO2EsCDsi6TtjKjtlZzri6QuCiAgICAgICAgdHJ5OgogICAgICAgICAgICBmZWVkID0gZmVlZHBhcnNlci5wYXJzZShORVdTX1JTUyArICI/IiArIHF1ZXJ5KQogICAgICAgIGV4Y2VwdCBFeGNlcHRpb24gYXMgZXg6CiAgICAgICAgICAgIGxvZygiWyVzXSDqsIDsoLjsmKTripQg7KSRIOusuOygnOqwgCDsg53qsrzsirXri4jri6Q6ICVzIC0gJXMiCiAgICAgICAgICAgICAgICAlIChrZXl3b3JkLCB0eXBlKGV4KS5fX25hbWVfXywgZXgpKQogICAgICAgICAgICBjb250aW51ZQoKICAgICAgICBpZiBub3QgZmVlZC5lbnRyaWVzOgogICAgICAgICAgICAjICLrhKTtirjsm4ztgazqsIAg66eJ7JWE7IScIOuquyDrsJvslYTsmKgg6rKDIiDqs7wgIuuwm+yVhOyZlOuKlOuNsCDquLDsgqzqsIAg7JeG64qUIOqygyIg7J2EIOq1rOu2hO2VnOuLpC4KICAgICAgICAgICAgd2h5ID0gZ2V0YXR0cihmZWVkLCAiYm96b19leGNlcHRpb24iLCBOb25lKQogICAgICAgICAgICBpZiB3aHk6CiAgICAgICAgICAgICAgICBsb2coIlslc10g66q7IOuwm+yVhOyZlOyKteuLiOuLpCAtICVzIiAlIChrZXl3b3JkLCB3aHkpKQogICAgICAgICAgICBlbHNlOgogICAgICAgICAgICAgICAgbG9nKCJbJXNdIOuwm+yVhOyZlOyngOunjCDsnbQg7YKk7JuM65Oc66GcIOqxuOumrOuKlCDquLDsgqzqsIAg7JeG7Iq164uI64ukLiIgJSBrZXl3b3JkKQogICAgICAgICAgICBjb250aW51ZQoKICAgICAgICBmb3IgZW50cnkgaW4gZmVlZC5lbnRyaWVzWzpNQVhfUEVSX0tFWVdPUkRdOgogICAgICAgICAgICB0cnk6CiAgICAgICAgICAgICAgICB3aGVuID0gcGFyc2VkYXRlX3RvX2RhdGV0aW1lKGVudHJ5LnB1Ymxpc2hlZCkuYXN0aW1lem9uZShLU1QpCiAgICAgICAgICAgICAgICBzaG93biwgc3RhbXAgPSB3aGVuLnN0cmZ0aW1lKCIlbS8lZCAlSDolTSIpLCB3aGVuLnRpbWVzdGFtcCgpCiAgICAgICAgICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgICAgICAgICBzaG93biwgc3RhbXAgPSAiLSIsIDAKICAgICAgICAgICAgaXRlbXMuYXBwZW5kKG1ha2VfaXRlbSgi64m07IqkIiwgZW50cnkudGl0bGUsIGVudHJ5LmxpbmssIHNob3duLCBzdGFtcCkpCgogICAgICAgIGxvZygiWyVzXSAlZOqxtCAo6rKA7IOJ6rKw6rO8ICVk6rG0IOykkSkiCiAgICAgICAgICAgICUgKGtleXdvcmQsIG1pbihsZW4oZmVlZC5lbnRyaWVzKSwgTUFYX1BFUl9LRVlXT1JEKSwgbGVuKGZlZWQuZW50cmllcykpKQoKICAgIGl0ZW1zLnNvcnQoa2V5PWxhbWJkYSB4OiAteFsidHMiXSkKICAgIG1lcmdlKGl0ZW1zKQogICAgcmVuZGVyKG5ld3NfYm94LCBpdGVtcywgdGFpbD1jb2xsZWN0ZWRfc3VtbWFyeSgi64m07IqkICVk6rG0IiAlIGxlbihpdGVtcykpKQogICAgbG9nKCLribTsiqQg7JmE66OMOiAlZOqxtCIgJSBsZW4oaXRlbXMpKQogICAgcmV0dXJuIGl0ZW1zCgoKIyDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKIyBTVEVQIDIuIERBUlQg7IiY7KeRIOuyhO2KvCDigJQg7KCE7J6Q6rO17Iuc7Iuc7Iqk7YWcICjtlajsoJUg7IS4IOqyuSkKIyDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKCmRlZiBkYXJ0X2ZldGNoX2FsbChrZXksIGJlZ2luLCBlbmQpOgogICAgIiIi6re4IOq4sOqwhCDqs7Xsi5zrpbwg66eI7KeA66eJIO2OmOydtOyngOq5jOyngCDrsJvripTri6QuCgogICAgREFSVCDsl5DripQg7ZqM7IKsIOydtOumhOycvOuhnCDssL7slYTri6zrnbzqs6Ag7JqU7LKt7ZWY64qUIOq4sOuKpeydtCDsl4bri6QuIGNvcnBfbmFtZSDsnYQg67O064K064+ECiAgICDsl5Drn6wg7JeG7J20IHN0YXR1cyAwMDAg7KCV7IOBIOycvOuhnCDsoITssrTqsIAg7Jio64ukICjsl4bripQg7ZqM7IKsIOydtOumhOydhCDrs7TrgrTrj4Qg6re466CH64ukKS4KICAgIOq3uOuemOyEnCDsl6zquLDshJwg64ukIOuwm+qzoCwg6rOg66W064qUIOydvOydgCDslYTrnpjsl5DshJwg7KeB7KCRIO2VnOuLpC4g7KSR6rCE7JeQ7IScIOuBiuycvOuptAogICAg65K37Y6Y7J207KeA7JeQIOyeiOuNmCDqt7gg7ZqM7IKsIOqzteyLnOulvCDrhpPsuZjqs6Ag44CM7JeG64uk44CN6rOgIO2VmOqyjCDrkJzri6QuCiAgICAiIiIKICAgIGNvbGxlY3RlZCwgcGFnZSwgdG90YWxfcGFnZSA9IFtdLCAxLCAxCiAgICB3aGlsZSBwYWdlIDw9IHRvdGFsX3BhZ2U6CiAgICAgICAgcXVlcnkgPSB1cmxsaWIucGFyc2UudXJsZW5jb2RlKGRpY3QoY3J0ZmNfa2V5PWtleSwgYmduX2RlPWJlZ2luLCBlbmRfZGU9ZW5kLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBhZ2Vfbm89cGFnZSwgcGFnZV9jb3VudD1EQVJUX1BBR0VfQ09VTlQpKQogICAgICAgIHdpdGggdXJsbGliLnJlcXVlc3QudXJsb3BlbihEQVJUX0xJU1RfQVBJICsgIj8iICsgcXVlcnksIHRpbWVvdXQ9MjUpIGFzIHJlczoKICAgICAgICAgICAgZGF0YSA9IGpzb24ubG9hZChyZXMpCiAgICAgICAgc3RhdHVzID0gZGF0YS5nZXQoInN0YXR1cyIpCiAgICAgICAgaWYgc3RhdHVzICE9ICIwMDAiOgogICAgICAgICAgICByZXR1cm4gY29sbGVjdGVkLCBzdGF0dXMsIGRhdGEuZ2V0KCJtZXNzYWdlIikKICAgICAgICB0b3RhbF9wYWdlID0gaW50KGRhdGEuZ2V0KCJ0b3RhbF9wYWdlIikgb3IgMSkKICAgICAgICBjb2xsZWN0ZWQuZXh0ZW5kKGRhdGEuZ2V0KCJsaXN0Iikgb3IgW10pCiAgICAgICAgaWYgcGFnZSA9PSAxIG9yIHBhZ2UgJSAxMCA9PSAwIG9yIHBhZ2UgPT0gdG90YWxfcGFnZToKICAgICAgICAgICAgbG9nKCIgICDqs7Xsi5wg66qp66GdICVkLyVkIO2OmOydtOyngCAo64iE7KCBICVk6rG0KSIgJSAocGFnZSwgdG90YWxfcGFnZSwgbGVuKGNvbGxlY3RlZCkpKQogICAgICAgIHBhZ2UgKz0gMQogICAgcmV0dXJuIGNvbGxlY3RlZCwgIjAwMCIsICLsoJXsg4EiCgoKZGVmIGNvbGxlY3RfZGFydCgpOgogICAga2V5ID0ga2V5X2VudHJ5LmdldCgpLnN0cmlwKCkKICAgIGNvbXBhbmllcyA9IFtjLnN0cmlwKCkgZm9yIGMgaW4gY29ycF9lbnRyeS5nZXQoKS5yZXBsYWNlKCIsIiwgIiAiKS5zcGxpdCgpIGlmIGMuc3RyaXAoKV0KICAgIGlmIG5vdCBrZXk6CiAgICAgICAgbG9nKCJEQVJUIOyduOymne2CpOqwgCDsl4bslrQg6rG064SI65yB64uI64ukLiIpCiAgICAgICAgcmVuZGVyKGRhcnRfYm94LCBbXSkKICAgICAgICByZXR1cm4gW10KCiAgICBlbmRfZGF5ID0gZGF0ZS50b2RheSgpCiAgICBiZWdpbl9kYXkgPSBlbmRfZGF5IC0gdGltZWRlbHRhKGRheXM9NykKICAgIGxvZygiREFSVCDqs7Xsi5zrpbwg67Cb7JWE7Ji164uI64ukICglcyB+ICVzKSIgJSAoYmVnaW5fZGF5LCBlbmRfZGF5KSkKICAgIHRyeToKICAgICAgICByYXcsIHN0YXR1cywgbWVzc2FnZSA9IGRhcnRfZmV0Y2hfYWxsKGtleSwgYmVnaW5fZGF5LnN0cmZ0aW1lKCIlWSVtJWQiKSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGVuZF9kYXkuc3RyZnRpbWUoIiVZJW0lZCIpKQogICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBleDoKICAgICAgICBsb2coIkRBUlQg66W8IOu2iOufrOyYpOyngCDrqrvtlojsirXri4jri6Q6ICVzIC0gJXMiICUgKHR5cGUoZXgpLl9fbmFtZV9fLCBleCkpCiAgICAgICAgcmVuZGVyKGRhcnRfYm94LCBbXSkKICAgICAgICByZXR1cm4gW10KCiAgICAjIDDqsbTsnbwg65WMIOydtOycoOulvCDqtazrtoTtlbTshJwg7JWM66Ck7KSA64ukLiDqt7jrg6UgIjDqsbQiIOydgCDsk7jrqqjqsIAg7JeG64ukLgogICAgaWYgc3RhdHVzID09ICIwMTMiOgogICAgICAgIGxvZygi7J20IOq4sOqwhOyXkCDsmKzrnbzsmKgg6rO17Iuc6rCAIOyVhOyYiCDsl4bsirXri4jri6QuICjso7zrp5DCt+qzte2ctOydvOydtOuptCDsoJXsg4HsnoXri4jri6QpIikKICAgICAgICByZW5kZXIoZGFydF9ib3gsIFtdLCB0YWlsPSLsnbQg6riw6rCE7JeQIOyYrOudvOyYqCDqs7Xsi5zqsIAg7JeG7Iq164uI64ukLiIpCiAgICAgICAgcmV0dXJuIFtdCiAgICBpZiBzdGF0dXMgaW4gKCIwMTAiLCAiMDExIik6CiAgICAgICAgbG9nKCJEQVJUIOyduOymne2CpOyXkCDrrLjsoJzqsIAg7J6I7Iq164uI64ukIC0gJXMgJXMiICUgKHN0YXR1cywgbWVzc2FnZSkpCiAgICAgICAgcmVuZGVyKGRhcnRfYm94LCBbXSwgdGFpbD0i7J247Kad7YKk66W8IOuLpOyLnCDtmZXsnbjtlbTso7zshLjsmpQuIikKICAgICAgICByZXR1cm4gW10KICAgIGlmIHN0YXR1cyA9PSAiMDIwIjoKICAgICAgICBsb2coIkRBUlQg7JqU7LKtIO2VnOuPhOulvCDrhJjsl4jsirXri4jri6QgLSAlcyAlcyIgJSAoc3RhdHVzLCBtZXNzYWdlKSkKICAgICAgICByZW5kZXIoZGFydF9ib3gsIFtdLCB0YWlsPSLsmKTripgg7JqU7LKtIO2VnOuPhOulvCDrhJjsl4jsirXri4jri6QuIikKICAgICAgICByZXR1cm4gW10KICAgIGlmIHN0YXR1cyAhPSAiMDAwIjoKICAgICAgICBsb2coIkRBUlQg7J2R64u17J20IOygleyDgeydtCDslYTri5nri4jri6QgLSAlcyAlcyIgJSAoc3RhdHVzLCBtZXNzYWdlKSkKICAgICAgICByZW5kZXIoZGFydF9ib3gsIFtdKQogICAgICAgIHJldHVybiBbXQoKICAgIGxvb2tlZCA9IGxlbihyYXcpCiAgICBpZiBjb21wYW5pZXM6CiAgICAgICAgcGlja2VkID0gW2l0IGZvciBpdCBpbiByYXcKICAgICAgICAgICAgICAgICAgaWYgYW55KG5hbWUgaW4gaXRbImNvcnBfbmFtZSJdIGZvciBuYW1lIGluIGNvbXBhbmllcyldCiAgICBlbHNlOgogICAgICAgIHBpY2tlZCA9IHJhd1s6Tk9fQ09NUEFOWV9MSU1JVF0KCiAgICBpdGVtcyA9IFtdCiAgICBmb3IgaXQgaW4gcGlja2VkOgogICAgICAgIGRheSA9IGl0WyJyY2VwdF9kdCJdCiAgICAgICAgc2hvd24gPSAoZGF5WzQ6Nl0gKyAiLyIgKyBkYXlbNjo4XSkgaWYgbGVuKGRheSkgPT0gOCBlbHNlICItIgogICAgICAgIHRyeToKICAgICAgICAgICAgc3RhbXAgPSBkYXRldGltZShpbnQoZGF5WzA6NF0pLCBpbnQoZGF5WzQ6Nl0pLCBpbnQoZGF5WzY6OF0pLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIHR6aW5mbz1LU1QpLnRpbWVzdGFtcCgpCiAgICAgICAgZXhjZXB0IChWYWx1ZUVycm9yLCBJbmRleEVycm9yKToKICAgICAgICAgICAgc3RhbXAgPSAwCiAgICAgICAgaXRlbXMuYXBwZW5kKG1ha2VfaXRlbSgiREFSVCIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiWyVzXSAlcyIgJSAoaXRbImNvcnBfbmFtZSJdLCBpdFsicmVwb3J0X25tIl0uc3RyaXAoKSksCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBEQVJUX0RPQ19VUkwgKyBpdFsicmNlcHRfbm8iXSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNob3duLCBzdGFtcCwgbWVtbz1pdC5nZXQoImZscl9ubSIsICIiKSkpCiAgICAgICAgaXRlbXNbLTFdWyJjb3JwIl0gPSBpdFsiY29ycF9uYW1lIl0KICAgIGl0ZW1zLnNvcnQoa2V5PWxhbWJkYSB4OiAoLXhbInRzIl0sIHhbInRpdGxlIl0pKQoKICAgIGlmIGNvbXBhbmllcyBhbmQgbm90IGl0ZW1zOgogICAgICAgIGxvZygi6rO17IucICVk6rG07J2EIOyCtO2OtOu0pOuKlOuNsCDsoIHslrTso7zsi6Ag7ZqM7IKsIOqxtOydgCDsl4bsl4jsirXri4jri6QuIiAlIGxvb2tlZCkKICAgICAgICByZW5kZXIoZGFydF9ib3gsIFtdLAogICAgICAgICAgICAgICB0YWlsPSLqs7Xsi5wgJWTqsbTsnYQg7IK07Y6067Sk7KeA66eMIOyggeyWtOyjvOyLoCDtmozsgqwg6rG07J2AIOyXhuyKteuLiOuLpC4iICUgbG9va2VkKQogICAgICAgIHJldHVybiBbXQoKICAgIGlmIGNvbXBhbmllczoKICAgICAgICBieV9jb3JwID0gQ291bnRlcih4WyJjb3JwIl0gZm9yIHggaW4gaXRlbXMpCiAgICAgICAgcGFydHMgPSBbIiVzICVk6rG0IiAlIChuLCBjKSBmb3IgbiwgYyBpbiBieV9jb3JwLm1vc3RfY29tbW9uKDYpXQogICAgICAgIGV4dHJhID0gKCIgKOq3uCDsmbggJWTqs7MpIiAlIChsZW4oYnlfY29ycCkgLSA2KSkgaWYgbGVuKGJ5X2NvcnApID4gNiBlbHNlICIiCiAgICAgICAgdGFpbCA9ICLqs7Xsi5wgJWTqsbQg7KSRICVk6rG0IC0gJXMlcyIgJSAobG9va2VkLCBsZW4oaXRlbXMpLCAiIC8gIi5qb2luKHBhcnRzKSwgZXh0cmEpCiAgICBlbHNlOgogICAgICAgIHRhaWwgPSAoIu2ajOyCrOulvCDslYgg7KCB7Jy87IWo7Jy864uIIOyghOyytCAlZOqxtCDspJEg7LWc7IugICVk6rG066eMIOuLtOyVmOyKteuLiOuLpC4iCiAgICAgICAgICAgICAgICAlIChsb29rZWQsIGxlbihpdGVtcykpKQoKICAgIG1lcmdlKGl0ZW1zKQogICAgcmVuZGVyKGRhcnRfYm94LCBpdGVtcywgdGFpbD1jb2xsZWN0ZWRfc3VtbWFyeSh0YWlsKSkKICAgIGxvZygiREFSVCDsmYTro4w6ICVk6rG0LiAlcyIgJSAobGVuKGl0ZW1zKSwgdGFpbCkpCiAgICByZXR1cm4gaXRlbXMKCgojIOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkAojIFNURVAgMy4g7KCV66asIOKAlCDtlansuaAg65WMIOykkeuztSDsoJzqsbDtlZjqs6Ag7LWc7Iug7IicICjsiJjsp5Eg67KE7Yq865Ok7J20IOqzte2GteycvOuhnCDsk7Tri6QpCiMg4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQCgpkZWYgbWVyZ2UobmV3X2l0ZW1zKToKICAgIHNlZW4gPSBzZXQoeFsidGl0bGUiXSBmb3IgeCBpbiBDT0xMRUNURUQpCiAgICBmb3IgaXRlbSBpbiBuZXdfaXRlbXM6CiAgICAgICAgdGl0bGUgPSAoaXRlbS5nZXQoInRpdGxlIikgb3IgIiIpLnN0cmlwKCkKICAgICAgICBpZiBub3QgdGl0bGUgb3IgdGl0bGUgaW4gc2VlbjoKICAgICAgICAgICAgY29udGludWUKICAgICAgICBzZWVuLmFkZCh0aXRsZSkKICAgICAgICBDT0xMRUNURUQuYXBwZW5kKGl0ZW0pCiAgICBDT0xMRUNURUQuc29ydChrZXk9bGFtYmRhIHg6IC14LmdldCgidHMiLCAwKSkKCgpkZWYgY29sbGVjdGVkX3N1bW1hcnkocHJlZml4KToKICAgIGNvdW50cyA9IENvdW50ZXIoeFsic3JjIl0gZm9yIHggaW4gQ09MTEVDVEVEKQogICAgYm9keSA9ICIgLyAiLmpvaW4oIiVzICVk6rG0IiAlIChrLCB2KSBmb3IgaywgdiBpbiBjb3VudHMuaXRlbXMoKSkgb3IgIjDqsbQiCiAgICByZXR1cm4gIiVzICAgfCAgIOyngOq4iOq5jOyngCDrqqjsnYAg6rKDOiAlcyIgJSAocHJlZml4LCBib2R5KQoKCiMg4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQCiMgU1RFUCA0LiDrqZTsnbwg67O466y4IOunjOuTpOq4sCDigJQg65SU7J6Q7J247J2AIOuzuOusuCDslYjsl5Ag7KeB7KCRCiMg4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQCgpkZWYgZXNjYXBlX2h0bWwodGV4dCk6CiAgICByZXR1cm4gKHRleHQucmVwbGFjZSgiJiIsICImYW1wOyIpLnJlcGxhY2UoIjwiLCAiJmx0OyIpCiAgICAgICAgICAgICAgICAucmVwbGFjZSgiPiIsICImZ3Q7IikucmVwbGFjZSgnIicsICImcXVvdDsiKSkKCgpkZWYgYnVpbGRfbWFpbF9odG1sKCk6CiAgICB0b2RheSA9IGRhdGV0aW1lLm5vdyhLU1QpLnN0cmZ0aW1lKCIlWeuFhCAlbeyblCAlZOydvCIpCiAgICBjb3VudHMgPSBDb3VudGVyKHhbInNyYyJdIGZvciB4IGluIENPTExFQ1RFRCkKICAgIHN1bW1hcnkgPSAiIMK3ICIuam9pbigiJXMgJWTqsbQiICUgKGssIHYpIGZvciBrLCB2IGluIGNvdW50cy5pdGVtcygpKQogICAgc2hvd24gPSBDT0xMRUNURURbOk1BSUxfTElNSVRdCgogICAgb3V0ID0gWyc8ZGl2IHN0eWxlPSJmb250LWZhbWlseTpNYWxndW4gR290aGljLEFwcGxlIFNEIEdvdGhpYyBOZW8sc2Fucy1zZXJpZjsnCiAgICAgICAgICAgJ21heC13aWR0aDo3NjBweDtjb2xvcjojMjIyIj4nLAogICAgICAgICAgICc8aDIgc3R5bGU9Im1hcmdpbjowIDAgNHB4Ij7smKTripjsnZgg7J207IqIIOumrO2PrO2KuDwvaDI+JywKICAgICAgICAgICAnPGRpdiBzdHlsZT0iY29sb3I6IzY2Njtmb250LXNpemU6MTNweDttYXJnaW4tYm90dG9tOjE2cHgiPicKICAgICAgICAgICAnJXMgwrcg66qo65GQICVk6rG0IMK3ICVzPC9kaXY+JyAlICh0b2RheSwgbGVuKENPTExFQ1RFRCksIHN1bW1hcnkpXQoKICAgICMg7Lac7LKY67OE66GcIOuCmOuIiOuLpC4g7ISe7Jy866m0IOydveq4sCDslrTroLXqs6AsIOqzteyLnOuKlCDsi5zqsIHsnYQg66qw6528IOqwmeydgCDrgqAg64m07Iqk67O064ukIOuwgOumsOuLpC4KICAgIGZvciBzb3VyY2UsIGxhYmVsIGluICgoIuuJtOyKpCIsICLribTsiqQiKSwgKCJEQVJUIiwgIuqzteyLnCAoREFSVCkiKSk6CiAgICAgICAgZ3JvdXAgPSBbeCBmb3IgeCBpbiBzaG93biBpZiB4WyJzcmMiXSA9PSBzb3VyY2VdCiAgICAgICAgaWYgbm90IGdyb3VwOgogICAgICAgICAgICBjb250aW51ZQogICAgICAgIG91dC5hcHBlbmQoJzxoMyBzdHlsZT0ibWFyZ2luOjE4cHggMCA2cHg7cGFkZGluZy1ib3R0b206NHB4OycKICAgICAgICAgICAgICAgICAgICdib3JkZXItYm90dG9tOjJweCBzb2xpZCAjZTVlNWU1Ij4lcyA8c3BhbiBzdHlsZT0iY29sb3I6Izg4ODsnCiAgICAgICAgICAgICAgICAgICAnZm9udC13ZWlnaHQ6bm9ybWFsO2ZvbnQtc2l6ZToxM3B4Ij4lZOqxtDwvc3Bhbj48L2gzPicKICAgICAgICAgICAgICAgICAgICUgKGxhYmVsLCBsZW4oZ3JvdXApKSkKICAgICAgICBvdXQuYXBwZW5kKCc8dGFibGUgc3R5bGU9ImJvcmRlci1jb2xsYXBzZTpjb2xsYXBzZTt3aWR0aDoxMDAlIj4nKQogICAgICAgIGZvciBpdGVtIGluIGdyb3VwOgogICAgICAgICAgICBtZW1vID0gKCIgIMK3ICAiICsgZXNjYXBlX2h0bWwoaXRlbVsibWVtbyJdKSkgaWYgaXRlbS5nZXQoIm1lbW8iKSBlbHNlICIiCiAgICAgICAgICAgIG91dC5hcHBlbmQoJzx0cj48dGQgc3R5bGU9InBhZGRpbmc6N3B4IDA7Ym9yZGVyLWJvdHRvbToxcHggc29saWQgI2YwZjBmMCI+JwogICAgICAgICAgICAgICAgICAgICAgICc8YSBocmVmPSIlcyIgc3R5bGU9ImNvbG9yOiMxMTU1Y2M7dGV4dC1kZWNvcmF0aW9uOm5vbmU7JwogICAgICAgICAgICAgICAgICAgICAgICdmb250LXNpemU6MTRweCI+JXM8L2E+JwogICAgICAgICAgICAgICAgICAgICAgICc8ZGl2IHN0eWxlPSJjb2xvcjojODg4O2ZvbnQtc2l6ZToxMnB4O21hcmdpbi10b3A6MnB4Ij4lcyVzPC9kaXY+JwogICAgICAgICAgICAgICAgICAgICAgICc8L3RkPjwvdHI+JwogICAgICAgICAgICAgICAgICAgICAgICUgKGVzY2FwZV9odG1sKGl0ZW1bImxpbmsiXSksIGVzY2FwZV9odG1sKGl0ZW1bInRpdGxlIl0pLAogICAgICAgICAgICAgICAgICAgICAgICAgIGVzY2FwZV9odG1sKGl0ZW1bImRhdGUiXSksIG1lbW8pKQogICAgICAgIG91dC5hcHBlbmQoIjwvdGFibGU+IikKCiAgICBpZiBsZW4oQ09MTEVDVEVEKSA+IE1BSUxfTElNSVQ6CiAgICAgICAgb3V0LmFwcGVuZCgnPHAgc3R5bGU9ImNvbG9yOiM4ODg7Zm9udC1zaXplOjEycHgiPuydtCDrsJbsl5AgJWTqsbTsnbQg642UIOyeiOyKteuLiOuLpC48L3A+JwogICAgICAgICAgICAgICAgICAgJSAobGVuKENPTExFQ1RFRCkgLSBNQUlMX0xJTUlUKSkKICAgIG91dC5hcHBlbmQoIjwvZGl2PiIpCiAgICByZXR1cm4gIiIuam9pbihvdXQpCgoKIyDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKIyBTVEVQIDUuIOuplOydvCDrs7TrgrTquLAg67KE7Yq8IOKAlCDslYTsm4Pro6kg7J6Q64+ZIOuwnOyGoQojIOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkAoKZGVmIHNlbmRfbWFpbCgpOgogICAgaWYgbm90IENPTExFQ1RFRDoKICAgICAgICBsb2coIuuztOuCvCDtla3rqqnsnbQg7JeG7Iq164uI64ukLiDrqLzsoIAg7IiY7KeR7ZWY7IS47JqULiIpCiAgICAgICAgcmV0dXJuCiAgICByZWNpcGllbnRzID0gW2Euc3RyaXAoKSBmb3IgYSBpbiB0b19lbnRyeS5nZXQoKS5yZXBsYWNlKCI7IiwgIiwiKS5zcGxpdCgiLCIpCiAgICAgICAgICAgICAgICAgIGlmIGEuc3RyaXAoKV0KICAgIGlmIG5vdCByZWNpcGllbnRzOgogICAgICAgIGxvZygi67Cb64qUIOyCrOuejOydtCDruYTslrQg7J6I7Iq164uI64ukLiIpCiAgICAgICAgcmV0dXJuCiAgICBpZiBvcy5uYW1lICE9ICJudCI6CiAgICAgICAgbG9nKCLslYTsm4Pro6kg7J6Q64+ZIOuwnOyGoeydgCDsnIjrj4TsmrDsl5DshJzrp4wg65Cp64uI64ukLiIpCiAgICAgICAgcmV0dXJuCiAgICB0cnk6CiAgICAgICAgaW1wb3J0IHdpbjMyY29tLmNsaWVudCBhcyB3aW4zMgogICAgZXhjZXB0IEltcG9ydEVycm9yOgogICAgICAgIGxvZygi7JWE7JuD66OpIOyhsOyekeyXkCDtlYTsmpTtlZwg6rKMIOyXhuyKteuLiOuLpC4g66qF66C57LC97JeQ7IScIHBpcCBpbnN0YWxsIHB5d2luMzIg7ZWY7IS47JqULiIpCiAgICAgICAgcmV0dXJuCgogICAgc3ViamVjdCA9ICgiW+ydtOyKiCDrpqztj6ztirhdICVzIMK3ICVk6rG0IgogICAgICAgICAgICAgICAlIChkYXRldGltZS5ub3coS1NUKS5zdHJmdGltZSgiJVktJW0tJWQiKSwgbGVuKENPTExFQ1RFRCkpKQogICAgYm9keSA9IGJ1aWxkX21haWxfaHRtbCgpCgogICAgIyBTTVRQIOuhnOuKlCDrqrsg67O064K464ukIOKAlCDtj6ztirjripQg7Je066CkIOyeiOyngOunjCBTVEFSVFRMUyDri6jqs4Tsl5DshJwg7Jew6rKw7J20IOuBiuq4sOqzoCwKICAgICMg7JWg7LSI7JeQIOqzhOyglSDruYTrsIDrsojtmLjrpbwg7ZSE66Gc6re4656o7JeQIOyggeyWtOyVvCDtlZzri6QuIOydtOuvuCDroZzqt7jsnbjrkJwg7JWE7JuD66Op7J2EIOyTtOuLpC4KICAgIHRyeToKICAgICAgICBvdXRsb29rID0gd2luMzIuRGlzcGF0Y2goIk91dGxvb2suQXBwbGljYXRpb24iKQogICAgICAgIG1haWwgPSBvdXRsb29rLkNyZWF0ZUl0ZW0oMCkgICAgICAgICAgIyAwID0g66mU7J28CiAgICAgICAgbWFpbC5UbyA9ICI7ICIuam9pbihyZWNpcGllbnRzKQogICAgICAgIG1haWwuU3ViamVjdCA9IHN1YmplY3QKICAgICAgICBtYWlsLkhUTUxCb2R5ID0gYm9keSAgICAgICAgICAgICAgICAgICMgQm9keSDsl5Ag64Sj7Jy866m0IOunge2BrOqwgCDquIDsnpDroZwg6rmo7KeE64ukCiAgICAgICAgbWFpbC5TZW5kKCkKICAgICAgICBsb2coIuyekOuPmSDrsJzshqEg7JmE66OMOiAlcyAoJWTqsbQpIiAlIChtYWlsLlRvLCBsZW4oQ09MTEVDVEVEKSkpCiAgICAgICAgcmV0dXJuCiAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGV4OgogICAgICAgIGxvZygi7J6Q64+ZIOuwnOyGoeydtCDslYgg65CQ7Iq164uI64ukICglcykuIOuplOydvCDssL3snYQg7Je07Ja065Oc66a06rKM7JqULiIKICAgICAgICAgICAgJSB0eXBlKGV4KS5fX25hbWVfXykKCiAgICAjIOOAjOyDiCDslYTsm4Pro6koTmV3IE91dGxvb2sp44CN7J2AIOychCDrsKnsi53snYQg7KeA7JuQ7ZWY7KeAIOyViuuKlOuLpC4g6re465WM64qUIOuCtOyaqeydtCDssYTsm4zsp4QKICAgICMg66mU7J28IOywveydhCDsl7TslrTshJwg7IKs656M7J20IFvrs7TrgrTquLBdIOunjCDriITrpbTqsowg7ZWc64ukLgogICAgdHJ5OgogICAgICAgIG91dGxvb2sgPSB3aW4zMi5EaXNwYXRjaCgiT3V0bG9vay5BcHBsaWNhdGlvbiIpCiAgICAgICAgbWFpbCA9IG91dGxvb2suQ3JlYXRlSXRlbSgwKQogICAgICAgIG1haWwuVG8gPSAiOyAiLmpvaW4ocmVjaXBpZW50cykKICAgICAgICBtYWlsLlN1YmplY3QgPSBzdWJqZWN0CiAgICAgICAgbWFpbC5IVE1MQm9keSA9IGJvZHkKICAgICAgICBtYWlsLkRpc3BsYXkoRmFsc2UpCiAgICAgICAgbG9nKCLrqZTsnbwg7LC9IOyXtOq4sCDsmYTro4wg4oCUIFvrs7TrgrTquLBdIOunjCDriITrpbTsi5zrqbQg65Cp64uI64ukLiIpCiAgICBleGNlcHQgRXhjZXB0aW9uIGFzIGV4OgogICAgICAgIGxvZygi66mU7J28IOywveuPhCDsl7Trpqzsp4Ag7JWK7JWY7Iq164uI64ukOiAlcyAtICVzIiAlICh0eXBlKGV4KS5fX25hbWVfXywgZXgpKQoKCiMg4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWQCiMgU1RFUCA2LiDsoITssrQg7Iuk7ZaJIOKAlCDsiJjsp5Hsl5DshJwg67Cc7Iah6rmM7KeAIO2VnCDrsojsl5AKIyDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKCmRlZiBydW5fYWxsKCk6CiAgICBjb2xsZWN0X25ld3MoKQogICAgY29sbGVjdF9kYXJ0KCkKICAgIGlmIENPTExFQ1RFRDoKICAgICAgICBzZW5kX21haWwoKQogICAgZWxzZToKICAgICAgICBsb2coIuyImOynkeuQnCDqsowg7JeG7Ja0IOuplOydvOydgCDrs7TrgrTsp4Ag7JWK7JWY7Iq164uI64ukLiIpCgoKQlVTWSA9IHRocmVhZGluZy5Mb2NrKCkKCgpkZWYgcnVuX2luX2JhY2tncm91bmQod29yayk6CiAgICAiIiLrsoTtirzsnYQg64iE66W4IOuPmeyViCDssL3snbQg66mI7LaU7KeAIOyViuqyjC4g7J6R7JeFIOykkeyXkOuKlCDrsoTtirzrj4Qg7J6g7IucIOyViCDriIzrprDri6QuCgogICAg7JWe7JeQ7IScIOyTsOuNmCDrsKnsi53rjIDroZwg6re464OlIOyLpO2Wie2VmOuptCBEQVJUIOuKlCAyOO2OmOydtOyngOudvCAxNey0iCDrj5nslYgg7LC97J20IOuoue2GteydtCDrkJjqs6AsCiAgICDsiJjqsJXsg53snYAg7ZSE66Gc6re4656o7J20IOyjveydgCDspIQg7JWM6rOgIOqwleygnCDsooXro4ztlZzri6QuCiAgICAiIiIKICAgIGlmIG5vdCBCVVNZLmFjcXVpcmUoYmxvY2tpbmc9RmFsc2UpOgogICAgICAgIGxvZygi7JWE7KeBIOyVnuydmCDsnpHsl4XsnbQg64Gd64KY7KeAIOyViuyVmOyKteuLiOuLpC4iKQogICAgICAgIHJldHVybgogICAgZm9yIGJ1dHRvbiBpbiBBTExfQlVUVE9OUzoKICAgICAgICBidXR0b24uY29uZmlnKHN0YXRlPSJkaXNhYmxlZCIpCgogICAgZGVmIGdvKCk6CiAgICAgICAgdHJ5OgogICAgICAgICAgICBzYXZlX3NldHRpbmdzKCkKICAgICAgICAgICAgd29yaygpCiAgICAgICAgZXhjZXB0IEV4Y2VwdGlvbiBhcyBleDogICAgICAgICAgICAgICAgICAgICMg7Ja065akIOqyveyasOyXkOuPhCDsobDsmqntnogg7KO97KeAIOyViuqyjAogICAgICAgICAgICBsb2coIuyYiOyDgSDrqrsg7ZWcIOusuOygnOqwgCDsg53qsrzsirXri4jri6Q6ICVzIC0gJXMiICUgKHR5cGUoZXgpLl9fbmFtZV9fLCBleCkpCiAgICAgICAgZmluYWxseToKICAgICAgICAgICAgQlVTWS5yZWxlYXNlKCkKICAgICAgICAgICAgcm9vdC5hZnRlcigwLCBsYW1iZGE6IFtiLmNvbmZpZyhzdGF0ZT0ibm9ybWFsIikgZm9yIGIgaW4gQUxMX0JVVFRPTlNdKQoKICAgIHRocmVhZGluZy5UaHJlYWQodGFyZ2V0PWdvLCBkYWVtb249VHJ1ZSkuc3RhcnQoKQoKCiMg4pSA4pSAIOywvSDsobDrpr0g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACnJvb3QgPSB0ay5UaygpCnJvb3QudGl0bGUoIuydtOyKiCDrpqztj6ztirgg67SHIikKcm9vdC5nZW9tZXRyeSgiOTQweDgyMCIpCgpzYXZlZCA9IGxvYWRfc2V0dGluZ3MoKQpmb3JtID0gdGsuRnJhbWUocm9vdCkKZm9ybS5wYWNrKGZpbGw9IngiLCBwYWR4PTEwLCBwYWR5PTgpCkZJRUxEUyA9ICgoIu2CpOybjOuTnCAo7Im87ZGc66GcIOyXrOufrCDqsJwpOiIsICJrZXl3b3JkcyIpLAogICAgICAgICAgKCLsp4DsvJzrs7wg7ZqM7IKsICjsibztkZzroZwg7Jes65+sIOqwnCk6IiwgImNvbXBhbmllcyIpLAogICAgICAgICAgKCLrqZTsnbwg67Cb7J2EIOyCrOuejDoiLCAibWFpbHRvIiksCiAgICAgICAgICAoIkRBUlQg7J247Kad7YKkOiIsICJkYXJ0X2tleSIpKQplbnRyaWVzID0gW10KZm9yIHJvdywgKGxhYmVsLCBmaWVsZCkgaW4gZW51bWVyYXRlKEZJRUxEUyk6CiAgICB0ay5MYWJlbChmb3JtLCB0ZXh0PWxhYmVsKS5ncmlkKHJvdz1yb3csIGNvbHVtbj0wLCBzdGlja3k9ImUiLCBwYWR5PTIpCiAgICBlbnRyeSA9IHRrLkVudHJ5KGZvcm0sIHdpZHRoPTU4KQogICAgZW50cnkuZ3JpZChyb3c9cm93LCBjb2x1bW49MSwgcGFkeD00LCBwYWR5PTIpCiAgICBlbnRyeS5pbnNlcnQoMCwgc2F2ZWQuZ2V0KGZpZWxkLCAiIikpCiAgICBlbnRyaWVzLmFwcGVuZChlbnRyeSkKa3dfZW50cnksIGNvcnBfZW50cnksIHRvX2VudHJ5LCBrZXlfZW50cnkgPSBlbnRyaWVzCgpidXR0b25zID0gdGsuRnJhbWUocm9vdCkKYnV0dG9ucy5wYWNrKGZpbGw9IngiLCBwYWR4PTEwKQpuZXdzX2J1dHRvbiA9IHRrLkJ1dHRvbihidXR0b25zLCB0ZXh0PSLribTsiqQg7IiY7KeR7ZWY6riwIiwKICAgICAgICAgICAgICAgICAgICAgICAgY29tbWFuZD1sYW1iZGE6IHJ1bl9pbl9iYWNrZ3JvdW5kKGNvbGxlY3RfbmV3cykpCmRhcnRfYnV0dG9uID0gdGsuQnV0dG9uKGJ1dHRvbnMsIHRleHQ9IkRBUlQg7IiY7KeR7ZWY6riwIiwKICAgICAgICAgICAgICAgICAgICAgICAgY29tbWFuZD1sYW1iZGE6IHJ1bl9pbl9iYWNrZ3JvdW5kKGNvbGxlY3RfZGFydCkpCm1haWxfYnV0dG9uID0gdGsuQnV0dG9uKGJ1dHRvbnMsIHRleHQ9IuuplOydvCDrs7TrgrTquLAiLAogICAgICAgICAgICAgICAgICAgICAgICBjb21tYW5kPWxhbWJkYTogcnVuX2luX2JhY2tncm91bmQoc2VuZF9tYWlsKSkKYWxsX2J1dHRvbiA9IHRrLkJ1dHRvbihidXR0b25zLCB0ZXh0PSLsoITssrQg7Iuk7ZaJIiwKICAgICAgICAgICAgICAgICAgICAgICBjb21tYW5kPWxhbWJkYTogcnVuX2luX2JhY2tncm91bmQocnVuX2FsbCkpCkFMTF9CVVRUT05TID0gW25ld3NfYnV0dG9uLCBkYXJ0X2J1dHRvbiwgbWFpbF9idXR0b24sIGFsbF9idXR0b25dCmZvciBidXR0b24gaW4gQUxMX0JVVFRPTlM6CiAgICBidXR0b24ucGFjayhzaWRlPSJsZWZ0IiwgcGFkeD0oMCwgNikpCgp0ay5MYWJlbChyb290LCB0ZXh0PSLribTsiqQg7IiY7KeRIOqysOqzvCIsIGFuY2hvcj0idyIpLnBhY2soZmlsbD0ieCIsIHBhZHg9MTAsIHBhZHk9KDgsIDApKQpuZXdzX2JveCA9IHNjcm9sbGVkdGV4dC5TY3JvbGxlZFRleHQocm9vdCwgaGVpZ2h0PTEyLCB3cmFwPSJ3b3JkIiwgc3RhdGU9ImRpc2FibGVkIikKbmV3c19ib3gucGFjayhmaWxsPSJib3RoIiwgZXhwYW5kPVRydWUsIHBhZHg9MTApCgp0ay5MYWJlbChyb290LCB0ZXh0PSJEQVJUIOyImOynkSDqsrDqs7wiLCBhbmNob3I9InciKS5wYWNrKGZpbGw9IngiLCBwYWR4PTEwLCBwYWR5PSg4LCAwKSkKZGFydF9ib3ggPSBzY3JvbGxlZHRleHQuU2Nyb2xsZWRUZXh0KHJvb3QsIGhlaWdodD0xMiwgd3JhcD0id29yZCIsIHN0YXRlPSJkaXNhYmxlZCIpCmRhcnRfYm94LnBhY2soZmlsbD0iYm90aCIsIGV4cGFuZD1UcnVlLCBwYWR4PTEwKQoKdGsuTGFiZWwocm9vdCwgdGV4dD0i7KeE7ZaJIOyDge2ZqSIsIGFuY2hvcj0idyIpLnBhY2soZmlsbD0ieCIsIHBhZHg9MTAsIHBhZHk9KDgsIDApKQpzdGF0dXNfYm94ID0gc2Nyb2xsZWR0ZXh0LlNjcm9sbGVkVGV4dChyb290LCBoZWlnaHQ9OCwgd3JhcD0id29yZCIsIHN0YXRlPSJkaXNhYmxlZCIpCnN0YXR1c19ib3gucGFjayhmaWxsPSJ4IiwgcGFkeD0xMCwgcGFkeT0oMCwgMTApKQoKCmRlZiBvbl9jbG9zZSgpOgogICAgc2F2ZV9zZXR0aW5ncygpCiAgICByb290LmRlc3Ryb3koKQoKCnJvb3QucHJvdG9jb2woIldNX0RFTEVURV9XSU5ET1ciLCBvbl9jbG9zZSkKbG9nKCLtjIzsnbTsjawgJXMg66GcIOyLpO2WiSDspJHsnoXri4jri6QuIiAlIHN5cy52ZXJzaW9uLnNwbGl0KClbMF0pCnJvb3QubWFpbmxvb3AoKQo=";
+  Array.prototype.slice.call(document.querySelectorAll(".download-mainpy-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      try {
+        var binary = atob(MAIN_PY_B64);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        var blob = new Blob([bytes], { type: "text/x-python" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "main.py";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      } catch (e) {
+        alert("다운로드에 실패했습니다. 강사에게 파일을 요청하세요.");
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

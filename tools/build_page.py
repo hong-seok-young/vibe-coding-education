@@ -1428,4 +1428,12 @@ out_path = f"{REPO}/DART 뉴스 크롤링 및 메일발송 프로그램 만들�
 with open(out_path, "w", encoding="utf-8") as f:
     f.write(doc)
 
+# GitHub Pages 로 공유할 때 주소가 짧아지도록 같은 내용을 index.html 로도 쓴다.
+# (한글·공백이 든 파일명은 주소에서 DART%20뉴스%20... 로 길게 늘어난다)
+# 사람이 더블클릭해서 여는 것은 위의 한글 파일명 쪽을 그대로 쓴다.
+index_path = f"{REPO}/index.html"
+with open(index_path, "w", encoding="utf-8") as f:
+    f.write(doc)
+
 print("written:", out_path, len(doc), "chars,", len(ALL_PAGE_IDS), "pages")
+print("written:", index_path, "(Pages 용 같은 사본)")

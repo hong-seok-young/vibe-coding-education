@@ -12,7 +12,7 @@ python3 tools/check_page.py     # 만들어진 HTML 을 점검한다
 |---|---|
 | `steps.py` | STEP 0~9 의 프롬프트·성공 기준·정답 코드 조각. **내용을 고치는 곳은 대개 여기다** |
 | `prep.html` | 사전 준비 페이지 마크업 (체크리스트, DART 키 발급 안내) |
-| `build_page.py` | 위 둘 + 스타일·스크립트·「막히면 여기」 페이지를 합쳐 HTML 하나로 |
+| `build_page.py` | 위 둘 + 스타일·스크립트·The APPS 안내 페이지를 합쳐 HTML 하나로 |
 | `check_page.py` | 태그 짝, 페이지·체크박스 수, 프롬프트 안의 역슬래시, 낡은 표현, 박혀있는 main.py 일치 |
 
 ## 고칠 때
@@ -21,7 +21,7 @@ python3 tools/check_page.py     # 만들어진 HTML 을 점검한다
 
 **사전 준비 페이지** → `prep.html`.
 
-**「막히면 여기」 페이지, 스타일, 페이지 이동** → `build_page.py` 안의 `STUCK_PAGE`,
+**The APPS 안내 페이지, 스타일, 페이지 이동** → `build_page.py` 안의 `APPS_PAGE`,
 `STYLE`, `SCRIPT`.
 
 **정답 코드** → `../news-report-bot/main.py`. 페이지의 "정답 코드 파일 받기" 버튼은 이
@@ -60,4 +60,4 @@ EOF
 node --check /tmp/page.js
 ```
 
-그다음 브라우저로 열어 페이지 이동(`#s0`, `#s2`, `#stuck`)과 체크박스 저장을 눌러본다.
+그다음 브라우저로 열어 페이지 이동(`#s0`, `#s2`, `#apps`)과 체크박스 저장을 눌러본다.

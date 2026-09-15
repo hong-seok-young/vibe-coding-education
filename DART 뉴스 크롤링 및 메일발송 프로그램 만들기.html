@@ -750,7 +750,6 @@
       <a class="toc-link" data-page="s6" href="#s6"><span class="toc-badge">6</span>완성</a>
 
   <div class="toc-group-label">참고</div>
-      <a class="toc-link" data-page="stuck" href="#stuck"><span class="toc-badge">!</span>막히면 여기</a>
       <a class="toc-link" data-page="apps" href="#apps"><span class="toc-badge">+</span>The APPS</a>
 </nav>
 
@@ -1483,144 +1482,6 @@ win32com.client 로 Outlook.Application 을 붙잡고, CreateItem(0) 으로 새 
     </details>
   </section>
 
-  <section class="page" data-page="stuck" id="stuck">
-    <div class="page-head">
-      <span class="page-eyebrow">참고</span>
-      <div class="page-title-row">
-        <h2>막히면 여기</h2>
-      </div>
-      <p class="step-desc">실제로 사내 PC에서 끝까지 돌려보며 부딪힌 것들이다.
-        증상만 보고 바로 찾아갈 수 있게 정리했다.</p>
-    </div>
-
-    <div class="workflow-note">
-      <p class="workflow-note-title">먼저 이것부터 — 에러 문장을 그대로 AI에게 붙여넣기</p>
-      <p class="tiny">아래를 다 읽을 필요 없다. <strong>프로그램 창이나 검은 창에 나온 문장을
-        통째로 복사해서 AI 채팅창에 붙여넣고 "이거 왜 이래?"라고 물어보는 것이 가장 빠르다.</strong>
-        아래는 그렇게 해도 안 풀릴 때, 혹은 강사가 원인을 빨리 짚어야 할 때 보는 목록이다.</p>
-    </div>
-
-    <div class="criteria-box">
-      <p class="criteria-label">수집이 안 될 때</p>
-      <ul>
-        <li><strong>뉴스 결과 칸에 <code>CERTIFICATE_VERIFY_FAILED</code></strong>
-          — 회사 보안 장비가 인터넷 통신을 중간에서 열어보고 자기 인증서로 다시 서명해
-          넘겨준다. 크롬은 회사가 윈도우에 심어둔 인증서를 보기 때문에 잘 되는데,
-          프로그램만 막히는 이유다.
-          <strong>원인은 거의 항상 라이브러리 선택이다.</strong> <code>requests</code> 는
-          윈도우 인증서 저장소를 보지 않고 <code>certifi</code> 라는 자기 목록만 보는데,
-          거기에 회사 인증서가 없다. 반면 파이썬에 원래 들어있는 <code>urllib</code> 과
-          그것을 쓰는 <code>feedparser</code> 는 윈도우 저장소를 보므로 그냥 된다
-          (측정값: <code>urllib</code> 은 루트 인증서 67개 = 윈도우 저장소,
-          <code>requests</code> 는 121개 = certifi 번들).
-          <strong>STEP 1 의 "막히면" 안내</strong>를 펼쳐서 프롬프트를 이어 넣는다.
-          코드에 <code>import requests</code> 가 보이면 그게 원인이다.
-          인증서 검사를 아예 끄는 방식은 쓰지 않는다.</li>
-        <li><strong>수집하고 나면 프로그램이 느려지거나 멈춘다</strong> — 결과 칸에 넣은 줄이
-          너무 많은 것이다. 원인은 둘 중 하나다. ① <strong>DART 를 회사명 없이 돌렸다</strong> —
-          일주일치 공시는 수천 건이라 그게 전부 쏟아진다. 회사명을 넣고 다시 누른다.
-          ② <strong>AI가 버튼을 누를 때마다 지금까지 모은 걸 전부 다시 늘어놓게 만들었다</strong> —
-          STEP 1·2 프롬프트에 "새로 가져온 것만 보여줘"가 들어가 있지만 AI가 무시할 때가 있다.
-          <strong>STEP 3</strong> 을 먼저 적용하면 정리된다.
-          결과 칸을 비우고 싶으면 프로그램을 껐다 켜면 된다 — 입력값은 남아있다.</li>
-        <li><strong>뉴스가 전부 <code>검색 실패</code></strong> — 회사가 구글 뉴스를 막았을 수 있다.
-          <code>한국뉴스_점검.py</code> 를 실행하면 구글만 막힌 건지 네트워크 전체가 막힌
-          건지 구분해준다. 네트워크 전체가 막힌 게 아니라면 키워드를 바꿔 다시 눌러본다.</li>
-        <li><strong>뉴스가 <code>0건</code></strong> (실패는 아님) — 그 키워드로 걸리는 기사가 없는
-          것이다. 더 넓은 단어로 바꿔본다.</li>
-        <li><strong>DART 가 <code>0건</code></strong> — 이유가 세 가지다. ① 그 기간에 공시가 아예
-          없다(주말·공휴일이면 정상) ② 공시는 많았지만 그 회사 것이 없다 ③ 인증키 문제.
-          프로그램이 이 셋을 구분해 알려주게 만들어 두었으니 DART 결과 칸의 문장을 먼저 읽는다.
-          <code>dart_점검.py</code> 를 실행하면 기간을 1일/3일/7일로 늘려가며 각각 몇 건인지
-          보여준다.</li>
-        <li><strong>결과가 엉뚱한 칸에 들어간다 / 제목을 눌러도 원문이 안 열린다</strong>
-          — AI가 STEP 0 의 칸 나누기나 링크 연결을 빠뜨린 것이다. 다음을 이어서 넣는다 —
-          <em>"뉴스 수집 결과는 뉴스 칸에만, DART 수집 결과는 DART 칸에만 들어가게 해줘.
-          그리고 두 칸 모두 항목 제목을 누르면 그 원문이 브라우저에서 열리게 하고, 제목은
-          파란색에 밑줄로 보여줘. 전체를 통째로 다시 줘."</em></li>
-        <li><strong>DART 에서 회사가 안 걸린다</strong> — <strong>정식 명칭으로</strong> 넣는다.
-          <code>현대차</code> 는 DART 에 등록된 이름(현대자동차)과 달라서 안 걸린다.
-          <strong>짧게 넣는 것은 해결책이 아니다</strong> — <code>삼성</code> 으로 넣으면 최근
-          일주일에 140건이 걸리는데 그중 94건이 삼성자산운용 ETF 투자설명서이고 정작
-          삼성전자는 0건이었다(실측). 노이즈만 폭증한다. <code>dart_점검.py</code> 를 실행하면
-          걸린 회사별 건수를 찍어주니, 거기서 실제 등록된 이름을 확인해 그대로 넣는다.</li>
-      </ul>
-    </div>
-
-    <div class="criteria-box">
-      <p class="criteria-label">메일이 안 갈 때</p>
-      <ul>
-        <li><strong><code>클래식 아웃룩 자동 발송이 안 됩니다</code></strong> — "새 아웃룩"만 깔린
-          PC에서 정상적으로 뜨는 메시지다. 오류가 아니다. 프로그램이 대신 메일 창을
-          열어주니 <strong>[보내기]만 누르면 된다.</strong></li>
-        <li><strong>메일 창도 안 뜬다</strong> — 아웃룩이 꺼져 있거나 로그인이 안 된 경우가
-          대부분이다. 아웃룩을 먼저 켜서 로그인 화면이 없는지 확인한다.</li>
-        <li><strong><code>pywin32 가 설치되어 있지 않습니다</code></strong> — 사전 준비의 설치
-          파일을 안 돌렸거나, <strong>다른 파이썬 버전에 깔린 경우</strong>다. 여러 버전이 깔린
-          PC에서 흔하다. 사전 준비의 <code>파이썬 설치.bat</code> 을 다시 더블클릭하면 된다.</li>
-        <li><strong>받는 사람이 없다고 나온다</strong> — 창의 "메일 받을 사람" 칸이 비어 있다.</li>
-      </ul>
-    </div>
-
-    <div class="criteria-box">
-      <p class="criteria-label">AI 쪽에서 막힐 때</p>
-      <ul>
-        <li><strong>프로그램 창이 아예 안 뜨고 검은 창만 깜빡한다 /
-          <code>SyntaxError</code></strong>
-          — <strong>AI가 첨부한 파일이 깨진 것이다.</strong> 파일로 만들어지는 과정에서
-          <strong>역슬래시(<code>\</code>)가 전부 사라지는</strong> 일이 있다. 줄바꿈을 뜻하는
-          <code>\n</code> 이 통째로 없어지면서 글자가 두 줄로 찢어지고, 파이썬은 거기서 읽기를
-          멈춘다. <strong>실제로 발생한 사례다</strong> — 같은 대화에서 첫 파일은 정상이었고 두 번째
-          파일만 깨졌으니, 언제 터질지 모른다고 보면 된다. 코드를 볼 필요 없이 아래를 그대로
-          넣으면 된다 —
-          <em>"받은 파일을 실행하니 SyntaxError 가 떴어. 파일에서 역슬래시가 전부 사라져서 글자가
-          찢어진 것 같아. 코드 안에 역슬래시를 아예 쓰지 않는 방식으로 바꿔줘 — 줄바꿈은
-          chr(10), 탭은 chr(9) 로. 그렇게 전체를 통째로 다시 줘."</em>
-          각 STEP 프롬프트 맨 끝에 이걸 미리 막는 문장이 들어가 있지만 AI가 무시할 때가 있다.
-          <strong>압축을 안 푼 채 실행한 경우와 증상이 똑같으니</strong>, 검은 창 마지막 줄에
-          <code>SyntaxError</code> 가 있는지로 구분한다.</li>
-        <li><strong>파일을 안 주고 채팅창에 코드만 보여준다</strong> — 이 AI 툴은 질문마다 답하는
-          모델이 자동으로 바뀐다. 화면 위쪽에서 <strong>모델을 Gemini 로 바꾼 뒤 같은 프롬프트를
-          다시</strong> 넣어본다. 그래도 안 되면 각 STEP 의 <strong>"정답 코드 파일 받기"</strong> 버튼을
-          쓴다.</li>
-        <li><strong>앞 단계에서 되던 기능이 사라졌다</strong> — AI가 바뀐 부분만 주면서 나머지를
-          빠뜨린 것이다. "앞 단계까지 되던 기능을 하나도 빼지 말고 전체를 통째로 다시 줘"라고
-          다시 요청한다. (각 프롬프트에 이미 그렇게 적혀 있다)</li>
-        <li><strong>새 대화창에서 물어봤더니 엉뚱한 걸 준다</strong> — AI는 앞서 짜준 코드를
-          기억하지 못한다. <strong>처음부터 끝까지 같은 대화창에서</strong> 이어 물어봐야 한다.</li>
-        <li><strong>받은 파일이 <code>main (2).py</code>, <code>main (3).py</code> 로 쌓인다</strong>
-          — 정상이다. 이름을 맞추려 애쓰지 말고 <strong>방금 받은 가장 최신 파일</strong>을 실행한다.
-          단 <strong>폴더는 처음 정한 그대로</strong> 쓴다 — 입력해둔 인증키가 프로그램 파일과 같은
-          폴더에 저장되기 때문이다.</li>
-      </ul>
-    </div>
-
-    <div class="criteria-box">
-      <p class="criteria-label">사전 준비가 안 될 때</p>
-      <ul>
-        <li><strong>검은 창이 깜빡하고 바로 닫힌다</strong> — 압축을 안 푼 채 ZIP 안에서 실행한
-          경우가 대부분이다. 압축을 먼저 푼다.</li>
-        <li><strong>파란 경고창 <code>Windows의 PC 보호</code></strong> —
-          <code>추가 정보</code> → <code>실행</code> 을 누르면 된다.</li>
-        <li><strong>부품 받기가 인증서 오류로 실패</strong> — 설치 파일이 자동으로 한 번 더
-          시도하게 되어 있다. 그래도 안 되면 사전 준비 페이지 맨 아래 「막히면」 안내를 따른다.</li>
-        <li><strong>설치 파일 자체가 회사 정책에 막힌다</strong> — 개인이 풀 수 없는 경우가 있다.
-          <strong>화면을 캡처해서 강사에게 보여주는 것</strong>이 가장 빠르다.</li>
-      </ul>
-    </div>
-
-    <div class="callout">
-      <p><strong>점검용 파일 두 개</strong> — 실습 폴더의 <code>news-report-bot</code> 안에 있다.
-        수집이 왜 안 되는지 프로그램과 따로 확인해볼 때 쓴다.</p>
-      <ul style="margin:8px 0 0; padding-left:20px;">
-        <li><code>한국뉴스_점검.py</code> — 구글 뉴스가 이 네트워크에서 실제로 되는지,
-          그리고 requests 와 urllib 중 무엇이 막히는지 보여준다. 그냥 실행하면 된다.</li>
-        <li><code>dart_점검.py</code> — DART 가 왜 0건인지 짚어준다. 파일을 열어 인증키와
-          회사 이름을 채운 뒤 실행한다.</li>
-      </ul>
-    </div>
-  </section>
-
   <section class="page" data-page="apps" id="apps">
     <div class="page-head">
       <span class="page-eyebrow">참고</span>
@@ -1660,7 +1521,7 @@ win32com.client 로 Outlook.Application 을 붙잡고, CreateItem(0) 으로 새 
 
     <div class="page-nav">
       <button class="page-nav-btn" id="pageNavPrev">← 이전</button>
-      <span class="page-nav-pos" id="pageNavPos">1 / 10</span>
+      <span class="page-nav-pos" id="pageNavPos">1 / 9</span>
       <button class="page-nav-btn next" id="pageNavNext">다음 →</button>
     </div>
 
@@ -1675,7 +1536,7 @@ win32com.client 로 Outlook.Application 을 붙잡고, CreateItem(0) 으로 새 
 
 <script>
 (function () {
-  var PAGE_IDS = ["prep", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "stuck", "apps"];
+  var PAGE_IDS = ["prep", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "apps"];
   var STORAGE_KEY = "issuebot-checklist";
   var STATE_KEY = "issuebot-current-page";
 

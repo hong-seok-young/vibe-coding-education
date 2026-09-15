@@ -220,7 +220,7 @@ toc_part3 = "\n".join(
     for s in STEPS if s["part"] == 3
 )
 
-ALL_PAGE_IDS = ["prep"] + [s["id"] for s in STEPS] + ["stuck"]
+ALL_PAGE_IDS = ["prep"] + [s["id"] for s in STEPS] + ["stuck", "apps"]
 MAIN_PY_URL = "https://github.com/hong-seok-young/vibe-coding-education/blob/claude/vibe-coding-education-program-lgtqes/news-report-bot/main.py"
 ZIP_URL = "https://github.com/hong-seok-young/vibe-coding-education/archive/refs/heads/claude/vibe-coding-education-program-lgtqes.zip"
 
@@ -974,7 +974,50 @@ TOC_HTML = f'''<button class="toc-toggle" id="tocToggle" aria-label="목차 열�
 
   <div class="toc-group-label">참고</div>
       <a class="toc-link" data-page="stuck" href="#stuck"><span class="toc-badge">!</span>막히면 여기</a>
+      <a class="toc-link" data-page="apps" href="#apps"><span class="toc-badge">+</span>The APPS</a>
 </nav>'''
+
+
+# ── 마지막 안내 페이지 ────────────────────────────────────
+# 실습이 끝난 사람에게 "만든 걸 어디에 올리는지" 를 알려주는 자리.
+# 매뉴얼 파일은 여기에 넣지 않는다 (사내 배포 문서라 별도로 전달한다).
+APPS_PAGE = '''
+  <section class="page" data-page="apps" id="apps">
+    <div class="page-head">
+      <span class="page-eyebrow">참고</span>
+      <div class="page-title-row">
+        <h2>만든 걸 사내에 등록하기 — The APPS</h2>
+      </div>
+      <p class="step-desc">오늘 만든 프로그램은 내 PC 에만 있다. 팀에서 같이 쓰려면
+        사내 앱 스토어인 <strong>The APPS</strong> 에 등록하면 된다. 흩어진 사내 웹·앱을
+        한곳에서 찾고, 우리가 만든 것을 한곳에서 관리하는 곳이다.</p>
+    </div>
+
+    <div class="workflow-note">
+      <p class="workflow-note-title">The APPS 는 이런 곳이다</p>
+      <ol>
+        <li><strong>찾기는 로그인 없이</strong> — 어떤 사내 앱이 있는지 검색해서 바로 쓸 수 있다.
+          "출장비 정산" 처럼 하는 일로 찾아도 나온다.</li>
+        <li><strong>등록은 누구나 신청</strong> — 이름·주소·설명·분류를 적어 올리면 된다.
+          오늘 만든 것처럼 파일로 쓰는 도구도, 주소로 접속하는 웹앱도 둘 다 올릴 수 있다.</li>
+        <li><strong>운영·보안 두 심사를 거쳐 게시된다</strong> — 특히 보안 심사에서
+          <strong>파일 안에 인증키나 비밀번호가 들어있는지</strong> 를 본다. 오늘 실습에서
+          DART 인증키를 코드가 아니라 창의 입력 칸에 넣은 것도 같은 이유다.</li>
+        <li><strong>설치 횟수와 별점이 쌓인다</strong> — 누가 실제로 쓰는지 숫자로 남는다.</li>
+      </ol>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">바로 가기</p>
+      <ul>
+        <li><strong>주소</strong> —
+          <a href="https://vibe-registry.xicna.app/" target="_blank" rel="noopener">vibe-registry.xicna.app</a>
+          <br><strong>사내망에서만 열린다.</strong> 집이나 휴대폰 네트워크에서는 접속되지 않으니,
+          안 열리면 회사 네트워크인지 먼저 확인한다.</li>
+        <li><strong>사용 매뉴얼</strong> — 계정·권한·등록 절차를 담은 안내 자료는 따로 전달한다.</li>
+      </ul>
+    </div>
+  </section>'''
 
 PREP_PAGE = f'''
   <section class="page" data-page="prep" id="prep">
@@ -1396,6 +1439,7 @@ body = f'''{TOC_HTML}
 {PREP_PAGE}
 {step_pages_html}
 {STUCK_PAGE}
+{APPS_PAGE}
 
     <div class="page-nav">
       <button class="page-nav-btn" id="pageNavPrev">← 이전</button>

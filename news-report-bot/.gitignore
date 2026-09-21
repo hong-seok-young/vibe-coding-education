@@ -6,3 +6,6 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+
+# 프로그램이 만들어내는 보고서 파일
+이슈리포트_*.html

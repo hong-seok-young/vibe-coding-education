@@ -94,6 +94,8 @@ callout_prep = '''
   </div>'''
 
 
+PART_LABELS = {1: "실습 1 · 수집", 2: "실습 2 · 보고서", 3: "실습 3 · 메일 발송"}
+
 # ── STEP 카드 렌더링 (한 STEP = 한 페이지) ──────────────────
 
 WORKFLOW_NOTE = '''
@@ -159,7 +161,7 @@ def render_step_page(step, index, total):
     return f'''
   <section class="page" data-page="{step['id']}" id="{step['id']}">
     <div class="page-head">
-      <span class="page-eyebrow">{"추가실습" if step['part'] == 3 else f"실습 {step['part']} · {'수집' if step['part'] == 1 else '메일 발송'}"}</span>
+      <span class="page-eyebrow">{PART_LABELS[step['part']]}</span>
       <div class="page-title-row">
         <label class="page-check-wrap">
           <input type="checkbox" class="check page-check" data-id="{step['id']}">
@@ -203,8 +205,8 @@ step_pages_html = "\n".join(render_step_page(s, i, len(STEPS)) for i, s in enume
 
 # ── TOC ──────────────────────────────────────────────────
 TOC_LABELS = {
-    "s0": "뼈대", "s1": "구글 뉴스", "s2": "DART", "s3": "정리",
-    "s4": "메일 본문", "s5": "아웃룩 발송", "s6": "완성",
+    "s0": "뼈대", "s1": "구글 뉴스", "s2": "DART",
+    "s3": "HTML 보고서", "s4": "아웃룩 발송", "s5": "완성",
 }
 
 toc_part1 = "\n".join(
@@ -986,8 +988,11 @@ TOC_HTML = f'''<button class="toc-toggle" id="tocToggle" aria-label="목차 열�
   <div class="toc-group-label">실습 1 · 수집</div>
 {toc_part1}
 
-  <div class="toc-group-label">실습 2 · 메일 발송</div>
+  <div class="toc-group-label">실습 2 · 보고서</div>
 {toc_part2}
+
+  <div class="toc-group-label">실습 3 · 메일 발송</div>
+{toc_part3}
 
   <div class="toc-group-label">참고</div>
       <a class="toc-link" data-page="apis" href="#apis"><span class="toc-badge">?</span>API 목록</a>
@@ -1031,9 +1036,11 @@ APIS_PAGE = '''
         <li><strong>2단계 · 인증키 하나</strong> — 발급받아 입력 칸에 붙여넣으면 끝.
           오늘 쓴 DART 가 여기고, <strong>아래 목록이 전부 2단계다.</strong>
           여기까지가 혼자 할 수 있는 선이다.</li>
-        <li><strong>3단계 · 로그인 연동(OAuth)</strong> — 구글 캘린더, 마이크로소프트 365 등.
-          토큰을 받고 갱신하는 절차가 따로 있어 혼자 붙이기는 어렵다. DX팀에 문의.</li>
-        <li><strong>4단계 · 사내 시스템</strong> — 그룹웨어, ERP 등. 담당 부서 협의가 먼저다.</li>
+        <li><strong>3단계 · 회사 아이디 연동(래디우스)</strong> — 개인이 발급받는 인증키가 아니라
+          <strong>회사 계정으로 인증해서</strong> 붙는 방식. 인증 절차가 따로 있어 혼자 붙일 수 없다.
+          <strong>DX팀에 문의.</strong></li>
+        <li><strong>4단계 · 사내 시스템 자체</strong> — 그룹웨어, ERP 처럼 사내 데이터를 직접
+          가져오는 것. 인증뿐 아니라 <strong>데이터를 써도 되는지</strong>부터 담당 부서 협의가 먼저다.</li>
       </ul>
     </div>
 
@@ -1125,31 +1132,71 @@ APIS_PAGE = '''
     </div>
 
     <div class="criteria-box">
-      <p class="criteria-label">유료 — 쓴 만큼 돈이 나간다</p>
+      <p class="criteria-label">유료 — AI API (쓴 만큼 돈이 나간다)</p>
+      <p class="tiny" style="margin-bottom:6px;">모아온 기사를 <strong>요약·분류하고 중요도를
+        매기는</strong> 데 쓴다. 오늘 만든 보고서에 붙이면 「읽을 것만 골라주는」 리포트가 된다.
+        무료 한도가 아니라 <strong>쓴 만큼 과금</strong>된다(대개 선불 충전).</p>
       <div class="apitable-wrap">
       <table class="apitable">
-        <thead><tr><th>서비스</th><th>무엇에 쓰나</th><th>발급처</th><th>비용</th></tr></thead>
+        <thead><tr><th>제공사</th><th>대표 모델</th><th>발급처</th><th>참고</th></tr></thead>
         <tbody>
           <tr>
-            <td class="api-name">AI API<span class="api-sub">Claude 등</span></td>
-            <td>모아온 기사를 <strong>요약·분류하고 중요도를 매긴다.</strong>
-              오늘 만든 리포트에 붙이면 「읽을 것만 골라주는」 봇이 된다</td>
+            <td class="api-name">Anthropic</td>
+            <td>Claude</td>
             <td><a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a></td>
-            <td class="api-quota">쓴 만큼 과금<span class="api-sub">선불 충전</span></td>
+            <td>긴 문서 정리에 강하다</td>
           </tr>
           <tr>
-            <td class="api-name">유료 데이터 서비스</td>
-            <td>증권사 시세, 신용평가, 해외 입찰정보 등</td>
-            <td class="api-quota">업체별 계약</td>
-            <td class="api-quota">계약 단가</td>
+            <td class="api-name">OpenAI</td>
+            <td>GPT</td>
+            <td><a href="https://platform.openai.com/" target="_blank" rel="noopener">platform.openai.com</a></td>
+            <td>자료와 예제가 가장 많다</td>
+          </tr>
+          <tr>
+            <td class="api-name">Google</td>
+            <td>Gemini</td>
+            <td><a href="https://aistudio.google.com/" target="_blank" rel="noopener">aistudio.google.com</a></td>
+            <td>무료 시험 한도가 있다</td>
+          </tr>
+          <tr>
+            <td class="api-name">네이버클라우드</td>
+            <td>HyperCLOVA X</td>
+            <td><a href="https://clovastudio.ncloud.com/" target="_blank" rel="noopener">clovastudio.ncloud.com</a></td>
+            <td>국내 서비스·국내 결제</td>
+          </tr>
+          <tr>
+            <td class="api-name">업스테이지</td>
+            <td>Solar</td>
+            <td><a href="https://console.upstage.ai/" target="_blank" rel="noopener">console.upstage.ai</a></td>
+            <td>국내 서비스, 문서 인식에 강하다</td>
+          </tr>
+          <tr>
+            <td class="api-name">Microsoft</td>
+            <td>Azure OpenAI</td>
+            <td><a href="https://azure.microsoft.com/ko-kr/products/ai-services/openai-service" target="_blank" rel="noopener">azure.microsoft.com</a></td>
+            <td><strong>사내 Azure 계약이 있으면 이쪽이 먼저다</strong></td>
           </tr>
         </tbody>
       </table>
       </div>
-      <p class="tiny" style="margin-top:8px;">AI API 가격은 글자 100만 자 단위로 매겨진다.
-        가벼운 모델은 100만 자에 1달러대, 가장 좋은 모델은 5달러대이고 받는 답변 쪽이 5배쯤
-        비싸다. 기사 몇백 건 요약은 몇백 원 수준이다.
-        <strong>다만 사내 결제·보안 검토가 먼저다 — DX팀에 문의할 것.</strong></p>
+      <p class="tiny" style="margin-top:8px;">가격은 글자 100만 자 단위로 매겨진다. 가벼운 모델은
+        100만 자에 1달러대, 가장 좋은 모델은 5달러대이고 <strong>받는 답변 쪽이 5배쯤 비싸다.</strong>
+        기사 몇백 건 요약은 몇백 원 수준이다. 정확한 값은 각 발급처의 요금 안내를 볼 것.</p>
+    </div>
+
+    <div class="callout">
+      <p><strong>AI API 는 혼자 신청하지 말 것.</strong> 두 가지가 먼저다 —
+        <strong>결제 수단</strong>(개인 카드로 회사 일을 결제하면 정산이 곤란해진다)과
+        <strong>보안 검토</strong>(사내 자료를 외부 AI 로 보내도 되는지는 자료 종류에 따라 다르다).
+        <strong>DX팀에 먼저 문의할 것.</strong></p>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">그 밖의 유료</p>
+      <ul>
+        <li><strong>유료 데이터 서비스</strong> — 증권사 시세, 신용평가, 해외 입찰정보 등은
+          업체별 계약이 필요하다. 개인이 발급받는 성격이 아니다.</li>
+      </ul>
     </div>
 
     <div class="workflow-note">

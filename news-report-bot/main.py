@@ -42,7 +42,7 @@ KST = timezone(timedelta(hours=9))
 MAX_PER_KEYWORD = 10      # 키워드당 수집
 NO_COMPANY_LIMIT = 50     # 지켜볼 회사를 안 적었을 때 담을 공시
 SHOW_LIMIT = 10           # 결과 칸에 보여줄 건수
-MAIL_LIMIT = 40           # 메일 본문에 담을 건수
+REPORT_LIMIT = 40         # 보고서·메일에 담을 건수
 
 NEWS_RSS = "https://news.google.com/rss/search"
 # 목록을 받는 곳(opendart)과 문서를 여는 곳(dart)이 다르다. 그리고 받은 자료의
@@ -284,10 +284,11 @@ def collect_dart():
 
 
 # ══════════════════════════════════════════════════════════
-# STEP 3. 정리 — 합칠 때 중복 제거하고 최신순 (수집 버튼들이 공통으로 쓴다)
+# STEP 3. HTML 보고서 만들기 — 정리해서 한 장으로, 파일로 저장해 브라우저로 열기
 # ══════════════════════════════════════════════════════════
 
 def merge(new_items):
+    """모은 목록에 합치면서 정리한다 — 제목 없는 건 빼고, 제목이 같으면 하나만, 최신순."""
     seen = set(x["title"] for x in COLLECTED)
     for item in new_items:
         title = (item.get("title") or "").strip()
@@ -304,23 +305,25 @@ def collected_summary(prefix):
     return "%s   |   지금까지 모은 것: %s" % (prefix, body)
 
 
-# ══════════════════════════════════════════════════════════
-# STEP 4. 메일 본문 만들기 — 디자인은 본문 안에 직접
-# ══════════════════════════════════════════════════════════
-
 def escape_html(text):
     return (text.replace("&", "&amp;").replace("<", "&lt;")
                 .replace(">", "&gt;").replace('"', "&quot;"))
 
 
-def build_mail_html():
+def build_report_html():
+    """모은 항목을 보고서 한 장(HTML)으로 만든다.
+
+    이 결과물을 두 군데에 그대로 쓴다 — 파일로 저장해 브라우저로 열고(STEP 3),
+    아웃룩 메일 본문으로도 보낸다(STEP 4). 메일은 별도 디자인 파일을 못 불러오니
+    디자인(style)을 본문 안에 직접 넣는다.
+    """
     today = datetime.now(KST).strftime("%Y년 %m월 %d일")
     counts = Counter(x["src"] for x in COLLECTED)
     summary = " · ".join("%s %d건" % (k, v) for k, v in counts.items())
-    shown = COLLECTED[:MAIL_LIMIT]
+    shown = COLLECTED[:REPORT_LIMIT]
 
     out = ['<div style="font-family:Malgun Gothic,Apple SD Gothic Neo,sans-serif;'
-           'max-width:760px;color:#222">',
+           'max-width:760px;margin:0 auto;color:#222">',
            '<h2 style="margin:0 0 4px">오늘의 이슈 리포트</h2>',
            '<div style="color:#666;font-size:13px;margin-bottom:16px">'
            '%s · 모두 %d건 · %s</div>' % (today, len(COLLECTED), summary)]
@@ -346,15 +349,38 @@ def build_mail_html():
                           escape_html(item["date"]), memo))
         out.append("</table>")
 
-    if len(COLLECTED) > MAIL_LIMIT:
+    if len(COLLECTED) > REPORT_LIMIT:
         out.append('<p style="color:#888;font-size:12px">이 밖에 %d건이 더 있습니다.</p>'
-                   % (len(COLLECTED) - MAIL_LIMIT))
+                   % (len(COLLECTED) - REPORT_LIMIT))
     out.append("</div>")
     return "".join(out)
 
 
+def save_report():
+    """보고서를 프로그램과 같은 폴더에 파일로 저장하고 브라우저로 연다."""
+    if not COLLECTED:
+        log("보고서로 만들 항목이 없습니다. 먼저 수집하세요.")
+        return None
+    name = "이슈리포트_%s.html" % datetime.now(KST).strftime("%Y%m%d_%H%M")
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
+    page = ("<!doctype html><html lang=ko><head><meta charset=utf-8>"
+            "<title>오늘의 이슈 리포트</title></head>"
+            "<body style=\"background:#f6f7f6;padding:24px\">"
+            + build_report_html() + "</body></html>")
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(page)
+    except OSError as ex:
+        log("보고서를 저장하지 못했습니다: %s" % ex)
+        return None
+    log("보고서를 만들었습니다: %s (%d건)" % (name, len(COLLECTED)))
+    webbrowser.open("file:///" + path.replace(os.sep, "/"))
+    log("브라우저로 열었습니다. 제목을 누르면 원문으로 갑니다.")
+    return path
+
+
 # ══════════════════════════════════════════════════════════
-# STEP 5. 메일 보내기 버튼 — 아웃룩 자동 발송
+# STEP 4. 메일 보내기 버튼 — 아웃룩 자동 발송
 # ══════════════════════════════════════════════════════════
 
 def send_mail():
@@ -377,7 +403,7 @@ def send_mail():
 
     subject = ("[이슈 리포트] %s · %d건"
                % (datetime.now(KST).strftime("%Y-%m-%d"), len(COLLECTED)))
-    body = build_mail_html()
+    body = build_report_html()
 
     # SMTP 로는 못 보낸다 — 포트는 열려 있지만 STARTTLS 단계에서 연결이 끊기고,
     # 애초에 계정 비밀번호를 프로그램에 적어야 한다. 이미 로그인된 아웃룩을 쓴다.
@@ -409,16 +435,17 @@ def send_mail():
 
 
 # ══════════════════════════════════════════════════════════
-# STEP 6. 전체 실행 — 수집에서 발송까지 한 번에
+# STEP 5. 전체 실행 — 수집에서 발송까지 한 번에
 # ══════════════════════════════════════════════════════════
 
 def run_all():
     collect_news()
     collect_dart()
-    if COLLECTED:
-        send_mail()
-    else:
-        log("수집된 게 없어 메일은 보내지 않았습니다.")
+    if not COLLECTED:
+        log("수집된 게 없어 보고서와 메일은 건너뜁니다.")
+        return
+    save_report()
+    send_mail()
 
 
 BUSY = threading.Lock()
@@ -476,11 +503,13 @@ news_button = tk.Button(buttons, text="뉴스 수집하기",
                         command=lambda: run_in_background(collect_news))
 dart_button = tk.Button(buttons, text="DART 수집하기",
                         command=lambda: run_in_background(collect_dart))
+report_button = tk.Button(buttons, text="보고서 만들기",
+                          command=lambda: run_in_background(save_report))
 mail_button = tk.Button(buttons, text="메일 보내기",
                         command=lambda: run_in_background(send_mail))
 all_button = tk.Button(buttons, text="전체 실행",
                        command=lambda: run_in_background(run_all))
-ALL_BUTTONS = [news_button, dart_button, mail_button, all_button]
+ALL_BUTTONS = [news_button, dart_button, report_button, mail_button, all_button]
 for button in ALL_BUTTONS:
     button.pack(side="left", padx=(0, 6))
 

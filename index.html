@@ -750,6 +750,7 @@
       <a class="toc-link" data-page="s6" href="#s6"><span class="toc-badge">6</span>완성</a>
 
   <div class="toc-group-label">참고</div>
+      <a class="toc-link" data-page="apis" href="#apis"><span class="toc-badge">?</span>API 목록</a>
       <a class="toc-link" data-page="apps" href="#apps"><span class="toc-badge">+</span>The APPS</a>
 </nav>
 
@@ -1482,6 +1483,123 @@ win32com.client 로 Outlook.Application 을 붙잡고, CreateItem(0) 으로 새 
     </details>
   </section>
 
+  <section class="page" data-page="apis" id="apis">
+    <div class="page-head">
+      <span class="page-eyebrow">참고</span>
+      <div class="page-title-row">
+        <h2>다음에 붙여볼 API 목록</h2>
+      </div>
+      <p class="step-desc">오늘 만든 것은 DART 전용 프로그램이 아니라
+        <strong>「인증키로 자료 받아 정리해서 메일 보내는 틀」</strong> 이다. 주소와 인증키만
+        바꾸면 아래 것들이 똑같이 돌아간다. 아래 목록은 모두 사내망에서 응답이 오는 것을
+        확인했다.</p>
+    </div>
+
+    <div class="workflow-note">
+      <p class="workflow-note-title">API 가 뭔가 — 한 줄로</p>
+      <ol>
+        <li><strong>사람이 보라고 만든 것이 홈페이지, 프로그램이 받아가라고 열어둔 창구가 API 다.</strong>
+          DART 홈페이지에서 눈으로 읽던 공시를, 오늘은 프로그램이 받아왔다. 그게 API 다.</li>
+        <li><strong>인증키는 출입증이다.</strong> 누가 얼마나 가져가는지 세기 위해 발급받는다.
+          그래서 남에게 주면 안 되고, 코드 안에 적어두면 안 된다 — 오늘 프로그램이 인증키를
+          창의 입력 칸에서 받은 이유다.</li>
+        <li><strong>대부분 무료다.</strong> 공공기관이 여는 것은 거의 다 무료이고, 하루에 몇 번까지
+          쓸 수 있는지(호출 한도)만 정해져 있다. 개인이 쓰는 수준에서는 넘길 일이 거의 없다.</li>
+      </ol>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">난이도 — 인증 방식으로 갈린다</p>
+      <ul>
+        <li><strong>1단계 · 인증키 없음</strong> — 주소만 넣으면 끝. 오늘 쓴 구글 뉴스가 여기다.</li>
+        <li><strong>2단계 · 인증키 하나</strong> — 발급받아 입력 칸에 붙여넣으면 끝.
+          오늘 쓴 DART 가 여기고, <strong>아래 목록이 전부 2단계다.</strong>
+          여기까지가 혼자 할 수 있는 선이다.</li>
+        <li><strong>3단계 · 로그인 연동(OAuth)</strong> — 구글 캘린더, 마이크로소프트 365 등.
+          토큰을 받고 갱신하는 절차가 따로 있어 혼자 붙이기는 어렵다. DX팀에 문의.</li>
+        <li><strong>4단계 · 사내 시스템</strong> — 그룹웨어, ERP 등. 담당 부서 협의가 먼저다.</li>
+      </ul>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">무료 — 건설 업무에 바로 쓸 만한 것</p>
+      <ul>
+        <li><strong>나라장터 입찰공고</strong> (조달청) — 공사·물품 입찰 공고를 업종·지역·금액으로
+          매일 받기. <strong>오늘 만든 것과 구조가 완전히 같다</strong> — 영업·견적 업무에 바로 쓴다.
+          <br>발급: <a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></li>
+        <li><strong>기상청 단기예보·특보</strong> — 강우·강풍 예보로 현장 작업중지 판단, 공정 조정.
+          <br>발급: 공공데이터포털</li>
+        <li><strong>에어코리아 대기질</strong> — 미세먼지 경보, 옥외작업·비산먼지 관리.
+          <br>발급: 공공데이터포털</li>
+        <li><strong>공휴일 정보</strong> (한국천문연구원) — <strong>공정표 작업일수 계산.</strong>
+          단순하지만 활용도가 가장 높은 축에 든다. <br>발급: 공공데이터포털</li>
+        <li><strong>국토부 아파트 실거래가</strong> — 매매·전월세 실거래, 분양·개발 검토.
+          <br>발급: 공공데이터포털</li>
+        <li><strong>건축물대장</strong> (건축HUB) — 부지·건물 제원 조회. <br>발급: 공공데이터포털</li>
+        <li><strong>한국은행 ECOS</strong> — 금리·환율·건설기성 등 경제통계. 하루 2만 건.
+          <br>발급: <a href="https://ecos.bok.or.kr/api/" target="_blank" rel="noopener">ecos.bok.or.kr/api</a></li>
+        <li><strong>KOSIS 국가통계포털</strong> — 건설수주액, 자재 물가지수. 하루 2만 건.
+          <br>발급: <a href="https://kosis.kr/openapi/" target="_blank" rel="noopener">kosis.kr/openapi</a></li>
+        <li><strong>카카오 로컬</strong> — 주소를 좌표로 바꾸기, 현장 위치 지도. 하루 10만 건.
+          <br>발급: <a href="https://developers.kakao.com/" target="_blank" rel="noopener">developers.kakao.com</a></li>
+        <li><strong>네이버 개발자센터</strong> — 뉴스·블로그 검색(구글 뉴스의 대안), 하루 2만 5천 건.
+          <br>발급: <a href="https://developers.naver.com/" target="_blank" rel="noopener">developers.naver.com</a></li>
+        <li><strong>구글 뉴스</strong> — 오늘 쓴 것. <strong>인증키가 아예 없다.</strong>
+          다만 구글이 공식 지원한다고 밝힌 적이 없어 언제든 바뀔 수 있다.</li>
+        <li><strong>DART 전자공시</strong> — 오늘 쓴 것. 하루 2만 건, 계정당 인증키 1개, 개인은 즉시 발급.
+          <br>발급: <a href="https://opendart.fss.or.kr/" target="_blank" rel="noopener">opendart.fss.or.kr</a></li>
+      </ul>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">유료 — 쓴 만큼 돈이 나간다</p>
+      <ul>
+        <li><strong>AI API</strong> (Claude 등) — 모아온 기사를 <strong>요약·분류하거나 중요도를
+          매기는</strong> 데 쓴다. 오늘 만든 리포트에 붙이면 「읽을 것만 골라주는」 봇이 된다.
+          무료 한도가 아니라 <strong>쓴 만큼 과금</strong>된다 (선불 충전).
+          <br>가격은 글자 100만 자 단위로 매겨지고, 모델에 따라 대략 다음과 같다 —
+          <strong>가벼운 모델은 100만 글자에 1달러대, 가장 좋은 모델은 5달러대</strong>
+          (받는 답변 쪽이 5배쯤 비싸다). 기사 몇백 건 요약은 몇백 원 수준이다.
+          <br>발급: <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>
+          — 다만 <strong>사내 결제·보안 검토가 먼저다. DX팀에 문의할 것.</strong></li>
+        <li><strong>유료 데이터 서비스</strong> — 증권사 시세, 신용평가, 해외 입찰정보 등은
+          계약이 필요하다. 개인이 발급받는 성격이 아니다.</li>
+      </ul>
+    </div>
+
+    <div class="workflow-note">
+      <p class="workflow-note-title">인증키 발급 — 어디나 순서가 같다</p>
+      <ol>
+        <li><strong>회원가입</strong> — 발급처 사이트에 가입한다 (대부분 회사 메일로 가능).</li>
+        <li><strong>인증키 신청</strong> — DART·ECOS·KOSIS 는 신청하면 <strong>바로 발급</strong>된다.
+          카카오·네이버는 「애플리케이션 등록」 을 먼저 하면 키가 나온다.</li>
+        <li><strong>공공데이터포털만 한 단계 더 있다</strong> — 아래 주의사항 참고.</li>
+        <li><strong>발급받은 키는 프로그램 입력 칸에 붙여넣는다.</strong>
+          코드 안에 적지 않는다. 오늘 만든 프로그램이 그렇게 되어 있다.</li>
+      </ol>
+    </div>
+
+    <div class="criteria-box">
+      <p class="criteria-label">주의 — 공공데이터포털은 DART 와 다르다</p>
+      <ul>
+        <li><strong>키 하나로 전부 되는 게 아니다.</strong> 계정 인증키는 하나지만,
+          <strong>쓰려는 API 마다 「활용신청」 을 따로</strong> 해야 한다.</li>
+        <li>자동승인되는 것도 있지만 <strong>심의 대상이면 1~2일</strong> 걸린다.
+          쓸 API 를 미리 정해 신청까지 끝내둬야 한다.</li>
+        <li>신청하지 않은 API 를 부르면 키가 멀쩡한데도 거부된다.
+          <strong>키가 틀린 것으로 오해하기 쉬운 지점이다.</strong></li>
+        <li>개발용 계정은 <strong>하루 1,000건</strong>, 실제 서비스용으로 신청하면
+          <strong>하루 10만 건</strong>까지 늘어난다. 혼자 쓰기에는 개발용으로 충분하다.</li>
+      </ul>
+    </div>
+
+    <div class="callout">
+      <p><strong>한도와 가격은 바뀐다.</strong> 위 숫자는 2026년 9월에 확인한 값이다.
+        실제로 쓸 때는 발급처 화면의 안내를 따른다. 그리고 어떤 API 든 오늘과 똑같이
+        <strong>「막히면 에러 문장을 그대로 AI 에게 붙여넣기」</strong> 가 가장 빠른 해결책이다.</p>
+    </div>
+  </section>
+
   <section class="page" data-page="apps" id="apps">
     <div class="page-head">
       <span class="page-eyebrow">참고</span>
@@ -1521,7 +1639,7 @@ win32com.client 로 Outlook.Application 을 붙잡고, CreateItem(0) 으로 새 
 
     <div class="page-nav">
       <button class="page-nav-btn" id="pageNavPrev">← 이전</button>
-      <span class="page-nav-pos" id="pageNavPos">1 / 9</span>
+      <span class="page-nav-pos" id="pageNavPos">1 / 10</span>
       <button class="page-nav-btn next" id="pageNavNext">다음 →</button>
     </div>
 
@@ -1536,7 +1654,7 @@ win32com.client 로 Outlook.Application 을 붙잡고, CreateItem(0) 으로 새 
 
 <script>
 (function () {
-  var PAGE_IDS = ["prep", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "apps"];
+  var PAGE_IDS = ["prep", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "apis", "apps"];
   var STORAGE_KEY = "issuebot-checklist";
   var STATE_KEY = "issuebot-current-page";
 

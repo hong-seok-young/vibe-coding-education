@@ -26,13 +26,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 PAGE = os.path.join(REPO, "DART 뉴스 크롤링 및 메일발송 프로그램 만들기.html")
 
-EXPECTED_PAGES = 9         # 사전 준비 + STEP 7개 + The APPS
+EXPECTED_PAGES = 10        # 사전 준비 + STEP 7개 + API 목록 + The APPS
 EXPECTED_CHECKBOXES = 13   # 사전 준비 6개 + STEP 페이지 7개
 PAIRED_TAGS = ("div", "ul", "li", "p", "section", "details", "pre", "code", "span", "strong", "em")
 # 낡은 표현 + 2026-09-08 검증에서 틀린 것으로 확인돼 되돌아오면 안 되는 처방들.
 # VERIFY_X509_STRICT 제거는 사내 PC 에서 먹히지 않았다 (self-signed certificate in
 # certificate chain). SMTP 는 포트가 막힌 게 아니라 STARTTLS 단계에서 끊긴다.
-STALE_WORDS = ("결과창", "NewsAPI", "네이버 검색", ".env", "python3.12", "맥OS", "macOS",
+# "search.naver.com" — 예전에 네이버 검색 페이지를 긁던 방식. 금지어는 그 방식이지
+# 네이버 API 자체가 아니다 (참고 페이지에서 정식 API 로 안내한다).
+STALE_WORDS = ("결과창", "NewsAPI", "search.naver.com", ".env", "python3.12", "맥OS", "macOS",
                ".command", "VERIFY_X509_STRICT", "Authority Key Identifier",
                "certifi 를 지정", "포트를 막아")
 

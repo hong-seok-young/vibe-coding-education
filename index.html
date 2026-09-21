@@ -476,6 +476,23 @@
 
   .tiny { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
 
+  /* API 목록 표 — 좁은 화면에서는 표 자체만 가로 스크롤된다 */
+  .apitable-wrap { overflow-x: auto; margin-top: 10px; -webkit-overflow-scrolling: touch; }
+  .apitable { width: 100%; min-width: 640px; border-collapse: collapse; font-size: 13px; }
+  .apitable th, .apitable td {
+    text-align: left; padding: 9px 12px 9px 0; vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+  .apitable thead th {
+    color: var(--muted); font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--line-strong); white-space: nowrap;
+  }
+  .apitable tbody tr:last-child td { border-bottom: none; }
+  .apitable .api-name { font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .apitable .api-sub { display: block; color: var(--muted); font-size: 11px; font-weight: 400; }
+  .apitable .api-quota { color: var(--muted); white-space: nowrap; }
+  .apitable .api-pick { color: var(--accent); font-weight: 600; }
   .filetable { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
   .filetable th, .filetable td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
   .filetable th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -1522,49 +1539,118 @@ win32com.client 로 Outlook.Application 을 붙잡고, CreateItem(0) 으로 새 
     </div>
 
     <div class="criteria-box">
-      <p class="criteria-label">무료 — 건설 업무에 바로 쓸 만한 것</p>
-      <ul>
-        <li><strong>나라장터 입찰공고</strong> (조달청) — 공사·물품 입찰 공고를 업종·지역·금액으로
-          매일 받기. <strong>오늘 만든 것과 구조가 완전히 같다</strong> — 영업·견적 업무에 바로 쓴다.
-          <br>발급: <a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></li>
-        <li><strong>기상청 단기예보·특보</strong> — 강우·강풍 예보로 현장 작업중지 판단, 공정 조정.
-          <br>발급: 공공데이터포털</li>
-        <li><strong>에어코리아 대기질</strong> — 미세먼지 경보, 옥외작업·비산먼지 관리.
-          <br>발급: 공공데이터포털</li>
-        <li><strong>공휴일 정보</strong> (한국천문연구원) — <strong>공정표 작업일수 계산.</strong>
-          단순하지만 활용도가 가장 높은 축에 든다. <br>발급: 공공데이터포털</li>
-        <li><strong>국토부 아파트 실거래가</strong> — 매매·전월세 실거래, 분양·개발 검토.
-          <br>발급: 공공데이터포털</li>
-        <li><strong>건축물대장</strong> (건축HUB) — 부지·건물 제원 조회. <br>발급: 공공데이터포털</li>
-        <li><strong>한국은행 ECOS</strong> — 금리·환율·건설기성 등 경제통계. 하루 2만 건.
-          <br>발급: <a href="https://ecos.bok.or.kr/api/" target="_blank" rel="noopener">ecos.bok.or.kr/api</a></li>
-        <li><strong>KOSIS 국가통계포털</strong> — 건설수주액, 자재 물가지수. 하루 2만 건.
-          <br>발급: <a href="https://kosis.kr/openapi/" target="_blank" rel="noopener">kosis.kr/openapi</a></li>
-        <li><strong>카카오 로컬</strong> — 주소를 좌표로 바꾸기, 현장 위치 지도. 하루 10만 건.
-          <br>발급: <a href="https://developers.kakao.com/" target="_blank" rel="noopener">developers.kakao.com</a></li>
-        <li><strong>네이버 개발자센터</strong> — 뉴스·블로그 검색(구글 뉴스의 대안), 하루 2만 5천 건.
-          <br>발급: <a href="https://developers.naver.com/" target="_blank" rel="noopener">developers.naver.com</a></li>
-        <li><strong>구글 뉴스</strong> — 오늘 쓴 것. <strong>인증키가 아예 없다.</strong>
-          다만 구글이 공식 지원한다고 밝힌 적이 없어 언제든 바뀔 수 있다.</li>
-        <li><strong>DART 전자공시</strong> — 오늘 쓴 것. 하루 2만 건, 계정당 인증키 1개, 개인은 즉시 발급.
-          <br>발급: <a href="https://opendart.fss.or.kr/" target="_blank" rel="noopener">opendart.fss.or.kr</a></li>
-      </ul>
+      <p class="criteria-label">무료 — 인증키만 받으면 쓸 수 있다</p>
+      <div class="apitable-wrap">
+      <table class="apitable">
+        <thead><tr><th>API</th><th>무엇에 쓰나</th><th>발급처</th><th>한도</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="api-name api-pick">나라장터 입찰공고<span class="api-sub">조달청</span></td>
+            <td>공사·물품 입찰 공고를 업종·지역·금액으로 매일 받기.
+              <strong>오늘 만든 것과 구조가 같다</strong> — 영업·견적에 바로 쓴다</td>
+            <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
+            <td class="api-quota">하루 1,000건</td>
+          </tr>
+          <tr>
+            <td class="api-name api-pick">기상청 단기예보·특보</td>
+            <td>강우·강풍 예보로 현장 작업중지 판단, 공정 조정</td>
+            <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
+            <td class="api-quota">하루 1,000건</td>
+          </tr>
+          <tr>
+            <td class="api-name">에어코리아 대기질</td>
+            <td>미세먼지 경보, 옥외작업·비산먼지 관리</td>
+            <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
+            <td class="api-quota">하루 1,000건</td>
+          </tr>
+          <tr>
+            <td class="api-name api-pick">공휴일 정보<span class="api-sub">한국천문연구원</span></td>
+            <td><strong>공정표 작업일수 계산.</strong> 단순한데 활용도가 가장 높은 축</td>
+            <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
+            <td class="api-quota">하루 1,000건</td>
+          </tr>
+          <tr>
+            <td class="api-name">아파트 실거래가<span class="api-sub">국토교통부</span></td>
+            <td>매매·전월세 실거래, 분양·개발 검토</td>
+            <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
+            <td class="api-quota">하루 1,000건</td>
+          </tr>
+          <tr>
+            <td class="api-name">건축물대장<span class="api-sub">건축HUB</span></td>
+            <td>부지·건물 제원 조회</td>
+            <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
+            <td class="api-quota">하루 1,000건</td>
+          </tr>
+          <tr>
+            <td class="api-name">경제통계<span class="api-sub">한국은행 ECOS</span></td>
+            <td>금리·환율·건설기성 등</td>
+            <td><a href="https://ecos.bok.or.kr/api/" target="_blank" rel="noopener">ecos.bok.or.kr</a></td>
+            <td class="api-quota">하루 2만 건</td>
+          </tr>
+          <tr>
+            <td class="api-name">국가통계<span class="api-sub">KOSIS</span></td>
+            <td>건설수주액, 자재 물가지수</td>
+            <td><a href="https://kosis.kr/openapi/" target="_blank" rel="noopener">kosis.kr</a></td>
+            <td class="api-quota">하루 2만 건</td>
+          </tr>
+          <tr>
+            <td class="api-name">카카오 로컬</td>
+            <td>주소를 좌표로 바꾸기, 현장 위치 지도</td>
+            <td><a href="https://developers.kakao.com/" target="_blank" rel="noopener">developers.kakao.com</a></td>
+            <td class="api-quota">하루 10만 건</td>
+          </tr>
+          <tr>
+            <td class="api-name">네이버 개발자센터</td>
+            <td>뉴스·블로그 검색 (구글 뉴스의 대안)</td>
+            <td><a href="https://developers.naver.com/" target="_blank" rel="noopener">developers.naver.com</a></td>
+            <td class="api-quota">하루 2만 5천 건</td>
+          </tr>
+          <tr>
+            <td class="api-name">DART 전자공시<span class="api-sub">오늘 쓴 것</span></td>
+            <td>상장사 공시. 계정당 인증키 1개, 개인은 즉시 발급</td>
+            <td><a href="https://opendart.fss.or.kr/" target="_blank" rel="noopener">opendart.fss.or.kr</a></td>
+            <td class="api-quota">하루 2만 건</td>
+          </tr>
+          <tr>
+            <td class="api-name">구글 뉴스<span class="api-sub">오늘 쓴 것</span></td>
+            <td>키워드 뉴스 검색. 구글이 공식 지원을 밝힌 적이 없어 바뀔 수 있다</td>
+            <td class="api-quota">발급 불필요</td>
+            <td class="api-quota">인증키 없음</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="tiny" style="margin-top:8px;">주황색으로 표시한 셋이 우리 업무에 가장 가깝다.
+        공공데이터포털 항목의 한도는 개발용 계정 기준이고, 실제 서비스용으로 신청하면
+        하루 10만 건까지 늘어난다.</p>
     </div>
 
     <div class="criteria-box">
       <p class="criteria-label">유료 — 쓴 만큼 돈이 나간다</p>
-      <ul>
-        <li><strong>AI API</strong> (Claude 등) — 모아온 기사를 <strong>요약·분류하거나 중요도를
-          매기는</strong> 데 쓴다. 오늘 만든 리포트에 붙이면 「읽을 것만 골라주는」 봇이 된다.
-          무료 한도가 아니라 <strong>쓴 만큼 과금</strong>된다 (선불 충전).
-          <br>가격은 글자 100만 자 단위로 매겨지고, 모델에 따라 대략 다음과 같다 —
-          <strong>가벼운 모델은 100만 글자에 1달러대, 가장 좋은 모델은 5달러대</strong>
-          (받는 답변 쪽이 5배쯤 비싸다). 기사 몇백 건 요약은 몇백 원 수준이다.
-          <br>발급: <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>
-          — 다만 <strong>사내 결제·보안 검토가 먼저다. DX팀에 문의할 것.</strong></li>
-        <li><strong>유료 데이터 서비스</strong> — 증권사 시세, 신용평가, 해외 입찰정보 등은
-          계약이 필요하다. 개인이 발급받는 성격이 아니다.</li>
-      </ul>
+      <div class="apitable-wrap">
+      <table class="apitable">
+        <thead><tr><th>서비스</th><th>무엇에 쓰나</th><th>발급처</th><th>비용</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="api-name">AI API<span class="api-sub">Claude 등</span></td>
+            <td>모아온 기사를 <strong>요약·분류하고 중요도를 매긴다.</strong>
+              오늘 만든 리포트에 붙이면 「읽을 것만 골라주는」 봇이 된다</td>
+            <td><a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a></td>
+            <td class="api-quota">쓴 만큼 과금<span class="api-sub">선불 충전</span></td>
+          </tr>
+          <tr>
+            <td class="api-name">유료 데이터 서비스</td>
+            <td>증권사 시세, 신용평가, 해외 입찰정보 등</td>
+            <td class="api-quota">업체별 계약</td>
+            <td class="api-quota">계약 단가</td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="tiny" style="margin-top:8px;">AI API 가격은 글자 100만 자 단위로 매겨진다.
+        가벼운 모델은 100만 자에 1달러대, 가장 좋은 모델은 5달러대이고 받는 답변 쪽이 5배쯤
+        비싸다. 기사 몇백 건 요약은 몇백 원 수준이다.
+        <strong>다만 사내 결제·보안 검토가 먼저다 — DX팀에 문의할 것.</strong></p>
     </div>
 
     <div class="workflow-note">

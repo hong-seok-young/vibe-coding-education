@@ -6,3 +6,6 @@ _steps_dump.txt
 *.pptx
 *.docx
 *.xlsx
+
+# 로컬 미리보기 설정 — 저장소에 올리지 않는다
+.claude/

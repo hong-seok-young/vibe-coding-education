@@ -9,7 +9,7 @@
     만들 때 역슬래시를 날려서 프로그램이 안 열린 사례가 있다. 설명문 안의
     <code> 예시는 붙여넣는 글이 아니라서 검사 대상이 아니다
   · 낡은 표현이 남아있지 않은지 (결과창 -> 결과 칸 처럼 바꾼 말들)
-  · 정답 코드 버튼에 박힌 main.py 가 지금 저장소의 main.py 와 같은지
+  · 정답 코드 버튼에 박힌 main.py 와 STEP 0 의 창 그림이 최신인지
 
 <script> 안의 자바스크립트 문법은 여기서 보지 않는다. node 가 있으면
     node --check <(추출한 스크립트)
@@ -83,6 +83,14 @@ def main():
         with open(os.path.join(REPO, "news-report-bot", "main.py"), "rb") as f:
             if base64.b64decode(embedded.group(1)) != f.read():
                 fail("박혀있는 main.py 가 지금 저장소의 main.py 와 다르다 — build_page.py 를 다시 실행할 것")
+
+    shot = re.search(r'<img src="data:image/png;base64,([A-Za-z0-9+/=]+)"', page)
+    if not shot:
+        fail("STEP 0 의 프로그램 창 그림이 페이지에 박혀있지 않다")
+    else:
+        with open(os.path.join(HERE, "program-window.png"), "rb") as f:
+            if base64.b64decode(shot.group(1)) != f.read():
+                fail("박혀있는 그림이 tools/program-window.png 와 다르다 — build_page.py 를 다시 실행할 것")
 
     index = os.path.join(REPO, "index.html")
     if not os.path.exists(index):

@@ -4,8 +4,9 @@
 아니라 여기서 만들어진다. **HTML 을 직접 고치지 말 것** — 다음 실행에 덮어써진다.
 
 ```
-python3 tools/build_page.py     # HTML 을 다시 만든다
-python3 tools/check_page.py     # 만들어진 HTML 을 점검한다
+python3 tools/build_page.py       # HTML 을 다시 만든다
+python3 tools/check_page.py       # 만들어진 HTML 을 점검한다
+python3 tools/capture_window.py   # STEP 0 의 창 그림을 다시 찍는다 (윈도우에서만)
 ```
 
 | 파일 | 무엇 |
@@ -13,6 +14,8 @@ python3 tools/check_page.py     # 만들어진 HTML 을 점검한다
 | `steps.py` | STEP 0~9 의 프롬프트·성공 기준·정답 코드 조각. **내용을 고치는 곳은 대개 여기다** |
 | `prep.html` | 사전 준비 페이지 마크업 (체크리스트, DART 키 발급 안내) |
 | `build_page.py` | 위 둘 + 스타일·스크립트·The APPS 안내 페이지를 합쳐 HTML 하나로 |
+| `capture_window.py` | main.py 를 실제로 띄워 창 그림(`program-window.png`)을 찍는다. **화면을 긁지 않고 PrintWindow 로 찍는다** — 사내 PC 는 화면에 이름·소속·IP 워터마크가 깔려 있어 화면 캡처를 쓰면 그게 같이 박힌다 |
+| `program-window.png` | STEP 0 페이지에 base64 로 박히는 창 그림. `main.py` 의 창 구성을 바꿨으면 다시 찍을 것 |
 | `check_page.py` | 태그 짝, 페이지·체크박스 수, 프롬프트 안의 역슬래시, 낡은 표현, 박혀있는 main.py 일치 |
 
 ## 고칠 때

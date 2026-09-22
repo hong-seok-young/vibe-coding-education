@@ -98,34 +98,23 @@ PART_LABELS = {1: "실습 1 · 수집", 2: "실습 2 · 보고서", 3: "실습 3
 
 # ── STEP 카드 렌더링 (한 STEP = 한 페이지) ──────────────────
 
-WORKFLOW_NOTE = '''
-    <div class="workflow-note">
-      <p class="workflow-note-title">여기서부터는 진짜로 코드를 짠다 — AI는 이렇게 쓴다</p>
-      <ol>
-        <li>여기서 말하는 "AI"는 사내에서 쓰는 <strong>대화형 챗봇</strong>이다. 프롬프트를 넣으면
-          그에 맞는 <strong>파이썬 코드 파일(.py)을 다운로드</strong>할 수 있게 준다 — 이 페이지처럼
-          직접 실행해주지는 않고, 내 PC의 파일을 열어보거나 고쳐주지도 않는다.</li>
-        <li>아래 <strong>프롬프트를 복사</strong>해서 그 AI 채팅창에 그대로 붙여넣는다.</li>
-        <li>AI가 내려주는 파일을 받는다. <strong>지금은 이 단계가 처음이라 내 PC에 아무 파일도
-          없다</strong> — 실습용 폴더를 하나 정해두고(바탕화면에 새로 만들어도 된다) 받은 파일을
-          그 안으로 옮겨둔다. 어디에 어떤 이름으로 저장하고 어떻게 실행하는지는 AI가 알려주니
-          그대로 따라 하면 된다.</li>
-        <li><strong>다음 단계부터는 매번 파일을 새로 받는다.</strong> AI는 파일을 내려주기만 하니,
-          같은 이름으로 또 받으면 브라우저가 <code>main (2).py</code>, <code>main (3).py</code>
-          처럼 뒤에 번호를 붙여 저장한다. <strong>이름을 맞추려고 애쓸 필요 없다 — 방금 받은
-          가장 최신 파일을 실행하면 된다.</strong> 단 <strong>폴더는 처음 정한 그대로 계속 쓴다</strong>
-          — 창에 입력해둔 인증키 같은 값이 프로그램 파일과 같은 폴더에 저장되기 때문에, 폴더를
-          옮겨 다니면 매번 처음부터 다시 입력해야 한다.</li>
-        <li><strong>다음 단계로 넘어갈 때도 같은 대화창에서 계속 이어서 물어봐야 한다.</strong>
-          새 대화를 시작하면 AI가 지금까지 짜준 코드를 기억하지 못한다. AI는 내 PC의 파일을 직접
-          열어보지 못하니, 매번 "지금까지 코드 전체를 다시 통째로 달라"고 요청해서 파일을 새로
-          받는 식으로 진행한다 (아래 프롬프트마다 이미 그렇게 요청하도록 되어 있다).</li>
-        <li>이 AI 툴은 질문마다 답하는 모델이 자동으로 바뀐다("스마트 라우팅"). 어떤 모델은 파일을
-          바로 첨부해주고, 어떤 모델은 파일 대신 채팅창에 코드를 텍스트로 그대로 보여준다. <strong>파일
-          첨부 대신 텍스트로 나오면, 화면 위쪽에서 모델을 Gemini로 바꾼 뒤 같은 프롬프트를 다시
-          넣어본다</strong> — 그래도 안 되면 이 페이지의 "정답 코드 파일 받기" 버튼을 대신 쓴다.</li>
-      </ol>
-    </div>
+# STEP 0 페이지에 넣는 완성 창 그림. tools/program-window.png 을 base64 로 박아
+# 넣어서 HTML 파일 하나만 있어도 그림이 보이게 한다 (이미지 파일을 따로 들고 다니지
+# 않아도 된다). 그림은 _lab/capture.py 로 main.py 를 실제로 띄워 찍는다 —
+# 화면을 긁으면 사내 보안 워터마크가 같이 찍히므로 PrintWindow 방식을 쓴다.
+import base64 as _b64
+
+with open(f"{HERE}/program-window.png", "rb") as _f:
+    SHOT_B64 = _b64.b64encode(_f.read()).decode("ascii")
+
+SHOT_HTML = f'''
+    <figure class="shot">
+      <img src="data:image/png;base64,{SHOT_B64}"
+           alt="완성된 프로그램 창 — 입력 칸 네 개, 버튼 다섯 개, 결과 칸 세 개">
+      <figcaption>이 STEP 을 마치면 이런 창이 뜬다. 입력 칸 넷(키워드·지켜볼 회사·메일 받을
+        사람·DART 인증키), 버튼 다섯(뉴스 수집·DART 수집·보고서 만들기·메일 보내기·전체 실행),
+        결과 칸 셋(뉴스·DART·진행 상황). 버튼은 아직 눌러도 진행 상황 칸에 안내만 나온다.</figcaption>
+    </figure>
 '''
 
 
@@ -140,7 +129,7 @@ def render_step_page(step, index, total):
       </div>'''
 
     criteria_html = "\n".join(f'          <li>{esc(c)}</li>' for c in step["criteria"])
-    intro = WORKFLOW_NOTE if step["id"] == "s0" else ""
+    intro = SHOT_HTML if step["id"] == "s0" else ""
 
     trouble_html = ""
     if step.get("trouble"):
@@ -706,6 +695,14 @@ STYLE = '''<style>
   .btn .arrow { font-size: 15px; line-height: 1; }
 
   .tiny { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+
+  /* STEP 0 의 완성 창 그림 */
+  .shot { margin: 14px 0 6px; }
+  .shot img {
+    display: block; width: 100%; height: auto; background: #fff;
+    border: 1px solid var(--line-strong); border-radius: 6px; box-shadow: var(--shadow);
+  }
+  .shot figcaption { color: var(--muted); font-size: 12px; line-height: 1.6; margin-top: 8px; }
 
   /* API 목록 표 — 좁은 화면에서는 표 자체만 가로 스크롤된다 */
   .apitable-wrap { overflow-x: auto; margin-top: 10px; -webkit-overflow-scrolling: touch; }

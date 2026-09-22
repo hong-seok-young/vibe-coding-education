@@ -367,14 +367,6 @@ STYLE = '''<style>
     margin-bottom: 4px;
   }
 
-  .toc-brand .sub {
-    display: block;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
   .toc-close {
     display: none;
     position: absolute;
@@ -936,7 +928,7 @@ TOC_HTML = f'''<button class="toc-toggle" id="tocToggle" aria-label="목차 열�
 <div class="toc-backdrop" id="tocBackdrop"></div>
 <nav class="toc" id="toc" aria-label="실습 목차">
   <button class="toc-close" id="tocClose" aria-label="목차 닫기">✕</button>
-  <div class="toc-brand">DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기<span class="sub">사전 준비부터 발송까지</span></div>
+  <div class="toc-brand">DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기</div>
 
   <a class="toc-link" data-page="prep" href="#prep"><span class="toc-badge">0</span>사전 준비</a>
 

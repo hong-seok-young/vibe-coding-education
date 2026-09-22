@@ -31,6 +31,7 @@ import webbrowser
 from collections import Counter
 from datetime import date, datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
+from pathlib import Path
 from tkinter import scrolledtext
 
 import feedparser
@@ -72,8 +73,8 @@ def load_settings():
 
 
 def save_settings():
-    data = dict(keywords=kw_entry.get(), companies=corp_entry.get(),
-                mailto=to_entry.get(), dart_key=key_entry.get())
+    data = dict(keywords=kw_entry.get(), mailto=to_entry.get(),
+                dart_key=key_entry.get())
     try:
         with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -129,7 +130,7 @@ def make_item(source, title, link, shown_date, timestamp, memo=""):
 def collect_news():
     raw = kw_entry.get().strip()
     if not raw:
-        log("키워드가 없어 뉴스는 건너뜁니다.")
+        log("검색어가 없어 뉴스는 건너뜁니다.")
         render(news_box, [])
         return []
 
@@ -204,7 +205,8 @@ def dart_fetch_all(key, begin, end):
 
 def collect_dart():
     key = key_entry.get().strip()
-    companies = [c.strip() for c in corp_entry.get().replace(",", " ").split() if c.strip()]
+    # 뉴스 검색어와 같은 칸을 쓴다 — 실무에서 둘 다 회사명이라 나눠 받을 이유가 없다.
+    companies = [c.strip() for c in kw_entry.get().replace(",", " ").split() if c.strip()]
     if not key:
         log("DART 인증키가 없어 건너뜁니다.")
         render(dart_box, [])
@@ -263,9 +265,9 @@ def collect_dart():
     items.sort(key=lambda x: (-x["ts"], x["title"]))
 
     if companies and not items:
-        log("공시 %d건을 살펴봤는데 적어주신 회사 건은 없었습니다." % looked)
+        log("공시 %d건을 살펴봤는데 검색어에 적은 회사 건은 없었습니다." % looked)
         render(dart_box, [],
-               tail="공시 %d건을 살펴봤지만 적어주신 회사 건은 없습니다." % looked)
+               tail="공시 %d건을 살펴봤지만 검색어에 적은 회사 건은 없습니다." % looked)
         return []
 
     if companies:
@@ -274,7 +276,7 @@ def collect_dart():
         extra = (" (그 외 %d곳)" % (len(by_corp) - 6)) if len(by_corp) > 6 else ""
         tail = "공시 %d건 중 %d건 - %s%s" % (looked, len(items), " / ".join(parts), extra)
     else:
-        tail = ("회사를 안 적으셨으니 전체 %d건 중 최신 %d건만 담았습니다."
+        tail = ("검색어를 안 적으셨으니 전체 %d건 중 최신 %d건만 담았습니다."
                 % (looked, len(items)))
 
     merge(items)
@@ -374,7 +376,10 @@ def save_report():
         log("보고서를 저장하지 못했습니다: %s" % ex)
         return None
     log("보고서를 만들었습니다: %s (%d건)" % (name, len(COLLECTED)))
-    webbrowser.open("file:///" + path.replace(os.sep, "/"))
+    # 파일 경로를 주소로 바꿀 때는 반드시 as_uri() 를 쓴다. 문자열로 이어붙이면
+    # 폴더 이름에 든 # 이나 공백이 주소 문법으로 해석돼 엉뚱한 곳이 열린다
+    # (실제로 D:/#. DX/... 폴더에서 D 드라이브 목록이 열렸다).
+    webbrowser.open(Path(path).as_uri())
     log("브라우저로 열었습니다. 제목을 누르면 원문으로 갑니다.")
     return path
 
@@ -484,8 +489,7 @@ root.geometry("940x820")
 saved = load_settings()
 form = tk.Frame(root)
 form.pack(fill="x", padx=10, pady=8)
-FIELDS = (("키워드 (쉼표로 여러 개):", "keywords"),
-          ("지켜볼 회사 (쉼표로 여러 개):", "companies"),
+FIELDS = (("검색어 (회사명, 쉼표로 여러 개):", "keywords"),
           ("메일 받을 사람:", "mailto"),
           ("DART 인증키:", "dart_key"))
 entries = []
@@ -495,7 +499,7 @@ for row, (label, field) in enumerate(FIELDS):
     entry.grid(row=row, column=1, padx=4, pady=2)
     entry.insert(0, saved.get(field, ""))
     entries.append(entry)
-kw_entry, corp_entry, to_entry, key_entry = entries
+kw_entry, to_entry, key_entry = entries
 
 buttons = tk.Frame(root)
 buttons.pack(fill="x", padx=10)

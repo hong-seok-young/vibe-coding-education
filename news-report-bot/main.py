@@ -415,15 +415,19 @@ def send_mail():
     try:
         outlook = win32.Dispatch("Outlook.Application")
         mail = outlook.CreateItem(0)          # 0 = 메일
-        mail.To = "; ".join(recipients)
+        to_text = "; ".join(recipients)
+        mail.To = to_text
         mail.Subject = subject
         mail.HTMLBody = body                  # Body 에 넣으면 링크가 글자로 깨진다
         mail.Send()
-        log("자동 발송 완료: %s (%d건)" % (mail.To, len(COLLECTED)))
+        # Send() 뒤에는 이 메일 객체를 다시 건드리면 안 된다. 보낸 편지함으로 옮겨져서
+        # mail.To 를 읽기만 해도 "항목이 삭제되었거나 옮겨졌습니다" 오류가 난다.
+        # 그러면 실제로는 보내놓고도 실패로 처리돼 메일 창이 또 뜬다.
+        log("자동 발송 완료: %s (%d건)" % (to_text, len(COLLECTED)))
         return
     except Exception as ex:
-        log("자동 발송이 안 됐습니다 (%s). 메일 창을 열어드릴게요."
-            % type(ex).__name__)
+        log("자동 발송이 안 됐습니다 — %s: %s" % (type(ex).__name__, ex))
+        log("대신 메일 창을 열어드릴게요.")
 
     # 「새 아웃룩(New Outlook)」은 위 방식을 지원하지 않는다. 그때는 내용이 채워진
     # 메일 창을 열어서 사람이 [보내기] 만 누르게 한다.
@@ -469,12 +473,28 @@ def run_in_background(work):
         button.config(state="disabled")
 
     def go():
+        # 아웃룩 조작(COM)은 그 일을 하는 스레드마다 먼저 초기화를 해줘야 한다.
+        # 빠뜨리면 자동 발송이 com_error (-2147221008, CoInitialize 가 호출되지
+        # 않았습니다) 로 실패한다. 창이 멈추지 않게 뒤에서 작업하는 구조라 반드시 필요하다.
+        com_ready = False
+        try:
+            import pythoncom
+            pythoncom.CoInitialize()
+            com_ready = True
+        except ImportError:
+            pass
         try:
             save_settings()
             work()
         except Exception as ex:                    # 어떤 경우에도 조용히 죽지 않게
             log("예상 못 한 문제가 생겼습니다: %s - %s" % (type(ex).__name__, ex))
         finally:
+            if com_ready:
+                try:
+                    import pythoncom
+                    pythoncom.CoUninitialize()
+                except Exception:
+                    pass
             BUSY.release()
             root.after(0, lambda: [b.config(state="normal") for b in ALL_BUTTONS])
 

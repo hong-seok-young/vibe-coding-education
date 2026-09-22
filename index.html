@@ -514,6 +514,12 @@
   .cmd-text { font-family: "IBM Plex Mono", ui-monospace, monospace; color: var(--ink); flex: 1; min-width: 140px; }
 
   .prompt-box { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+  .prompt-box > summary { cursor: pointer; list-style: none; }
+  .prompt-box > summary::-webkit-details-marker { display: none; }
+  .prompt-box > summary .prompt-label::before {
+    content: "▸"; display: inline-block; margin-right: 6px; color: var(--muted);
+  }
+  .prompt-box[open] > summary .prompt-label::before { content: "▾"; }
 
   .prompt-box-head {
     display: flex;
@@ -711,14 +717,12 @@
         <span class="num">0</span>
         <h2>사전 준비</h2>
       </div>
-      <p class="group-sub">실습 전 준비해야 할 사항</p>
 
   <section class="group">
     <div class="group-head">
       <span class="num">A</span>
       <h2>설치</h2>
     </div>
-    <p class="group-sub">파일 하나 더블클릭이면 끝난다. 직접 뭘 입력할 건 없다.</p>
 
     <div class="items">
 
@@ -816,27 +820,6 @@
     </div>
   </section>
 
-  <section class="group">
-    <div class="group-head">
-      <span class="num">D</span>
-      <h2>모니터링 키워드 정하기</h2>
-    </div>
-    <div class="items">
-
-      <label class="item">
-        <span class="check-col"><input type="checkbox" class="check" data-id="keywords"></span>
-        <span>
-          <span class="item-title">
-            키워드 3개
-            <span class="tag required">필수</span>
-          </span>
-          <p class="tiny">이것도 잘 적어둔다 — 실습 때 프로그램에 직접 채워넣게 된다.</p>
-        </span>
-      </label>
-
-    </div>
-  </section>
-
 
   <div class="callout">
     <p><strong>설치 파일이 회사 정책에 막히면</strong> — 아래 순서로 대신 준비한다.
@@ -873,11 +856,11 @@
            alt="완성된 프로그램 창 — 입력 칸 세 개, 버튼 다섯 개, 결과 칸 세 개">
     </figure>
 
-    <div class="prompt-box">
-      <div class="prompt-box-head">
+    <details class="prompt-box">
+      <summary class="prompt-box-head">
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s0">복사</button>
-      </div>
+      </summary>
       <pre class="prompt-text" id="prompt-s0">파이썬으로 뉴스랑 DART 공시를 모아서 메일로 보내는 프로그램을 만들 거야. 나는 코딩을 전혀
 몰라. 윈도우 PC 를 쓰고, 아웃룩에 회사 메일로 로그인해둔 상태야.
 
@@ -889,7 +872,8 @@
 검색어 칸 하나로 뉴스 검색과 DART 회사 찾기를 같이 할 거야. 둘 다 결국 회사명이라
 칸을 나눠 받을 이유가 없어.
 
-그 아래에 버튼 네 개 — &quot;뉴스 수집하기&quot;, &quot;DART 수집하기&quot;, &quot;메일 보내기&quot;, &quot;전체 실행&quot;.
+그 아래에 버튼 다섯 개 — &quot;뉴스 수집하기&quot;, &quot;DART 수집하기&quot;, &quot;보고서 만들기&quot;, &quot;메일 보내기&quot;,
+&quot;전체 실행&quot;.
 
 그 아래는 결과 보는 곳인데, 하나로 합치지 말고 세 칸으로 나눠줘 — &quot;뉴스 수집 결과&quot;,
 &quot;DART 수집 결과&quot;, 그리고 진행 상황이나 에러가 들어갈 작은 &quot;진행 상황&quot; 칸. 수집 버튼은 각자
@@ -918,7 +902,7 @@
 실행 중인 파이썬 버전을 한 줄 보여줘.
 
 코드는 채팅창에 쓰지 말고 .py 파일로 첨부해줘. 파일을 어디에 어떤 이름으로 저장하고 어떻게 실행하면 창이 뜨는지도 순서대로 알려줘. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
-    </div>
+    </details>
 
     <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
@@ -928,7 +912,7 @@
           <li>결과 보는 곳이 &quot;뉴스 수집 결과&quot; / &quot;DART 수집 결과&quot; / &quot;진행 상황&quot; 세 칸으로 나뉘어 있다</li>
           <li>진행 상황 칸 맨 위에 실행 중인 파이썬 버전이 한 줄 표시된다</li>
           <li>입력 칸에 아무 값이나 써넣고 창을 닫았다가 다시 열면, 써넣은 값이 그대로 남아있다</li>
-          <li>버튼 네 개를 눌러보면 에러 없이 진행 상황 칸에 뭔가 나온다</li>
+          <li>버튼 다섯 개를 눌러보면 에러 없이 진행 상황 칸에 뭔가 나온다</li>
       </ul>
     </div>
 
@@ -967,11 +951,11 @@
         <code class="cmd-text" id="cmd-s1">pip install feedparser</code>
         <button class="copy-btn" data-copy="cmd-s1">복사</button>
       </div>
-    <div class="prompt-box">
-      <div class="prompt-box-head">
+    <details class="prompt-box">
+      <summary class="prompt-box-head">
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s1">복사</button>
-      </div>
+      </summary>
       <pre class="prompt-text" id="prompt-s1">&quot;뉴스 수집하기&quot; 버튼이 실제로 구글 뉴스에서 기사를 가져오게 해줘. 구글 뉴스는 인증키 없이
 검색 결과를 받아올 수 있어. 검색어 칸에 적은 단어마다 한국 기준으로 검색해서, 단어당 최신
 열 건까지만.
@@ -1003,7 +987,7 @@ CERTIFICATE_VERIFY_FAILED
 버튼을 누른 동안 창이 멈추지 않게 뒤에서 작업해줘.
 
 코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
-    </div>
+    </details>
 
     <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
@@ -1022,16 +1006,16 @@ CERTIFICATE_VERIFY_FAILED
     <details class="answer-details">
       <summary>그래도 뉴스 칸에 CERTIFICATE 어쩌고 하는 에러가 뜨면</summary>
       <p class="tiny" style="margin-top: 4px;">AI 가 강사님 쪽지를 무시하고 <code>requests</code> 를 쓴 것이다. 실제로 자주 일어난다 — 같은 프롬프트를 줘도 어느 라이브러리를 고르느냐에 따라 성패가 갈린다.</p>
-      <div class="prompt-box" style="margin-top: 10px;">
-        <div class="prompt-box-head">
+      <details class="prompt-box" style="margin-top: 10px;">
+        <summary class="prompt-box-head">
           <span class="prompt-label">이 프롬프트를 이어서 넣기</span>
           <button class="copy-btn" data-copy="trouble-s1">복사</button>
-        </div>
+        </summary>
         <pre class="prompt-text" id="trouble-s1">아직 CERTIFICATE_VERIFY_FAILED 에러가 나. 지금 코드가 인터넷에서 자료를 받아올 때 requests 를
 쓰고 있는지 봐줘. 쓰고 있으면 feedparser 로 바꿔줘. feedparser 는 파이썬에 원래 들어있는
 urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 우리 회사 환경에서 그냥 된다고
 강사님이 그랬어. 인증서 검증을 끄는 방법은 쓰지 말아줘.</pre>
-      </div>
+      </details>
     </details>
     <details class="answer-details">
       <summary>안 되면? 정답 코드 파일 받기</summary>
@@ -1062,11 +1046,11 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
       </ol>
     </div>
 
-    <div class="prompt-box">
-      <div class="prompt-box-head">
+    <details class="prompt-box">
+      <summary class="prompt-box-head">
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s2">복사</button>
-      </div>
+      </summary>
       <pre class="prompt-text" id="prompt-s2">&quot;DART 수집하기&quot; 버튼이 전자공시시스템(DART)에서 최근 일주일 공시 목록을 가져오게 해줘.
 
 인증키가 없으면 DART 칸에 &quot;DART 인증키가 없어 건너뜀&quot; 만 알려주고 넘어가.
@@ -1109,7 +1093,7 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
 창이 멈추지 않게 뒤에서 작업해줘.
 
 코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
-    </div>
+    </details>
 
     <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
@@ -1128,17 +1112,17 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
     <details class="answer-details">
       <summary>공시가 나오긴 하는데 내가 적은 회사 것이 아니면</summary>
       <p class="tiny" style="margin-top: 4px;">회사 이름을 요청에 실어 보낸 것이다. DART 는 그 값을 무시하고 전체를 주면서도 「정상」 이라고 응답하기 때문에, 에러가 없는데 결과가 엉뚱하다.</p>
-      <div class="prompt-box" style="margin-top: 10px;">
-        <div class="prompt-box-head">
+      <details class="prompt-box" style="margin-top: 10px;">
+        <summary class="prompt-box-head">
           <span class="prompt-label">이 프롬프트를 이어서 넣기</span>
           <button class="copy-btn" data-copy="trouble-s2">복사</button>
-        </div>
+        </summary>
         <pre class="prompt-text" id="trouble-s2">DART 결과에 내가 적은 회사가 아닌 다른 회사 공시가 나와. 지금 코드가 회사 이름을 DART 에
 요청할 때 같이 보내고 있는지 봐줘. 보내고 있으면 빼줘. DART 에는 회사 이름으로 찾는 기능이
 없어서 그 값을 무시하고 전체를 주는데 응답은 정상 이라고 온다고 강사님이 그랬어. 대신 그
 기간 공시를 마지막 페이지까지 다 받은 다음, 회사 이름이 들어간 것만 프로그램에서 직접
 골라내줘. 지금 몇 페이지째인지도 진행 상황 칸에 보여줘.</pre>
-      </div>
+      </details>
     </details>
     <details class="answer-details">
       <summary>안 되면? 정답 코드 파일 받기</summary>
@@ -1168,13 +1152,13 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
       </ol>
     </div>
 
-    <div class="prompt-box">
-      <div class="prompt-box-head">
+    <details class="prompt-box">
+      <summary class="prompt-box-head">
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s3">복사</button>
-      </div>
-      <pre class="prompt-text" id="prompt-s3">&quot;보고서 만들기&quot; 버튼을 하나 더 만들어줘. 모은 것을 보기 좋은 보고서 한 장으로 만들어서
-파일로 저장하고 브라우저로 열어주는 버튼이야.
+      </summary>
+      <pre class="prompt-text" id="prompt-s3">앞에서 만들어둔 &quot;보고서 만들기&quot; 버튼이 실제로 동작하게 해줘. 모은 것을 보기 좋은 보고서
+한 장으로 만들어서 파일로 저장하고 브라우저로 열어주는 버튼이야.
 
 먼저 모은 항목을 합칠 때 자동으로 정리되게 해줘. 제목이 비어있는 건 빼고, 제목이 똑같으면
 링크가 달라도 같은 소식으로 봐서 하나만 남기고, 최신 것부터 정렬하되 날짜가 없는 건 맨 뒤로.
@@ -1209,7 +1193,7 @@ as_uri() 로 주소를 만들어라. 그러면 특수문자가 알아서 바뀐�
 디자인 파일을 불러올 수 없으니까, 디자인은 파일을 따로 만들지 말고 본문 안에 직접 넣어줘.
 
 코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
-    </div>
+    </details>
 
     <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
@@ -1259,11 +1243,11 @@ as_uri() 로 주소를 만들어라. 그러면 특수문자가 알아서 바뀐�
         <code class="cmd-text" id="cmd-s4">pip install pywin32</code>
         <button class="copy-btn" data-copy="cmd-s4">복사</button>
       </div>
-    <div class="prompt-box">
-      <div class="prompt-box-head">
+    <details class="prompt-box">
+      <summary class="prompt-box-head">
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s4">복사</button>
-      </div>
+      </summary>
       <pre class="prompt-text" id="prompt-s4">&quot;메일 보내기&quot; 버튼을 눌렀을 때, 앞 단계에서 만든 그 보고서를 메일 본문으로 그대로 써서
 실제로 발송하게 해줘. 보고서를 다시 만들지 말고 같은 걸 쓰면 돼.
 
@@ -1307,7 +1291,7 @@ CoUninitialize 로 정리한다.
 이 버튼도 창이 멈추지 않게 해줘.
 
 코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
-    </div>
+    </details>
 
     <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
@@ -1325,11 +1309,11 @@ CoUninitialize 로 정리한다.
     <details class="answer-details">
       <summary>아무 반응이 없거나, 보냈는데 메일 창이 또 뜨면</summary>
       <p class="tiny" style="margin-top: 4px;">셋 중 하나다. ① SMTP 로 보내려 했다(포트는 열려 있어 코드는 맞아 보이지만 암호화 단계에서 끊긴다) ② 뒤에서 도는 작업에서 COM 초기화를 빠뜨렸다 ③ Send 뒤에 메일 객체를 다시 건드려, 보내놓고도 실패로 처리됐다.</p>
-      <div class="prompt-box" style="margin-top: 10px;">
-        <div class="prompt-box-head">
+      <details class="prompt-box" style="margin-top: 10px;">
+        <summary class="prompt-box-head">
           <span class="prompt-label">이 프롬프트를 이어서 넣기</span>
           <button class="copy-btn" data-copy="trouble-s4">복사</button>
-        </div>
+        </summary>
         <pre class="prompt-text" id="trouble-s4">메일 보내기가 제대로 안 돼. 아래 세 가지를 확인해서 고쳐줘. 그리고 실패했을 때 오류 종류만
 쓰지 말고 오류 내용까지 진행 상황 칸에 그대로 보여줘.
 
@@ -1345,7 +1329,7 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
 셋째, Send 를 부른 다음에 그 메일 객체를 다시 읽는 곳이 있으면 없애줘. 받는 사람 주소처럼
 로그에 쓸 값은 Send 전에 미리 변수에 담아두면 돼. 안 그러면 항목이 삭제되었거나 옮겨졌다는
 오류가 나면서, 메일은 이미 나갔는데 실패한 걸로 처리돼 메일 창이 또 떠.</pre>
-      </div>
+      </details>
     </details>
     <details class="answer-details">
       <summary>안 되면? 정답 코드 파일 받기</summary>
@@ -1374,11 +1358,11 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
       </ol>
     </div>
 
-    <div class="prompt-box">
-      <div class="prompt-box-head">
+    <details class="prompt-box">
+      <summary class="prompt-box-head">
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-s5">복사</button>
-      </div>
+      </summary>
       <pre class="prompt-text" id="prompt-s5">&quot;전체 실행&quot; 버튼을 완성해줘. 누르면 뉴스 수집, DART 수집, 보고서 만들기, 메일 보내기를
 순서대로 한 번에 실행해줘. 수집된 게 없으면 보고서와 메일은 건너뛰고 진행 상황 칸에 알려줘.
 
@@ -1390,7 +1374,7 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
 문제인지 적어주게 해줘. 여기까지 되면 완성이야.
 
 코드는 채팅창에 쓰지 말고, 앞에 만들어준 것에 이걸 더해서 전체를 통째로 .py 파일로 다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를. 그리고 코드에 역슬래시 문자는 쓰지 말아줘. 받은 파일에서 역슬래시가 사라져서 프로그램이 안 열린 적이 있어 — 줄바꿈이 필요하면 chr(10) 을 쓰면 된다고 들었어.</pre>
-    </div>
+    </details>
 
     <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
@@ -1882,7 +1866,10 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
   }
 
   Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
-    btn.addEventListener("click", function () {
+    btn.addEventListener("click", function (e) {
+      // summary 안에 있는 버튼이라, 막지 않으면 복사하면서 블록이 같이 펼쳐진다.
+      e.preventDefault();
+      e.stopPropagation();
       var target = document.getElementById(btn.dataset.copy);
       if (!target) return;
       copyText(target.textContent, btn);

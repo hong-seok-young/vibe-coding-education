@@ -145,13 +145,13 @@ def render_step_page(step, index, total):
     <details class="answer-details">
       <summary>{esc(t['summary'])}</summary>
       <p class="tiny" style="margin-top: 4px;">{t['body']}</p>
-      <div class="prompt-box" style="margin-top: 10px;">
-        <div class="prompt-box-head">
+      <details class="prompt-box" style="margin-top: 10px;">
+        <summary class="prompt-box-head">
           <span class="prompt-label">이 프롬프트를 이어서 넣기</span>
           <button class="copy-btn" data-copy="trouble-{step['id']}">복사</button>
-        </div>
+        </summary>
         <pre class="prompt-text" id="trouble-{step['id']}">{esc(t['prompt'])}</pre>
-      </div>
+      </details>
     </details>'''
 
     return f'''
@@ -165,13 +165,13 @@ def render_step_page(step, index, total):
       {todo_html}
     </div>
 {intro}{lib_html}
-    <div class="prompt-box">
-      <div class="prompt-box-head">
+    <details class="prompt-box">
+      <summary class="prompt-box-head">
         <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
         <button class="copy-btn" data-copy="prompt-{step['id']}">복사</button>
-      </div>
+      </summary>
       <pre class="prompt-text" id="prompt-{step['id']}">{esc(step['prompt'])}</pre>
-    </div>
+    </details>
 
     <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
@@ -738,6 +738,12 @@ STYLE = '''<style>
   .cmd-text { font-family: "IBM Plex Mono", ui-monospace, monospace; color: var(--ink); flex: 1; min-width: 140px; }
 
   .prompt-box { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+  .prompt-box > summary { cursor: pointer; list-style: none; }
+  .prompt-box > summary::-webkit-details-marker { display: none; }
+  .prompt-box > summary .prompt-label::before {
+    content: "▸"; display: inline-block; margin-right: 6px; color: var(--muted);
+  }
+  .prompt-box[open] > summary .prompt-label::before { content: "▾"; }
 
   .prompt-box-head {
     display: flex;
@@ -1204,7 +1210,6 @@ PREP_PAGE = f'''
         <span class="num">0</span>
         <h2>사전 준비</h2>
       </div>
-      <p class="group-sub">실습 전 준비해야 할 사항</p>
 
 {sections_prep}
 
@@ -1405,7 +1410,10 @@ SCRIPT = '''<script>
   }
 
   Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
-    btn.addEventListener("click", function () {
+    btn.addEventListener("click", function (e) {
+      // summary 안에 있는 버튼이라, 막지 않으면 복사하면서 블록이 같이 펼쳐진다.
+      e.preventDefault();
+      e.stopPropagation();
       var target = document.getElementById(btn.dataset.copy);
       if (!target) return;
       copyText(target.textContent, btn);

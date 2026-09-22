@@ -51,6 +51,9 @@ for _step in STEPS:
     )
 
 
+LINEBREAK = chr(10)
+
+
 def esc(s):
     return h.escape(s)
 
@@ -111,9 +114,6 @@ SHOT_HTML = f'''
     <figure class="shot">
       <img src="data:image/png;base64,{SHOT_B64}"
            alt="완성된 프로그램 창 — 입력 칸 세 개, 버튼 다섯 개, 결과 칸 세 개">
-      <figcaption>이 STEP 을 마치면 이런 창이 뜬다. 입력 칸 셋(검색어·메일 받을 사람·DART
-        인증키), 버튼 다섯(뉴스 수집·DART 수집·보고서 만들기·메일 보내기·전체 실행),
-        결과 칸 셋(뉴스·DART·진행 상황). 버튼은 아직 눌러도 진행 상황 칸에 안내만 나온다.</figcaption>
     </figure>
 '''
 
@@ -129,6 +129,13 @@ def render_step_page(step, index, total):
       </div>'''
 
     criteria_html = "\n".join(f'          <li>{esc(c)}</li>' for c in step["criteria"])
+
+    # 이 단계에서 만들 것을 줄글 대신 번호 목록으로 보여준다 (todo 가 있는 단계만).
+    if step.get("todo"):
+        items = LINEBREAK.join(f'        <li>{esc(t)}</li>' for t in step["todo"])
+        todo_html = f'<ol class="step-todo">{LINEBREAK}{items}{LINEBREAK}      </ol>'
+    else:
+        todo_html = "<p class=" + chr(34) + "step-desc" + chr(34) + ">" + esc(step["desc"]) + "</p>"
     intro = SHOT_HTML if step["id"] == "s0" else ""
 
     trouble_html = ""
@@ -158,7 +165,7 @@ def render_step_page(step, index, total):
         <h2>STEP {step['num']} · {esc(step['title'])}</h2>
         <span class="step-time">{esc(step['time'])}</span>
       </div>
-      <p class="step-desc">{esc(step['desc'])}</p>
+      {todo_html}
     </div>
 {intro}{lib_html}
     <div class="prompt-box">
@@ -628,7 +635,6 @@ STYLE = '''<style>
     display: block; width: 100%; height: auto; background: #fff;
     border: 1px solid var(--line-strong); border-radius: 6px; box-shadow: var(--shadow);
   }
-  .shot figcaption { color: var(--muted); font-size: 12px; line-height: 1.6; margin-top: 8px; }
 
   /* API 목록 표 — 좁은 화면에서는 표 자체만 가로 스크롤된다 */
   .apitable-wrap { overflow-x: auto; margin-top: 10px; -webkit-overflow-scrolling: touch; }

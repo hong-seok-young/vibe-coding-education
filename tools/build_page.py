@@ -81,22 +81,6 @@ sections_prep, _, _ = between(
 # 폴더 안에 이미 들어있는 로컬 파일로 취급하고(더블클릭만 안내), 이 페이지 하나만
 # 따로 받은 예외적인 경우에만 파이썬 공식 사이트 링크로 안내한다.
 
-# 설치 파일 더블클릭이 회사 정책에 막히는 경우를 위한 대안. 본문(체크리스트)에는
-# 명령 프롬프트를 시키지 않는다 — 사전 준비는 "더블클릭 한 번"으로 끝나야 한다.
-# 여기는 진짜 막힌 사람만 펼쳐보는 자리다.
-callout_prep = '''
-  <div class="callout">
-    <p><strong>설치 파일이 회사 정책에 막히면</strong> — 아래 순서로 대신 준비한다.
-      여기까지 왔으면 강사에게 알려주는 것이 가장 빠르다.</p>
-    <ol style="margin:8px 0 0; padding-left:20px;">
-      <li><a href="https://www.python.org/ftp/python/pymanager/python-manager-26.3.msix">파이썬 설치 관리자</a>를
-        받아 더블클릭해 설치한 뒤, 명령 프롬프트(cmd)에서 <code>py install 3</code></li>
-      <li>이어서 <code>pip install feedparser pywin32</code>
-        (인증서 오류가 나면 <code>pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org feedparser pywin32</code>)</li>
-    </ol>
-  </div>'''
-
-
 PART_LABELS = {1: "실습 1 · 수집", 2: "실습 2 · 보고서", 3: "실습 3 · 메일 발송"}
 
 # ── STEP 카드 렌더링 (한 STEP = 한 페이지) ──────────────────
@@ -668,8 +652,14 @@ STYLE = '''<style>
   .install-details summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .install-details[open] summary { color: var(--ink); margin-bottom: 8px; }
 
-  .install-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 13px; color: var(--ink-soft); }
+  /* 번호가 보이도록 flex 를 쓰지 않는다 — flex 자식이 되면 li 의 번호 표식이 사라진다 */
+  .install-list { margin: 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft); line-height: 1.75; }
+  .install-list li { margin-bottom: 4px; }
+  .install-list li::marker { color: var(--accent); font-weight: 600; }
   .install-list strong { color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.95em; }
+  .prep-fallback { margin-top: 12px; }
+  .prep-fallback > summary { cursor: pointer; }
+  .prep-fallback > summary strong { color: var(--ink); }
 
   .kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 13px; margin-top: 8px; }
   .kv dt { color: var(--muted); }
@@ -944,22 +934,17 @@ APIS_PAGE = '''
       <div class="page-title-row">
         <h2>다음에 붙여볼 API 목록</h2>
       </div>
-      <p class="step-desc">오늘 만든 것은 DART 전용 프로그램이 아니라
-        <strong>「인증키로 자료 받아 정리해서 메일 보내는 틀」</strong> 이다. 주소와 인증키만
-        바꾸면 아래 것들이 똑같이 돌아간다. 아래 목록은 모두 사내망에서 응답이 오는 것을
-        확인했다.</p>
+      <p class="step-desc">오늘 만든 것은 <strong>「인증키로 자료 받아 메일 보내는 틀」</strong> 이다.
+        주소와 인증키만 바꾸면 아래 것들이 똑같이 돌아간다. 전부 사내망에서 응답을 확인했다.</p>
     </div>
 
     <div class="workflow-note">
       <p class="workflow-note-title">API 가 뭔가 — 한 줄로</p>
       <ol>
-        <li><strong>사람이 보라고 만든 것이 홈페이지, 프로그램이 받아가라고 열어둔 창구가 API 다.</strong>
-          DART 홈페이지에서 눈으로 읽던 공시를, 오늘은 프로그램이 받아왔다. 그게 API 다.</li>
-        <li><strong>인증키는 출입증이다.</strong> 누가 얼마나 가져가는지 세기 위해 발급받는다.
-          그래서 남에게 주면 안 되고, 코드 안에 적어두면 안 된다 — 오늘 프로그램이 인증키를
-          창의 입력 칸에서 받은 이유다.</li>
-        <li><strong>대부분 무료다.</strong> 공공기관이 여는 것은 거의 다 무료이고, 하루에 몇 번까지
-          쓸 수 있는지(호출 한도)만 정해져 있다. 개인이 쓰는 수준에서는 넘길 일이 거의 없다.</li>
+        <li><strong>홈페이지는 사람이 보라고, API 는 프로그램이 받아가라고 열어둔 창구다.</strong></li>
+        <li><strong>인증키는 출입증.</strong> 남에게 주지 말고, 코드에 적지 말 것 — 오늘 창의
+          입력 칸에서 받은 이유다.</li>
+        <li><strong>대부분 무료.</strong> 하루 호출 한도만 정해져 있고, 혼자 쓰는 수준에선 넘지 않는다.</li>
       </ol>
     </div>
 
@@ -1177,20 +1162,16 @@ APPS_PAGE = '''
         <h2>만든 걸 사내에 등록하기 — The APPS</h2>
       </div>
       <p class="step-desc">오늘 만든 프로그램은 내 PC 에만 있다. 팀에서 같이 쓰려면
-        사내 앱 스토어인 <strong>The APPS</strong> 에 등록하면 된다. 흩어진 사내 웹·앱을
-        한곳에서 찾고, 우리가 만든 것을 한곳에서 관리하는 곳이다.</p>
+        사내 앱 스토어 <strong>The APPS</strong> 에 등록한다.</p>
     </div>
 
     <div class="workflow-note">
       <p class="workflow-note-title">The APPS 는 이런 곳이다</p>
       <ol>
-        <li><strong>찾기는 로그인 없이</strong> — 어떤 사내 앱이 있는지 검색해서 바로 쓸 수 있다.
-          "출장비 정산" 처럼 하는 일로 찾아도 나온다.</li>
-        <li><strong>등록은 누구나 신청</strong> — 이름·주소·설명·분류를 적어 올리면 된다.
-          오늘 만든 것처럼 파일로 쓰는 도구도, 주소로 접속하는 웹앱도 둘 다 올릴 수 있다.</li>
-        <li><strong>운영·보안 두 심사를 거쳐 게시된다</strong> — 특히 보안 심사에서
-          <strong>파일 안에 인증키나 비밀번호가 들어있는지</strong> 를 본다. 오늘 실습에서
-          DART 인증키를 코드가 아니라 창의 입력 칸에 넣은 것도 같은 이유다.</li>
+        <li><strong>찾기는 로그인 없이</strong> — "출장비 정산" 처럼 하는 일로 검색해도 나온다.</li>
+        <li><strong>등록은 누구나 신청</strong> — 파일로 쓰는 도구도, 주소로 접속하는 웹앱도 된다.</li>
+        <li><strong>운영·보안 두 심사를 거쳐 게시</strong> — 보안 심사에서 <strong>파일 안에
+          인증키나 비밀번호가 있는지</strong> 본다. 오늘 인증키를 코드에 안 적은 이유와 같다.</li>
         <li><strong>설치 횟수와 별점이 쌓인다</strong> — 누가 실제로 쓰는지 숫자로 남는다.</li>
       </ol>
     </div>
@@ -1220,17 +1201,13 @@ PREP_PAGE = f'''
       </div>
 
 {sections_prep}
-
-{callout_prep}
     </div>
   </section>'''
 
 
 FOOTER = '''
   <footer>
-    바이브 코딩 실습 · DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기 ·
-    프로그램 창에 입력한 인증키는 <code>settings.json</code> 에 저장됩니다 — 이 파일은 공유하지 마세요 ·
-    프롬프트는 예시입니다, 표현을 바꿔서 시도해봐도 좋습니다
+    입력한 인증키는 <code>settings.json</code> 에 저장됩니다 — 이 파일은 공유하지 마세요.
   </footer>'''
 
 SCRIPT = '''<script>

@@ -436,21 +436,14 @@
     margin-bottom: 8px;
   }
 
-  .install-list {
-    margin: 0;
-    padding-left: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    font-size: 13px;
-    color: var(--ink-soft);
-  }
-
-  .install-list strong {
-    color: var(--ink);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 0.95em;
-  }
+  /* 번호가 보이도록 flex 를 쓰지 않는다 — flex 자식이 되면 li 의 번호 표식이 사라진다 */
+  .install-list { margin: 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft); line-height: 1.75; }
+  .install-list li { margin-bottom: 4px; }
+  .install-list li::marker { color: var(--accent); font-weight: 600; }
+  .install-list strong { color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.95em; }
+  .prep-fallback { margin-top: 12px; }
+  .prep-fallback > summary { cursor: pointer; }
+  .prep-fallback > summary strong { color: var(--ink); }
 
   .kv {
     display: grid;
@@ -526,7 +519,6 @@
     </div>
 
     <div class="items">
-
       <label class="item">
         <span class="check-col"><input type="checkbox" class="check" data-id="install"></span>
         <span>
@@ -534,41 +526,52 @@
             <code>파이썬 설치.bat</code> 더블클릭
             <span class="tag required">이것만 하면 끝</span>
           </span>
-          <p class="tiny">강사가 준 실습 폴더 안에 있다.
-            <strong>더블클릭하면 파이썬과 필요한 부품까지 알아서 다 깔린다.</strong>
-            2~3분 걸리고, 검은 창에 글자가 올라가는 동안 <strong>창을 닫지 말 것.</strong></p>
-          <p class="tiny"><strong><code>준비 끝!</code> 이라고 나오면 된 것이다.</strong>
-            이미 깔려 있는 건 알아서 건너뛴다.</p>
+          <ol class="install-list">
+            <li>강사가 준 실습 폴더에서 <code>파이썬 설치.bat</code> 더블클릭</li>
+            <li>검은 창이 2~3분 돈다 — <strong>닫지 말 것</strong></li>
+            <li><code>준비 끝!</code> 이 나오면 완료</li>
+          </ol>
           <p class="tiny warn">파란 경고창 <code>Windows의 PC 보호</code> 가 뜨면
-            <code>추가 정보</code> → <code>실행</code> 을 누른다. 정상이다.</p>
+            <code>추가 정보</code> → <code>실행</code>. 정상이다.</p>
         </span>
       </label>
-
     </div>
+
+    <details class="callout prep-fallback">
+      <summary><strong>설치 파일이 막히면</strong> — 회사 정책으로 실행이 안 될 때만 펼친다</summary>
+      <ol class="install-list">
+        <li><a href="https://www.python.org/ftp/python/pymanager/python-manager-26.3.msix">파이썬 설치 관리자</a>를
+          받아 더블클릭해 설치</li>
+        <li>명령 프롬프트(cmd)에서 <code>py install 3</code></li>
+        <li>이어서 <code>pip install feedparser pywin32</code></li>
+        <li>인증서 오류가 나면
+          <code>pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org feedparser pywin32</code></li>
+      </ol>
+      <p class="tiny">여기까지 왔으면 강사에게 알리는 것이 가장 빠르다.</p>
+    </details>
   </section>
 
   <section class="group">
     <div class="group-head">
       <span class="num">B</span>
-      <h2>인증키 발급 (DART 하나만)</h2>
+      <h2>DART 인증키 발급</h2>
     </div>
 
     <div class="items">
-
       <label class="item">
         <span class="check-col"><input type="checkbox" class="check" data-id="dart"></span>
         <span>
           <span class="item-title">
-            DART 인증키
+            인증키 받기
             <span class="tag required">필수</span>
             <span class="tag free">무료</span>
           </span>
-          <ul class="install-list">
-            <li>1. 아래 버튼으로 접속 → 회원가입(이미 있으면 로그인)</li>
-            <li>2. 상단 메뉴 <strong>오픈API 이용안내 → 인증키 신청/관리</strong> 클릭</li>
-            <li>3. "인증키 신청" 탭에서 이용자 정보 입력 후 <strong>신청하기</strong></li>
-            <li>4. 같은 화면에 뜨는 인증키를 복사</li>
-          </ul>
+          <ol class="install-list">
+            <li>아래 버튼으로 접속 → 회원가입 (이미 있으면 로그인)</li>
+            <li>상단 <strong>오픈API 이용안내 → 인증키 신청/관리</strong></li>
+            <li><strong>인증키 신청</strong> 탭에서 정보 입력 후 신청</li>
+            <li>같은 화면에 뜨는 인증키 복사</li>
+          </ol>
           <div class="actions">
             <a class="btn primary" href="https://opendart.fss.or.kr" target="_blank" rel="noopener">발급받으러 가기</a>
           </div>
@@ -576,28 +579,26 @@
       </label>
 
       <label class="item">
-        <span class="check-col"><input type="checkbox" class="check" data-id="news-nokey"></span>
+        <span class="check-col"><input type="checkbox" class="check" data-id="envfile"></span>
         <span>
           <span class="item-title">
-            뉴스 검색 — 발급받을 것 없음
-            <span class="tag free">무료</span>
+            인증키 메모장에 붙여두기
+            <span class="tag required">필수</span>
           </span>
-          <p class="tiny">뉴스는 <strong>구글 뉴스</strong>에서 가져온다. 가입도, 인증키도, 하루 호출
-            한도도 없다 — 그래서 <strong>미리 준비할 게 없다.</strong> 실습 때 키워드만 적어 넣으면 된다.</p>
+          <p class="tiny">실습 때 프로그램 창에 직접 채워넣는다.</p>
         </span>
       </label>
 
       <label class="item">
-        <span class="check-col"><input type="checkbox" class="check" data-id="envfile"></span>
+        <span class="check-col"><input type="checkbox" class="check" data-id="news-nokey"></span>
         <span>
           <span class="item-title">
-            발급받은 DART 인증키, 잘 보관해두기
-            <span class="tag required">필수</span>
+            뉴스는 발급받을 것 없음
+            <span class="tag free">무료</span>
           </span>
-          <p class="tiny">메모장 같은 곳에 붙여넣어 둔다 — 실습 때 프로그램 창에 직접 채워넣게 된다.</p>
+          <p class="tiny">구글 뉴스는 가입도 인증키도 필요 없다. 읽고 넘어가면 된다.</p>
         </span>
       </label>
-
     </div>
   </section>
 
@@ -606,18 +607,19 @@
       <span class="num">C</span>
       <h2>아웃룩 확인</h2>
     </div>
-    <div class="items">
 
+    <div class="items">
       <label class="item">
         <span class="check-col"><input type="checkbox" class="check" data-id="outlook-check"></span>
         <span>
           <span class="item-title">
-            아웃룩 로그인 확인
+            아웃룩에 회사 메일 로그인
             <span class="tag required">필수</span>
           </span>
+          <p class="tiny">프로그램이 이 아웃룩을 그대로 써서 메일을 보낸다. 켜서 로그인 화면이
+            뜨지 않는지만 확인한다.</p>
         </span>
       </label>
-
     </div>
   </section>
 

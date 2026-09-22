@@ -131,7 +131,8 @@ def render_step_page(step, index, total):
       <p class="tiny" style="margin-top: 4px;">{t['body']}</p>
       <details class="prompt-box" style="margin-top: 10px;">
         <summary class="prompt-box-head">
-          <span class="prompt-label">이 프롬프트를 이어서 넣기</span>
+          <span class="prompt-label">이어서 넣을 프롬프트 보기</span>
+          <span class="prompt-hint">클릭!</span>
           <button class="copy-btn" data-copy="trouble-{step['id']}">복사</button>
         </summary>
         <pre class="prompt-text" id="trouble-{step['id']}">{esc(t['prompt'])}</pre>
@@ -151,7 +152,8 @@ def render_step_page(step, index, total):
 {intro}{lib_html}
     <details class="prompt-box">
       <summary class="prompt-box-head">
-        <span class="prompt-label">이 프롬프트를 AI에게 붙여넣기</span>
+        <span class="prompt-label">모범 프롬프트 보기</span>
+        <span class="prompt-hint">클릭!</span>
         <button class="copy-btn" data-copy="prompt-{step['id']}">복사</button>
       </summary>
       <pre class="prompt-text" id="prompt-{step['id']}">{esc(step['prompt'])}</pre>
@@ -735,13 +737,26 @@ STYLE = '''<style>
   .cmd-label { color: var(--muted); flex-shrink: 0; }
   .cmd-text { font-family: "IBM Plex Mono", ui-monospace, monospace; color: var(--ink); flex: 1; min-width: 140px; }
 
-  .prompt-box { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+  .prompt-box { border: 1px solid var(--accent); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
   .prompt-box > summary { cursor: pointer; list-style: none; }
   .prompt-box > summary::-webkit-details-marker { display: none; }
+  /* 접혀 있으면 눈에 띄어야 한다 — 이걸 못 찾으면 실습이 시작되지 않는다 */
+  .prompt-box > summary { background: var(--accent-wash); color: var(--accent); }
+  .prompt-box > summary:hover { filter: brightness(0.97); }
+  .prompt-box > summary .prompt-label { color: var(--accent); font-size: 13.5px; }
   .prompt-box > summary .prompt-label::before {
-    content: "▸"; display: inline-block; margin-right: 6px; color: var(--muted);
+    content: "▸"; display: inline-block; margin-right: 6px;
   }
   .prompt-box[open] > summary .prompt-label::before { content: "▾"; }
+  .prompt-hint {
+    margin-right: auto; padding: 2px 8px; border-radius: 999px;
+    background: var(--accent); color: var(--accent-ink);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+    animation: hintPulse 1.8s ease-in-out infinite;
+  }
+  .prompt-box[open] .prompt-hint { display: none; }
+  @keyframes hintPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+  @media (prefers-reduced-motion: reduce) { .prompt-hint { animation: none; } }
 
   .prompt-box-head {
     display: flex;

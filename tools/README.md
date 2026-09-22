@@ -4,16 +4,23 @@
 아니라 여기서 만들어진다. **HTML 을 직접 고치지 말 것** — 다음 실행에 덮어써진다.
 
 ```
-python3 tools/build_page.py       # HTML 을 다시 만든다
-python3 tools/check_page.py       # 만들어진 HTML 을 점검한다
-python3 tools/capture_window.py   # STEP 0 의 창 그림을 다시 찍는다 (윈도우에서만)
+python3 tools/make_stage_files.py   # main.py 에서 단계별 정답 파일 6개를 만든다
+python3 tools/check_stage_files.py  # 그 6개가 실제로 열리는지 확인한다
+python3 tools/build_page.py         # HTML 을 다시 만든다
+python3 tools/check_page.py         # 만들어진 HTML 을 점검한다
+python3 tools/capture_window.py     # STEP 0 의 창 그림을 다시 찍는다 (윈도우에서만)
 ```
+
+**`main.py` 를 고쳤으면 순서대로 다 돌려야 한다.** 단계별 파일이 거기서 만들어지고,
+그게 다시 HTML 에 박히기 때문이다.
 
 | 파일 | 무엇 |
 |---|---|
 | `steps.py` | STEP 0~9 의 프롬프트·성공 기준·정답 코드 조각. **내용을 고치는 곳은 대개 여기다** |
 | `prep.html` | 사전 준비 페이지 마크업 (체크리스트, DART 키 발급 안내) |
 | `build_page.py` | 위 둘 + 스타일·스크립트·The APPS 안내 페이지를 합쳐 HTML 하나로 |
+| `make_stage_files.py` | `main.py` 에서 뒤 단계 기능을 덜어내 `news-report-bot/단계별/STEP0~5.py` 를 만든다. **단계마다 다른 파일을 내려줘야 하는 이유** — 완성본 하나만 내려주면 STEP 0 에서 이미 다 된 프로그램을 받게 되어 실습이 사라진다 |
+| `check_stage_files.py` | 그 6개를 실제로 띄워 입력 칸·버튼·결과 칸 수와, 아직 안 붙인 버튼이 안내만 내는지 확인한다 |
 | `capture_window.py` | main.py 를 실제로 띄워 창 그림(`program-window.png`)을 찍는다. **화면을 긁지 않고 PrintWindow 로 찍는다** — 사내 PC 는 화면에 이름·소속·IP 워터마크가 깔려 있어 화면 캡처를 쓰면 그게 같이 박힌다 |
 | `program-window.png` | STEP 0 페이지에 base64 로 박히는 창 그림. `main.py` 의 창 구성을 바꿨으면 다시 찍을 것 |
 | `check_page.py` | 태그 짝, 페이지·체크박스 수, 프롬프트 안의 역슬래시, 낡은 표현, 박혀있는 main.py 일치 |

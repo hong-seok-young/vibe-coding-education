@@ -182,12 +182,14 @@ def render_step_page(step, index, total):
 
 {trouble_html}
     <details class="answer-details">
-      <summary>안 되면? 정답 코드 파일 받기</summary>
-      <p class="tiny" style="margin-top: 4px;">완성된 전체 코드(main.py)를 받아서, 그 안의
-        <code># STEP {step['num']}.</code> 로 시작하는 부분과 비교해본다.</p>
+      <summary>안 되면? 이 단계까지 만든 정답 코드 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">이 STEP 을 마쳤을 때 나와야 하는 파일이다.
+        완성본이 아니라 <strong>딱 여기까지만</strong> 들어있으니, 받아서 그대로 실행하고
+        다음 단계를 이어가면 된다.</p>
       <div class="actions" style="margin-top: 8px;">
-        <button type="button" class="btn primary download-mainpy-btn">
-          <span class="arrow">⬇</span> main.py 받기
+        <button type="button" class="btn primary download-stage-btn"
+                data-stage="{step['num']}">
+          <span class="arrow">⬇</span> STEP {step['num']} 까지의 코드 받기
         </button>
       </div>
     </details>
@@ -224,8 +226,14 @@ ZIP_URL = "https://github.com/hong-seok-young/vibe-coding-education/archive/refs
 # 회사 보안 소프트웨어에 막힐 수 있다는 걸 알고도, 사용자가 위험을 감수하고 요청해서 반영함.
 import base64
 
-with open(f"{REPO}/news-report-bot/main.py", "rb") as _f:
-    MAIN_PY_B64 = base64.b64encode(_f.read()).decode("ascii")
+# 단계마다 "그 단계까지 만든 상태" 파일을 따로 싣는다. 완성본 하나만 싣고 매 단계
+# 내려주면 STEP 0 에서 이미 다 된 프로그램을 받게 되어 실습이 사라진다.
+# 파일은 tools/make_stage_files.py 가 main.py 에서 만들어낸다.
+STAGE_B64 = {}
+for _s in range(6):
+    with open(f"{REPO}/news-report-bot/단계별/STEP{_s}.py", "rb") as _f:
+        STAGE_B64[_s] = base64.b64encode(_f.read()).decode("ascii")
+STAGE_B64_JS = "{" + ",".join('"%d":"%s"' % (k, v) for k, v in STAGE_B64.items()) + "}"
 
 fonts_head = '''<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1421,18 +1429,19 @@ SCRIPT = '''<script>
   });
 
   /* ── "정답 코드 파일 받기" — main.py 를 base64 로 박아뒀다가 Blob 으로 내려받는다 ── */
-  var MAIN_PY_B64 = "__MAIN_PY_B64__";
-  Array.prototype.slice.call(document.querySelectorAll(".download-mainpy-btn")).forEach(function (btn) {
+  var STAGE_B64 = __STAGE_B64__;
+  Array.prototype.slice.call(document.querySelectorAll(".download-stage-btn")).forEach(function (btn) {
     btn.addEventListener("click", function () {
       try {
-        var binary = atob(MAIN_PY_B64);
+        var stage = btn.dataset.stage;
+        var binary = atob(STAGE_B64[stage]);
         var bytes = new Uint8Array(binary.length);
         for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         var blob = new Blob([bytes], { type: "text/x-python" });
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
         a.href = url;
-        a.download = "main.py";
+        a.download = "main.py";   // 받는 이름은 늘 같게 — 학생이 헷갈리지 않는다
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -1444,7 +1453,7 @@ SCRIPT = '''<script>
   });
 })();
 </script>'''
-SCRIPT = SCRIPT.replace("__MAIN_PY_B64__", MAIN_PY_B64)
+SCRIPT = SCRIPT.replace("__STAGE_B64__", STAGE_B64_JS)
 
 body = f'''{TOC_HTML}
 

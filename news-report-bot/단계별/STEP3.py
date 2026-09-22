@@ -1,4 +1,4 @@
-"""이슈 리포트 봇 — 완성본 (실습 정답 코드)
+"""이슈 리포트 봇 — STEP 3 까지 만든 상태 (실습 정답 코드)
 
 키워드로 구글 뉴스를 모으고, DART 에서 관심 회사 공시를 모아서, 윈도우에 로그인된
 아웃룩으로 요약 메일을 보낸다.
@@ -6,8 +6,8 @@
     pip install feedparser pywin32
     python main.py
 
-2026-09-08 사내 PC 에서 뉴스 20건 + DART 공시 2건 수집 -> 아웃룩 자동 발송까지
-실제로 확인했다. 각 STEP 주석은 실습 페이지의 STEP 번호와 같다.
+실습 페이지 STEP 3 까지 따라왔을 때 나와야 하는 모습이다. 아직 붙이지 않은
+버튼은 눌러도 진행 상황 칸에 안내만 나온다. 완성본은 STEP 5 파일이다.
 
 이 프로그램이 왜 이렇게 생겼는지 (프롬프트에서 짚어야 하는 것):
   · 인터넷 접속에 requests 를 쓰지 않는다. 사내 보안장비가 HTTPS 를 중간에서 열어보기
@@ -388,74 +388,9 @@ def save_report():
 # STEP 4. 메일 보내기 버튼 — 아웃룩 자동 발송
 # ══════════════════════════════════════════════════════════
 
-def send_mail():
-    if not COLLECTED:
-        log("보낼 항목이 없습니다. 먼저 수집하세요.")
-        return
-    recipients = [a.strip() for a in to_entry.get().replace(";", ",").split(",")
-                  if a.strip()]
-    if not recipients:
-        log("받는 사람이 비어 있습니다.")
-        return
-    if os.name != "nt":
-        log("아웃룩 자동 발송은 윈도우에서만 됩니다.")
-        return
-    try:
-        import win32com.client as win32
-    except ImportError:
-        log("아웃룩 조작에 필요한 게 없습니다. 명령창에서 pip install pywin32 하세요.")
-        return
-
-    subject = ("[이슈 리포트] %s · %d건"
-               % (datetime.now(KST).strftime("%Y-%m-%d"), len(COLLECTED)))
-    body = build_report_html()
-
-    # SMTP 로는 못 보낸다 — 포트는 열려 있지만 STARTTLS 단계에서 연결이 끊기고,
-    # 애초에 계정 비밀번호를 프로그램에 적어야 한다. 이미 로그인된 아웃룩을 쓴다.
-    try:
-        outlook = win32.Dispatch("Outlook.Application")
-        mail = outlook.CreateItem(0)          # 0 = 메일
-        to_text = "; ".join(recipients)
-        mail.To = to_text
-        mail.Subject = subject
-        mail.HTMLBody = body                  # Body 에 넣으면 링크가 글자로 깨진다
-        mail.Send()
-        # Send() 뒤에는 이 메일 객체를 다시 건드리면 안 된다. 보낸 편지함으로 옮겨져서
-        # mail.To 를 읽기만 해도 "항목이 삭제되었거나 옮겨졌습니다" 오류가 난다.
-        # 그러면 실제로는 보내놓고도 실패로 처리돼 메일 창이 또 뜬다.
-        log("자동 발송 완료: %s (%d건)" % (to_text, len(COLLECTED)))
-        return
-    except Exception as ex:
-        log("자동 발송이 안 됐습니다 — %s: %s" % (type(ex).__name__, ex))
-        log("대신 메일 창을 열어드릴게요.")
-
-    # 「새 아웃룩(New Outlook)」은 위 방식을 지원하지 않는다. 그때는 내용이 채워진
-    # 메일 창을 열어서 사람이 [보내기] 만 누르게 한다.
-    try:
-        outlook = win32.Dispatch("Outlook.Application")
-        mail = outlook.CreateItem(0)
-        mail.To = "; ".join(recipients)
-        mail.Subject = subject
-        mail.HTMLBody = body
-        mail.Display(False)
-        log("메일 창 열기 완료 — [보내기] 만 누르시면 됩니다.")
-    except Exception as ex:
-        log("메일 창도 열리지 않았습니다: %s - %s" % (type(ex).__name__, ex))
-
-
 # ══════════════════════════════════════════════════════════
 # STEP 5. 전체 실행 — 수집에서 발송까지 한 번에
 # ══════════════════════════════════════════════════════════
-
-def run_all():
-    collect_news()
-    collect_dart()
-    if not COLLECTED:
-        log("수집된 게 없어 보고서와 메일은 건너뜁니다.")
-        return
-    save_report()
-    send_mail()
-
 
 BUSY = threading.Lock()
 
@@ -501,6 +436,11 @@ def run_in_background(work):
     threading.Thread(target=go, daemon=True).start()
 
 
+def not_ready():
+    """아직 연결하지 않은 버튼. 다음 단계에서 실제 동작을 붙인다."""
+    log("이 버튼은 아직 준비 중입니다. 다음 단계에서 연결합니다.")
+
+
 # ── 창 조립 ────────────────────────────────────────────────
 root = tk.Tk()
 root.title("이슈 리포트 봇")
@@ -527,8 +467,8 @@ BUTTON_SPECS = [
     ("뉴스 수집하기", collect_news),
     ("DART 수집하기", collect_dart),
     ("보고서 만들기", save_report),
-    ("메일 보내기", send_mail),
-    ("전체 실행", run_all),
+    ("메일 보내기", not_ready),
+    ("전체 실행", not_ready),
 ]
 ALL_BUTTONS = []
 for label, action in BUTTON_SPECS:

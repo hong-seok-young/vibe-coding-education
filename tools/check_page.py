@@ -9,7 +9,7 @@
     만들 때 역슬래시를 날려서 프로그램이 안 열린 사례가 있다. 설명문 안의
     <code> 예시는 붙여넣는 글이 아니라서 검사 대상이 아니다
   · 낡은 표현이 남아있지 않은지 (결과창 -> 결과 칸 처럼 바꾼 말들)
-  · 정답 코드 버튼에 박힌 main.py 와 STEP 0 의 창 그림이 최신인지
+  · 단계별 정답 코드 6개와 STEP 0 의 창 그림이 최신인지
 
 <script> 안의 자바스크립트 문법은 여기서 보지 않는다. node 가 있으면
     node --check <(추출한 스크립트)
@@ -76,13 +76,22 @@ def main():
         if word in page:
             fail(f"낡은 표현 '{word}' 이 {page.count(word)} 번 남아있다")
 
-    embedded = re.search(r'MAIN_PY_B64\s*=\s*"([A-Za-z0-9+/=]+)"', page)
-    if not embedded:
-        fail("정답 코드(main.py)가 페이지에 박혀있지 않다")
-    else:
-        with open(os.path.join(REPO, "news-report-bot", "main.py"), "rb") as f:
-            if base64.b64decode(embedded.group(1)) != f.read():
-                fail("박혀있는 main.py 가 지금 저장소의 main.py 와 다르다 — build_page.py 를 다시 실행할 것")
+    # 단계마다 "그 단계까지 만든 상태" 파일이 제대로 박혀있는지. 하나라도 어긋나면
+    # 수강생이 엉뚱한 단계의 코드를 받게 된다 (완성본을 받으면 실습이 사라진다).
+    stages = dict(re.findall(r'"(\d)":"([A-Za-z0-9+/=]+)"', page))
+    if len(stages) != 6:
+        fail("단계별 정답 코드가 %d개만 박혀있다 (기대 6)" % len(stages))
+    for num, b64 in stages.items():
+        path = os.path.join(REPO, "news-report-bot", "단계별", "STEP%s.py" % num)
+        if not os.path.exists(path):
+            fail("STEP%s.py 가 없다 — tools/make_stage_files.py 를 실행할 것" % num)
+            continue
+        with open(path, "rb") as f:
+            if base64.b64decode(b64) != f.read():
+                fail("박혀있는 STEP%s 코드가 파일과 다르다 — build_page.py 를 다시 실행할 것" % num)
+    buttons = len(re.findall(r'class="btn primary download-stage-btn"', page))
+    if buttons != 6:
+        fail("단계별 코드 받기 버튼이 %d개다 (기대 6)" % buttons)
 
     shot = re.search(r'<img src="data:image/png;base64,([A-Za-z0-9+/=]+)"', page)
     if not shot:

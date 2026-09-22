@@ -1,4 +1,4 @@
-"""이슈 리포트 봇 — 완성본 (실습 정답 코드)
+"""이슈 리포트 봇 — STEP 1 까지 만든 상태 (실습 정답 코드)
 
 키워드로 구글 뉴스를 모으고, DART 에서 관심 회사 공시를 모아서, 윈도우에 로그인된
 아웃룩으로 요약 메일을 보낸다.
@@ -6,8 +6,8 @@
     pip install feedparser pywin32
     python main.py
 
-2026-09-08 사내 PC 에서 뉴스 20건 + DART 공시 2건 수집 -> 아웃룩 자동 발송까지
-실제로 확인했다. 각 STEP 주석은 실습 페이지의 STEP 번호와 같다.
+실습 페이지 STEP 1 까지 따라왔을 때 나와야 하는 모습이다. 아직 붙이지 않은
+버튼은 눌러도 진행 상황 칸에 안내만 나온다. 완성본은 STEP 5 파일이다.
 
 이 프로그램이 왜 이렇게 생겼는지 (프롬프트에서 짚어야 하는 것):
   · 인터넷 접속에 requests 를 쓰지 않는다. 사내 보안장비가 HTTPS 를 중간에서 열어보기
@@ -168,8 +168,7 @@ def collect_news():
             % (keyword, min(len(feed.entries), MAX_PER_KEYWORD), len(feed.entries)))
 
     items.sort(key=lambda x: -x["ts"])
-    merge(items)
-    render(news_box, items, tail=collected_summary("뉴스 %d건" % len(items)))
+    render(news_box, items, tail="뉴스 %d건 가져왔습니다." % len(items))
     log("뉴스 완료: %d건" % len(items))
     return items
 
@@ -178,284 +177,17 @@ def collect_news():
 # STEP 2. DART 수집 버튼 — 전자공시시스템 (함정 세 겹)
 # ══════════════════════════════════════════════════════════
 
-def dart_fetch_all(key, begin, end):
-    """그 기간 공시를 마지막 페이지까지 받는다.
-
-    DART 에는 회사 이름으로 찾아달라고 요청하는 기능이 없다. corp_name 을 보내도
-    에러 없이 status 000 정상 으로 전체가 온다 (없는 회사 이름을 보내도 그렇다).
-    그래서 여기서 다 받고, 고르는 일은 아래에서 직접 한다. 중간에서 끊으면
-    뒷페이지에 있던 그 회사 공시를 놓치고 「없다」고 하게 된다.
-    """
-    collected, page, total_page = [], 1, 1
-    while page <= total_page:
-        query = urllib.parse.urlencode(dict(crtfc_key=key, bgn_de=begin, end_de=end,
-                                            page_no=page, page_count=DART_PAGE_COUNT))
-        with urllib.request.urlopen(DART_LIST_API + "?" + query, timeout=25) as res:
-            data = json.load(res)
-        status = data.get("status")
-        if status != "000":
-            return collected, status, data.get("message")
-        total_page = int(data.get("total_page") or 1)
-        collected.extend(data.get("list") or [])
-        if page == 1 or page % 10 == 0 or page == total_page:
-            log("   공시 목록 %d/%d 페이지 (누적 %d건)" % (page, total_page, len(collected)))
-        page += 1
-    return collected, "000", "정상"
-
-
-def collect_dart():
-    key = key_entry.get().strip()
-    # 뉴스 검색어와 같은 칸을 쓴다 — 실무에서 둘 다 회사명이라 나눠 받을 이유가 없다.
-    companies = [c.strip() for c in kw_entry.get().replace(",", " ").split() if c.strip()]
-    if not key:
-        log("DART 인증키가 없어 건너뜁니다.")
-        render(dart_box, [])
-        return []
-
-    end_day = date.today()
-    begin_day = end_day - timedelta(days=7)
-    log("DART 공시를 받아옵니다 (%s ~ %s)" % (begin_day, end_day))
-    try:
-        raw, status, message = dart_fetch_all(key, begin_day.strftime("%Y%m%d"),
-                                              end_day.strftime("%Y%m%d"))
-    except Exception as ex:
-        log("DART 를 불러오지 못했습니다: %s - %s" % (type(ex).__name__, ex))
-        render(dart_box, [])
-        return []
-
-    # 0건일 때 이유를 구분해서 알려준다. 그냥 "0건" 은 쓸모가 없다.
-    if status == "013":
-        log("이 기간에 올라온 공시가 아예 없습니다. (주말·공휴일이면 정상입니다)")
-        render(dart_box, [], tail="이 기간에 올라온 공시가 없습니다.")
-        return []
-    if status in ("010", "011"):
-        log("DART 인증키에 문제가 있습니다 - %s %s" % (status, message))
-        render(dart_box, [], tail="인증키를 다시 확인해주세요.")
-        return []
-    if status == "020":
-        log("DART 요청 한도를 넘었습니다 - %s %s" % (status, message))
-        render(dart_box, [], tail="오늘 요청 한도를 넘었습니다.")
-        return []
-    if status != "000":
-        log("DART 응답이 정상이 아닙니다 - %s %s" % (status, message))
-        render(dart_box, [])
-        return []
-
-    looked = len(raw)
-    if companies:
-        picked = [it for it in raw
-                  if any(name in it["corp_name"] for name in companies)]
-    else:
-        picked = raw[:NO_COMPANY_LIMIT]
-
-    items = []
-    for it in picked:
-        day = it["rcept_dt"]
-        shown = (day[4:6] + "/" + day[6:8]) if len(day) == 8 else "-"
-        try:
-            stamp = datetime(int(day[0:4]), int(day[4:6]), int(day[6:8]),
-                             tzinfo=KST).timestamp()
-        except (ValueError, IndexError):
-            stamp = 0
-        items.append(make_item("DART",
-                               "[%s] %s" % (it["corp_name"], it["report_nm"].strip()),
-                               DART_DOC_URL + it["rcept_no"],
-                               shown, stamp, memo=it.get("flr_nm", "")))
-        items[-1]["corp"] = it["corp_name"]
-    items.sort(key=lambda x: (-x["ts"], x["title"]))
-
-    if companies and not items:
-        log("공시 %d건을 살펴봤는데 검색어에 적은 회사 건은 없었습니다." % looked)
-        render(dart_box, [],
-               tail="공시 %d건을 살펴봤지만 검색어에 적은 회사 건은 없습니다." % looked)
-        return []
-
-    if companies:
-        by_corp = Counter(x["corp"] for x in items)
-        parts = ["%s %d건" % (n, c) for n, c in by_corp.most_common(6)]
-        extra = (" (그 외 %d곳)" % (len(by_corp) - 6)) if len(by_corp) > 6 else ""
-        tail = "공시 %d건 중 %d건 - %s%s" % (looked, len(items), " / ".join(parts), extra)
-    else:
-        tail = ("검색어를 안 적으셨으니 전체 %d건 중 최신 %d건만 담았습니다."
-                % (looked, len(items)))
-
-    merge(items)
-    render(dart_box, items, tail=collected_summary(tail))
-    log("DART 완료: %d건. %s" % (len(items), tail))
-    return items
-
-
 # ══════════════════════════════════════════════════════════
 # STEP 3. HTML 보고서 만들기 — 정리해서 한 장으로, 파일로 저장해 브라우저로 열기
 # ══════════════════════════════════════════════════════════
-
-def merge(new_items):
-    """모은 목록에 합치면서 정리한다 — 제목 없는 건 빼고, 제목이 같으면 하나만, 최신순."""
-    seen = set(x["title"] for x in COLLECTED)
-    for item in new_items:
-        title = (item.get("title") or "").strip()
-        if not title or title in seen:
-            continue
-        seen.add(title)
-        COLLECTED.append(item)
-    COLLECTED.sort(key=lambda x: -x.get("ts", 0))
-
-
-def collected_summary(prefix):
-    counts = Counter(x["src"] for x in COLLECTED)
-    body = " / ".join("%s %d건" % (k, v) for k, v in counts.items()) or "0건"
-    return "%s   |   지금까지 모은 것: %s" % (prefix, body)
-
-
-def escape_html(text):
-    return (text.replace("&", "&amp;").replace("<", "&lt;")
-                .replace(">", "&gt;").replace('"', "&quot;"))
-
-
-def build_report_html():
-    """모은 항목을 보고서 한 장(HTML)으로 만든다.
-
-    이 결과물을 두 군데에 그대로 쓴다 — 파일로 저장해 브라우저로 열고(STEP 3),
-    아웃룩 메일 본문으로도 보낸다(STEP 4). 메일은 별도 디자인 파일을 못 불러오니
-    디자인(style)을 본문 안에 직접 넣는다.
-    """
-    today = datetime.now(KST).strftime("%Y년 %m월 %d일")
-    counts = Counter(x["src"] for x in COLLECTED)
-    summary = " · ".join("%s %d건" % (k, v) for k, v in counts.items())
-    shown = COLLECTED[:REPORT_LIMIT]
-
-    out = ['<div style="font-family:Malgun Gothic,Apple SD Gothic Neo,sans-serif;'
-           'max-width:760px;margin:0 auto;color:#222">',
-           '<h2 style="margin:0 0 4px">오늘의 이슈 리포트</h2>',
-           '<div style="color:#666;font-size:13px;margin-bottom:16px">'
-           '%s · 모두 %d건 · %s</div>' % (today, len(COLLECTED), summary)]
-
-    # 출처별로 나눈다. 섞으면 읽기 어렵고, 공시는 시각을 몰라 같은 날 뉴스보다 밀린다.
-    for source, label in (("뉴스", "뉴스"), ("DART", "공시 (DART)")):
-        group = [x for x in shown if x["src"] == source]
-        if not group:
-            continue
-        out.append('<h3 style="margin:18px 0 6px;padding-bottom:4px;'
-                   'border-bottom:2px solid #e5e5e5">%s <span style="color:#888;'
-                   'font-weight:normal;font-size:13px">%d건</span></h3>'
-                   % (label, len(group)))
-        out.append('<table style="border-collapse:collapse;width:100%">')
-        for item in group:
-            memo = ("  ·  " + escape_html(item["memo"])) if item.get("memo") else ""
-            out.append('<tr><td style="padding:7px 0;border-bottom:1px solid #f0f0f0">'
-                       '<a href="%s" style="color:#1155cc;text-decoration:none;'
-                       'font-size:14px">%s</a>'
-                       '<div style="color:#888;font-size:12px;margin-top:2px">%s%s</div>'
-                       '</td></tr>'
-                       % (escape_html(item["link"]), escape_html(item["title"]),
-                          escape_html(item["date"]), memo))
-        out.append("</table>")
-
-    if len(COLLECTED) > REPORT_LIMIT:
-        out.append('<p style="color:#888;font-size:12px">이 밖에 %d건이 더 있습니다.</p>'
-                   % (len(COLLECTED) - REPORT_LIMIT))
-    out.append("</div>")
-    return "".join(out)
-
-
-def save_report():
-    """보고서를 프로그램과 같은 폴더에 파일로 저장하고 브라우저로 연다."""
-    if not COLLECTED:
-        log("보고서로 만들 항목이 없습니다. 먼저 수집하세요.")
-        return None
-    name = "이슈리포트_%s.html" % datetime.now(KST).strftime("%Y%m%d_%H%M")
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
-    page = ("<!doctype html><html lang=ko><head><meta charset=utf-8>"
-            "<title>오늘의 이슈 리포트</title></head>"
-            "<body style=\"background:#f6f7f6;padding:24px\">"
-            + build_report_html() + "</body></html>")
-    try:
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(page)
-    except OSError as ex:
-        log("보고서를 저장하지 못했습니다: %s" % ex)
-        return None
-    log("보고서를 만들었습니다: %s (%d건)" % (name, len(COLLECTED)))
-    # 파일 경로를 주소로 바꿀 때는 반드시 as_uri() 를 쓴다. 문자열로 이어붙이면
-    # 폴더 이름에 든 # 이나 공백이 주소 문법으로 해석돼 엉뚱한 곳이 열린다
-    # (실제로 D:/#. DX/... 폴더에서 D 드라이브 목록이 열렸다).
-    webbrowser.open(Path(path).as_uri())
-    log("브라우저로 열었습니다. 제목을 누르면 원문으로 갑니다.")
-    return path
-
 
 # ══════════════════════════════════════════════════════════
 # STEP 4. 메일 보내기 버튼 — 아웃룩 자동 발송
 # ══════════════════════════════════════════════════════════
 
-def send_mail():
-    if not COLLECTED:
-        log("보낼 항목이 없습니다. 먼저 수집하세요.")
-        return
-    recipients = [a.strip() for a in to_entry.get().replace(";", ",").split(",")
-                  if a.strip()]
-    if not recipients:
-        log("받는 사람이 비어 있습니다.")
-        return
-    if os.name != "nt":
-        log("아웃룩 자동 발송은 윈도우에서만 됩니다.")
-        return
-    try:
-        import win32com.client as win32
-    except ImportError:
-        log("아웃룩 조작에 필요한 게 없습니다. 명령창에서 pip install pywin32 하세요.")
-        return
-
-    subject = ("[이슈 리포트] %s · %d건"
-               % (datetime.now(KST).strftime("%Y-%m-%d"), len(COLLECTED)))
-    body = build_report_html()
-
-    # SMTP 로는 못 보낸다 — 포트는 열려 있지만 STARTTLS 단계에서 연결이 끊기고,
-    # 애초에 계정 비밀번호를 프로그램에 적어야 한다. 이미 로그인된 아웃룩을 쓴다.
-    try:
-        outlook = win32.Dispatch("Outlook.Application")
-        mail = outlook.CreateItem(0)          # 0 = 메일
-        to_text = "; ".join(recipients)
-        mail.To = to_text
-        mail.Subject = subject
-        mail.HTMLBody = body                  # Body 에 넣으면 링크가 글자로 깨진다
-        mail.Send()
-        # Send() 뒤에는 이 메일 객체를 다시 건드리면 안 된다. 보낸 편지함으로 옮겨져서
-        # mail.To 를 읽기만 해도 "항목이 삭제되었거나 옮겨졌습니다" 오류가 난다.
-        # 그러면 실제로는 보내놓고도 실패로 처리돼 메일 창이 또 뜬다.
-        log("자동 발송 완료: %s (%d건)" % (to_text, len(COLLECTED)))
-        return
-    except Exception as ex:
-        log("자동 발송이 안 됐습니다 — %s: %s" % (type(ex).__name__, ex))
-        log("대신 메일 창을 열어드릴게요.")
-
-    # 「새 아웃룩(New Outlook)」은 위 방식을 지원하지 않는다. 그때는 내용이 채워진
-    # 메일 창을 열어서 사람이 [보내기] 만 누르게 한다.
-    try:
-        outlook = win32.Dispatch("Outlook.Application")
-        mail = outlook.CreateItem(0)
-        mail.To = "; ".join(recipients)
-        mail.Subject = subject
-        mail.HTMLBody = body
-        mail.Display(False)
-        log("메일 창 열기 완료 — [보내기] 만 누르시면 됩니다.")
-    except Exception as ex:
-        log("메일 창도 열리지 않았습니다: %s - %s" % (type(ex).__name__, ex))
-
-
 # ══════════════════════════════════════════════════════════
 # STEP 5. 전체 실행 — 수집에서 발송까지 한 번에
 # ══════════════════════════════════════════════════════════
-
-def run_all():
-    collect_news()
-    collect_dart()
-    if not COLLECTED:
-        log("수집된 게 없어 보고서와 메일은 건너뜁니다.")
-        return
-    save_report()
-    send_mail()
-
 
 BUSY = threading.Lock()
 
@@ -501,6 +233,11 @@ def run_in_background(work):
     threading.Thread(target=go, daemon=True).start()
 
 
+def not_ready():
+    """아직 연결하지 않은 버튼. 다음 단계에서 실제 동작을 붙인다."""
+    log("이 버튼은 아직 준비 중입니다. 다음 단계에서 연결합니다.")
+
+
 # ── 창 조립 ────────────────────────────────────────────────
 root = tk.Tk()
 root.title("이슈 리포트 봇")
@@ -525,10 +262,10 @@ buttons = tk.Frame(root)
 buttons.pack(fill="x", padx=10)
 BUTTON_SPECS = [
     ("뉴스 수집하기", collect_news),
-    ("DART 수집하기", collect_dart),
-    ("보고서 만들기", save_report),
-    ("메일 보내기", send_mail),
-    ("전체 실행", run_all),
+    ("DART 수집하기", not_ready),
+    ("보고서 만들기", not_ready),
+    ("메일 보내기", not_ready),
+    ("전체 실행", not_ready),
 ]
 ALL_BUTTONS = []
 for label, action in BUTTON_SPECS:

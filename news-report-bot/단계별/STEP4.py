@@ -1,4 +1,4 @@
-"""이슈 리포트 봇 — 완성본 (실습 정답 코드)
+"""이슈 리포트 봇 — STEP 4 까지 만든 상태 (실습 정답 코드)
 
 키워드로 구글 뉴스를 모으고, DART 에서 관심 회사 공시를 모아서, 윈도우에 로그인된
 아웃룩으로 요약 메일을 보낸다.
@@ -6,8 +6,8 @@
     pip install feedparser pywin32
     python main.py
 
-2026-09-08 사내 PC 에서 뉴스 20건 + DART 공시 2건 수집 -> 아웃룩 자동 발송까지
-실제로 확인했다. 각 STEP 주석은 실습 페이지의 STEP 번호와 같다.
+실습 페이지 STEP 4 까지 따라왔을 때 나와야 하는 모습이다. 아직 붙이지 않은
+버튼은 눌러도 진행 상황 칸에 안내만 나온다. 완성본은 STEP 5 파일이다.
 
 이 프로그램이 왜 이렇게 생겼는지 (프롬프트에서 짚어야 하는 것):
   · 인터넷 접속에 requests 를 쓰지 않는다. 사내 보안장비가 HTTPS 를 중간에서 열어보기
@@ -447,16 +447,6 @@ def send_mail():
 # STEP 5. 전체 실행 — 수집에서 발송까지 한 번에
 # ══════════════════════════════════════════════════════════
 
-def run_all():
-    collect_news()
-    collect_dart()
-    if not COLLECTED:
-        log("수집된 게 없어 보고서와 메일은 건너뜁니다.")
-        return
-    save_report()
-    send_mail()
-
-
 BUSY = threading.Lock()
 
 
@@ -501,6 +491,11 @@ def run_in_background(work):
     threading.Thread(target=go, daemon=True).start()
 
 
+def not_ready():
+    """아직 연결하지 않은 버튼. 다음 단계에서 실제 동작을 붙인다."""
+    log("이 버튼은 아직 준비 중입니다. 다음 단계에서 연결합니다.")
+
+
 # ── 창 조립 ────────────────────────────────────────────────
 root = tk.Tk()
 root.title("이슈 리포트 봇")
@@ -528,7 +523,7 @@ BUTTON_SPECS = [
     ("DART 수집하기", collect_dart),
     ("보고서 만들기", save_report),
     ("메일 보내기", send_mail),
-    ("전체 실행", run_all),
+    ("전체 실행", not_ready),
 ]
 ALL_BUTTONS = []
 for label, action in BUTTON_SPECS:

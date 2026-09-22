@@ -322,7 +322,7 @@
 
   .check-col { display: flex; justify-content: center; padding-top: 2px; }
 
-  .check, .page-check {
+  .check {
     appearance: none;
     width: 20px;
     height: 20px;
@@ -335,12 +335,12 @@
     flex-shrink: 0;
   }
 
-  .check:focus-visible, .page-check:focus-visible {
+  .check:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
 
-  .check::after, .page-check::after {
+  .check::after {
     content: "";
     width: 10px;
     height: 6px;
@@ -350,8 +350,8 @@
     opacity: 0;
   }
 
-  .check:checked, .page-check:checked { background: var(--good); border-color: var(--good); }
-  .check:checked::after, .page-check:checked::after { opacity: 1; }
+  .check:checked { background: var(--good); border-color: var(--good); }
+  .check:checked::after { opacity: 1; }
 
   .item-title {
     display: flex;
@@ -486,7 +486,6 @@
     margin-bottom: 8px;
   }
 
-  .page-check-wrap { display: flex; }
 
   .page-title-row h2 { flex: 1; min-width: 160px; }
 
@@ -856,9 +855,6 @@
     <div class="page-head">
       <span class="page-eyebrow">실습 1 · 수집</span>
       <div class="page-title-row">
-        <label class="page-check-wrap">
-          <input type="checkbox" class="check page-check" data-id="s0">
-        </label>
         <h2>STEP 0 · 프로그램 창 만들기</h2>
         <span class="step-time">10분</span>
       </div>
@@ -953,9 +949,6 @@
     <div class="page-head">
       <span class="page-eyebrow">실습 1 · 수집</span>
       <div class="page-title-row">
-        <label class="page-check-wrap">
-          <input type="checkbox" class="check page-check" data-id="s1">
-        </label>
         <h2>STEP 1 · 뉴스 수집 버튼 연결하기</h2>
         <span class="step-time">15분</span>
       </div>
@@ -1056,9 +1049,6 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
     <div class="page-head">
       <span class="page-eyebrow">실습 1 · 수집</span>
       <div class="page-title-row">
-        <label class="page-check-wrap">
-          <input type="checkbox" class="check page-check" data-id="s2">
-        </label>
         <h2>STEP 2 · DART 수집 버튼 연결하기</h2>
         <span class="step-time">20분</span>
       </div>
@@ -1166,9 +1156,6 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
     <div class="page-head">
       <span class="page-eyebrow">실습 2 · 보고서</span>
       <div class="page-title-row">
-        <label class="page-check-wrap">
-          <input type="checkbox" class="check page-check" data-id="s3">
-        </label>
         <h2>STEP 3 · HTML 보고서 만들기</h2>
         <span class="step-time">15분</span>
       </div>
@@ -1254,9 +1241,6 @@ as_uri() 로 주소를 만들어라. 그러면 특수문자가 알아서 바뀐�
     <div class="page-head">
       <span class="page-eyebrow">실습 3 · 메일 발송</span>
       <div class="page-title-row">
-        <label class="page-check-wrap">
-          <input type="checkbox" class="check page-check" data-id="s4">
-        </label>
         <h2>STEP 4 · 메일 보내기 — 아웃룩 자동 발송</h2>
         <span class="step-time">20분</span>
       </div>
@@ -1379,9 +1363,6 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
     <div class="page-head">
       <span class="page-eyebrow">실습 3 · 메일 발송</span>
       <div class="page-title-row">
-        <label class="page-check-wrap">
-          <input type="checkbox" class="check page-check" data-id="s5">
-        </label>
         <h2>STEP 5 · 전체 실행 버튼 — 완성</h2>
         <span class="step-time">10분</span>
       </div>
@@ -1722,7 +1703,7 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
   var STORAGE_KEY = "issuebot-checklist";
   var STATE_KEY = "issuebot-current-page";
 
-  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check, .page-check"));
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check"));
   var pages = Array.prototype.slice.call(document.querySelectorAll(".page"));
   var tocLinks = Array.prototype.slice.call(document.querySelectorAll(".toc-link"));
   var itemCountWordEl = document.getElementById("itemCountWord");
@@ -1754,7 +1735,7 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
       var pageId = link.dataset.page;
       var pageEl = document.getElementById(pageId);
       if (!pageEl) return;
-      var pageBoxes = pageEl.querySelectorAll(".check, .page-check");
+      var pageBoxes = pageEl.querySelectorAll(".check");
       var allDone = pageBoxes.length > 0 &&
         Array.prototype.every.call(pageBoxes, function (b) { return b.checked; });
       link.classList.toggle("done", allDone);

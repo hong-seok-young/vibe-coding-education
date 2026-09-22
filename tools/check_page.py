@@ -27,7 +27,7 @@ REPO = os.path.dirname(HERE)
 PAGE = os.path.join(REPO, "DART 뉴스 크롤링 및 메일발송 프로그램 만들기.html")
 
 EXPECTED_PAGES = 9         # 사전 준비 + STEP 6개 + API 목록 + The APPS
-EXPECTED_CHECKBOXES = 12   # 사전 준비 6개 + STEP 페이지 6개
+EXPECTED_CHECKBOXES = 6    # 사전 준비 페이지의 체크리스트만
 PAIRED_TAGS = ("div", "ul", "li", "p", "section", "details", "pre", "code", "span",
                "strong", "em", "table", "thead", "tbody", "tr", "th", "td")
 # 낡은 표현 + 2026-09-08 검증에서 틀린 것으로 확인돼 되돌아오면 안 되는 처방들.

@@ -159,9 +159,6 @@ def render_step_page(step, index, total):
     <div class="page-head">
       <span class="page-eyebrow">{PART_LABELS[step['part']]}</span>
       <div class="page-title-row">
-        <label class="page-check-wrap">
-          <input type="checkbox" class="check page-check" data-id="{step['id']}">
-        </label>
         <h2>STEP {step['num']} · {esc(step['title'])}</h2>
         <span class="step-time">{esc(step['time'])}</span>
       </div>
@@ -549,7 +546,7 @@ STYLE = '''<style>
 
   .check-col { display: flex; justify-content: center; padding-top: 2px; }
 
-  .check, .page-check {
+  .check {
     appearance: none;
     width: 20px;
     height: 20px;
@@ -562,12 +559,12 @@ STYLE = '''<style>
     flex-shrink: 0;
   }
 
-  .check:focus-visible, .page-check:focus-visible {
+  .check:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
 
-  .check::after, .page-check::after {
+  .check::after {
     content: "";
     width: 10px;
     height: 6px;
@@ -577,8 +574,8 @@ STYLE = '''<style>
     opacity: 0;
   }
 
-  .check:checked, .page-check:checked { background: var(--good); border-color: var(--good); }
-  .check:checked::after, .page-check:checked::after { opacity: 1; }
+  .check:checked { background: var(--good); border-color: var(--good); }
+  .check:checked::after { opacity: 1; }
 
   .item-title {
     display: flex;
@@ -713,7 +710,6 @@ STYLE = '''<style>
     margin-bottom: 8px;
   }
 
-  .page-check-wrap { display: flex; }
 
   .page-title-row h2 { flex: 1; min-width: 160px; }
 
@@ -1230,7 +1226,7 @@ SCRIPT = '''<script>
   var STORAGE_KEY = "issuebot-checklist";
   var STATE_KEY = "issuebot-current-page";
 
-  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check, .page-check"));
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check"));
   var pages = Array.prototype.slice.call(document.querySelectorAll(".page"));
   var tocLinks = Array.prototype.slice.call(document.querySelectorAll(".toc-link"));
   var itemCountWordEl = document.getElementById("itemCountWord");
@@ -1262,7 +1258,7 @@ SCRIPT = '''<script>
       var pageId = link.dataset.page;
       var pageEl = document.getElementById(pageId);
       if (!pageEl) return;
-      var pageBoxes = pageEl.querySelectorAll(".check, .page-check");
+      var pageBoxes = pageEl.querySelectorAll(".check");
       var allDone = pageBoxes.length > 0 &&
         Array.prototype.every.call(pageBoxes, function (b) { return b.checked; });
       link.classList.toggle("done", allDone);

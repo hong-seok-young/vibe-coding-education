@@ -682,6 +682,23 @@ STYLE = '''<style>
     font-size: 0.92em;
   }
 
+  /* 회색 조각은 눌러서 복사할 수 있다 — 명령어를 손으로 옮겨 적다 틀리는 것을 막는다 */
+  code {
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  code:hover { background: var(--accent-wash); border-color: var(--accent); }
+
+  code.copied {
+    background: var(--good-wash);
+    border-color: var(--good);
+    color: var(--good);
+  }
+
+  code.copied::after { content: " 복사됨"; font-size: 0.85em; font-weight: 600; }
+
   .callout {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -1416,6 +1433,22 @@ SCRIPT = '''<script>
       done();
     } catch (e) { /* 복사 실패 시 그냥 무시 */ }
   }
+
+  /* 회색 코드 조각을 클릭하면 그 내용이 복사된다. 라벨(체크박스)이나 summary 안에 있는 경우가
+     있어서 기본 동작을 막지 않으면 체크가 켜지거나 블록이 펼쳐진다. */
+  Array.prototype.slice.call(document.querySelectorAll("code")).forEach(function (el) {
+    el.title = "클릭하면 복사";
+    el.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var text = el.textContent;
+      copyText(text, {
+        get textContent() { return text; },
+        set textContent(v) { /* 조각 안의 글자는 그대로 둔다 */ },
+        classList: el.classList
+      });
+    });
+  });
 
   Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
     btn.addEventListener("click", function (e) {

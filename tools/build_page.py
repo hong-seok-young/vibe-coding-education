@@ -110,9 +110,9 @@ with open(f"{HERE}/program-window.png", "rb") as _f:
 SHOT_HTML = f'''
     <figure class="shot">
       <img src="data:image/png;base64,{SHOT_B64}"
-           alt="완성된 프로그램 창 — 입력 칸 네 개, 버튼 다섯 개, 결과 칸 세 개">
-      <figcaption>이 STEP 을 마치면 이런 창이 뜬다. 입력 칸 넷(키워드·지켜볼 회사·메일 받을
-        사람·DART 인증키), 버튼 다섯(뉴스 수집·DART 수집·보고서 만들기·메일 보내기·전체 실행),
+           alt="완성된 프로그램 창 — 입력 칸 세 개, 버튼 다섯 개, 결과 칸 세 개">
+      <figcaption>이 STEP 을 마치면 이런 창이 뜬다. 입력 칸 셋(검색어·메일 받을 사람·DART
+        인증키), 버튼 다섯(뉴스 수집·DART 수집·보고서 만들기·메일 보내기·전체 실행),
         결과 칸 셋(뉴스·DART·진행 상황). 버튼은 아직 눌러도 진행 상황 칸에 안내만 나온다.</figcaption>
     </figure>
 '''

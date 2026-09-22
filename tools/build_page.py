@@ -221,6 +221,22 @@ for _s in range(6):
         STAGE_B64[_s] = base64.b64encode(_f.read()).decode("ascii")
 STAGE_B64_JS = "{" + ",".join('"%d":"%s"' % (k, v) for k, v in STAGE_B64.items()) + "}"
 
+# 크롬 탭 아이콘. 별도 파일을 두면 HTML 만 옮겼을 때 아이콘이 깨지므로
+# SVG 를 주소 안에 그대로 적어 넣는다 (파일 하나로 다닐 수 있게).
+_Q = chr(39)          # 작은따옴표. SVG 안에 큰따옴표를 쓰므로 바깥은 이걸로 감싼다
+FAVICON = (
+    '<link rel="icon" href=' + _Q + 'data:image/svg+xml,'
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+    '<rect width="64" height="64" rx="14" fill="%23c96a1a"/>'
+    '<rect x="14" y="15" width="30" height="34" rx="3" fill="%23fff"/>'
+    '<rect x="19" y="21" width="20" height="5" fill="%23c96a1a"/>'
+    '<rect x="19" y="30" width="20" height="3" fill="%23e0b18c"/>'
+    '<rect x="19" y="37" width="13" height="3" fill="%23e0b18c"/>'
+    '<path d="M46 31h5a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H31" fill="none" '
+    'stroke="%23fff" stroke-width="4" stroke-linecap="round"/>'
+    '</svg>' + _Q + '>'
+)
+
 fonts_head = '''<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
@@ -1473,6 +1489,7 @@ doc = f'''<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기</title>
+{FAVICON}
 {fonts_head}
 {STYLE}
 </head>

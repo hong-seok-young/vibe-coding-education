@@ -376,36 +376,6 @@ STYLE = '''<style>
     font-size: 14px;
   }
 
-  .toc-mini-progress {
-    margin: 14px 10px 16px;
-    padding: 10px 12px;
-    background: var(--surface-2);
-    border-radius: 10px;
-  }
-
-  .toc-mini-progress .n {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 13px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .toc-mini-track {
-    margin-top: 6px;
-    height: 5px;
-    border-radius: 999px;
-    background: var(--line);
-    overflow: hidden;
-  }
-
-  .toc-mini-fill {
-    height: 100%;
-    width: 0%;
-    background: var(--accent);
-    border-radius: inherit;
-    transition: width 0.3s ease;
-  }
-
   .toc-group-label {
     font-size: 10.5px;
     font-weight: 700;
@@ -515,51 +485,7 @@ STYLE = '''<style>
 
   .lede strong { color: var(--ink); }
 
-  .progress-card {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 16px 18px;
-    box-shadow: var(--shadow);
-    margin-bottom: 30px;
-  }
-
-  .progress-top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 10px;
-  }
-
-  .progress-top .label { font-size: 13px; color: var(--muted); }
-
-  .progress-top .stat-value {
-    font-size: 15px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-  }
-
-  .progress-track {
-    height: 8px;
-    border-radius: 999px;
-    background: var(--surface-2);
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    width: 0%;
-    background: var(--accent);
-    border-radius: inherit;
-    transition: width 0.35s ease;
-  }
-
-  .progress-note { margin: 12px 0 0; font-size: 12.5px; color: var(--muted); }
-
   @media (prefers-reduced-motion: reduce) {
-    .progress-fill, .toc-mini-fill { transition: none; }
   }
 
   /* ── 페이지 전환 ── */
@@ -975,11 +901,6 @@ TOC_HTML = f'''<button class="toc-toggle" id="tocToggle" aria-label="목차 열�
   <button class="toc-close" id="tocClose" aria-label="목차 닫기">✕</button>
   <div class="toc-brand">DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기<span class="sub">사전 준비부터 발송까지</span></div>
 
-  <div class="toc-mini-progress">
-    <span class="n"><span id="tocDone">0</span> / <span id="tocTotal">0</span> 완료</span>
-    <div class="toc-mini-track"><div class="toc-mini-fill" id="tocFill"></div></div>
-  </div>
-
   <a class="toc-link" data-page="prep" href="#prep"><span class="toc-badge">0</span>사전 준비</a>
 
   <div class="toc-group-label">실습 1 · 수집</div>
@@ -1306,14 +1227,7 @@ SCRIPT = '''<script>
   var boxes = Array.prototype.slice.call(document.querySelectorAll(".check, .page-check"));
   var pages = Array.prototype.slice.call(document.querySelectorAll(".page"));
   var tocLinks = Array.prototype.slice.call(document.querySelectorAll(".toc-link"));
-  var doneCountEl = document.getElementById("doneCount");
-  var totalCountEl = document.getElementById("totalCount");
-  var fillEl = document.getElementById("progressFill");
-  var noteEl = document.getElementById("progressNote");
   var itemCountWordEl = document.getElementById("itemCountWord");
-  var tocDoneEl = document.getElementById("tocDone");
-  var tocTotalEl = document.getElementById("tocTotal");
-  var tocFillEl = document.getElementById("tocFill");
   var navPrevBtn = document.getElementById("pageNavPrev");
   var navNextBtn = document.getElementById("pageNavNext");
   var navPosEl = document.getElementById("pageNavPos");
@@ -1334,21 +1248,9 @@ SCRIPT = '''<script>
   }
 
   function render() {
-    var total = boxes.length;
-    var done = boxes.filter(function (b) { return b.checked; }).length;
-    totalCountEl.textContent = String(total);
-    doneCountEl.textContent = String(done);
-    tocTotalEl.textContent = String(total);
-    tocDoneEl.textContent = String(done);
-    var pct = total ? (done / total) * 100 : 0;
-    fillEl.style.width = pct + "%";
-    tocFillEl.style.width = pct + "%";
+    // 진행률 표시는 두지 않는다. 체크박스는 스스로 확인하는 용도로만 쓰고,
+    // 다 체크한 단계는 목차에서 색으로만 표시한다.
     if (itemCountWordEl) itemCountWordEl.textContent = "6가지";
-    noteEl.textContent = done === 0
-      ? "체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전"
-      : done === total
-        ? "체크박스는 이 브라우저에만 저장됩니다 · 전부 완료, 수고했다"
-        : "체크박스는 이 브라우저에만 저장됩니다 · 진행 중";
 
     tocLinks.forEach(function (link) {
       var pageId = link.dataset.page;
@@ -1539,14 +1441,6 @@ body = f'''{TOC_HTML}
 <div class="content-outer">
   <div class="wrap">
 
-    <div class="progress-card">
-      <div class="progress-top">
-        <span class="label">전체 진행률</span>
-        <span class="stat-value"><span id="doneCount">0</span> / <span id="totalCount">0</span> 완료</span>
-      </div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-      <p class="progress-note" id="progressNote">체크박스는 이 브라우저에만 저장됩니다 · 아직 시작 전</p>
-    </div>
 {PREP_PAGE}
 {step_pages_html}
 {APIS_PAGE}

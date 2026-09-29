@@ -84,7 +84,7 @@ echo  [!] 아직 파이썬을 찾지 못했습니다.
 echo      [Add python.exe to PATH] 체크를 빠뜨렸을 가능성이 가장 큽니다.
 echo      제어판에서 Python 을 제거한 뒤, 그 체크박스를 켜고 다시 설치해 보세요.
 echo.
-echo      이 창의 내용을 통째로 캡처해서 강사에게 보여주세요.
+echo      이 창을 캡처해서 AI 채팅창에 붙여넣고 원인을 물어보세요.
 exit /b 1
 
 :python_ready
@@ -115,7 +115,7 @@ if not errorlevel 1 goto :libs_ready
 echo.
 echo  [!] 부품을 받지 못했습니다.
 echo      파이썬은 준비됐으니 실습은 시작할 수 있지만, 실습 중에 다시 받아야 합니다.
-echo      위에 나온 오류 내용을 캡처해서 강사에게 보여주세요.
+echo      위에 나온 오류 내용을 캡처해서 AI 채팅창에 붙여넣고 원인을 물어보세요.
 exit /b 1
 
 :libs_ready

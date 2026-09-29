@@ -1480,7 +1480,7 @@ SCRIPT = '''<script>
         document.body.removeChild(a);
         setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
       } catch (e) {
-        alert("다운로드에 실패했습니다. 강사에게 파일을 요청하세요.");
+        alert("다운로드에 실패했습니다. 페이지를 새로고침한 뒤 다시 눌러주세요.");
       }
     });
   });

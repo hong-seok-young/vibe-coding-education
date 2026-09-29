@@ -168,14 +168,14 @@ def render_step_page(step, index, total):
 
 {trouble_html}
     <details class="answer-details">
-      <summary>안 되면? 이 단계까지 만든 정답 코드 받기</summary>
+      <summary>안 되면? 이 단계까지 만든 프로그램 받기</summary>
       <p class="tiny" style="margin-top: 4px;">이 STEP 을 마쳤을 때 나와야 하는 파일이다.
         완성본이 아니라 <strong>딱 여기까지만</strong> 들어있으니, 받아서 그대로 실행하고
         다음 단계를 이어가면 된다.</p>
       <div class="actions" style="margin-top: 8px;">
         <button type="button" class="btn primary download-stage-btn"
                 data-stage="{step['num']}">
-          <span class="arrow">⬇</span> STEP {step['num']} 까지의 코드 받기
+          <span class="arrow">⬇</span> STEP {step['num']} 까지의 프로그램 받기
         </button>
       </div>
     </details>

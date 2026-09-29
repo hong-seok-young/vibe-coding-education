@@ -31,7 +31,7 @@ echo  ============================================================
 echo    바이브 코딩 실습 - 환경 준비
 echo  ============================================================
 echo.
-echo    실습에 필요한 것을 한 번에 준비합니다 - 파이썬과 부품 3개.
+echo    실습에 필요한 것을 한 번에 준비합니다 - 파이썬과 부품 2개.
 echo    코드는 실습 때 여러분이 AI와 함께 만들어 갑니다.
 echo.
 echo    이미 깔려 있는 건 그대로 씁니다. 버전은 최신이어도 괜찮습니다.
@@ -101,15 +101,15 @@ rem
 rem  We use %PY% -m pip so packages land in the exact interpreter we found.
 rem  (This is what causes 'installed but missing' on multi-version PCs.)
 rem ============================================================
-echo  [2/2] 실습에 필요한 부품 3개를 받습니다 (1~2분)...
-%PY% -m pip install feedparser pywin32
+echo  [2/2] 실습에 필요한 부품 2개를 받습니다 (1~2분)...
+%PY% -m pip install --disable-pip-version-check --no-cache-dir feedparser pywin32
 if not errorlevel 1 goto :libs_ready
 
 echo.
 echo        실패했습니다. 회사 보안 장비 때문일 수 있어
 echo        신뢰할 곳을 지정해서 다시 시도합니다...
 echo.
-%PY% -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org feedparser pywin32
+%PY% -m pip install --disable-pip-version-check --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host pypi.python.org feedparser pywin32
 if not errorlevel 1 goto :libs_ready
 
 echo.

@@ -103,14 +103,8 @@ SHOT_HTML = f'''
 
 
 def render_step_page(step, index, total):
+    # 설치는 사전 준비의 bat 한 번으로 끝난다 — STEP 마다 설치 명령을 보여주지 않는다.
     lib_html = ""
-    if step["need_install"]:
-        lib_html = f'''
-      <div class="cmd-box">
-        <span class="cmd-label">터미널에 먼저 입력 — 사전 준비에서 이미 받아뒀으면 넘어가기</span>
-        <code class="cmd-text" id="cmd-{step['id']}">{esc(step['need_install'])}</code>
-        <button class="copy-btn" data-copy="cmd-{step['id']}">복사</button>
-      </div>'''
 
     criteria_html = "\n".join(f'          <li>{esc(c)}</li>' for c in step["criteria"])
 

@@ -1032,43 +1032,43 @@ APIS_PAGE = '''
             <td class="api-name api-pick">기상청 단기예보·특보</td>
             <td>강우·강풍 예보로 현장 작업중지 판단, 공정 조정</td>
             <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
-            <td class="api-quota">하루 1,000건</td>
+            <td class="api-quota">API 마다 다름</td>
           </tr>
           <tr>
             <td class="api-name">에어코리아 대기질</td>
             <td>미세먼지 경보, 옥외작업·비산먼지 관리</td>
             <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
-            <td class="api-quota">하루 1,000건</td>
+            <td class="api-quota">API 마다 다름</td>
           </tr>
           <tr>
             <td class="api-name api-pick">공휴일 정보<span class="api-sub">한국천문연구원</span></td>
             <td><strong>공정표 작업일수 계산.</strong> 단순한데 활용도가 가장 높은 축</td>
             <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
-            <td class="api-quota">하루 1,000건</td>
+            <td class="api-quota">API 마다 다름</td>
           </tr>
           <tr>
             <td class="api-name">아파트 실거래가<span class="api-sub">국토교통부</span></td>
             <td>매매·전월세 실거래, 분양·개발 검토</td>
             <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
-            <td class="api-quota">하루 1,000건</td>
+            <td class="api-quota">API 마다 다름</td>
           </tr>
           <tr>
             <td class="api-name">건축물대장<span class="api-sub">건축HUB</span></td>
             <td>부지·건물 제원 조회</td>
             <td><a href="https://www.data.go.kr/" target="_blank" rel="noopener">공공데이터포털</a></td>
-            <td class="api-quota">하루 1,000건</td>
+            <td class="api-quota">API 마다 다름</td>
           </tr>
           <tr>
             <td class="api-name">경제통계<span class="api-sub">한국은행 ECOS</span></td>
             <td>금리·환율·건설기성 등</td>
             <td><a href="https://ecos.bok.or.kr/api/" target="_blank" rel="noopener">ecos.bok.or.kr</a></td>
-            <td class="api-quota">하루 2만 건</td>
+            <td class="api-quota">발급처에서 확인</td>
           </tr>
           <tr>
             <td class="api-name">국가통계<span class="api-sub">KOSIS</span></td>
             <td>건설수주액, 자재 물가지수</td>
             <td><a href="https://kosis.kr/openapi/" target="_blank" rel="noopener">kosis.kr</a></td>
-            <td class="api-quota">하루 2만 건</td>
+            <td class="api-quota">발급처에서 확인</td>
           </tr>
           <tr>
             <td class="api-name">카카오 로컬</td>
@@ -1077,16 +1077,16 @@ APIS_PAGE = '''
             <td class="api-quota">하루 10만 건</td>
           </tr>
           <tr>
-            <td class="api-name">네이버 개발자센터</td>
-            <td>뉴스·블로그 검색 (구글 뉴스의 대안)</td>
-            <td><a href="https://developers.naver.com/" target="_blank" rel="noopener">developers.naver.com</a></td>
-            <td class="api-quota">하루 2만 5천 건</td>
+            <td class="api-name">네이버 검색 API<span class="api-sub">NAVER API HUB</span></td>
+            <td>뉴스·블로그 검색 (구글 뉴스의 대안). 네이버 클라우드 계정이 필요하다</td>
+            <td><a href="https://www.ncloud.com/product/applicationService/naverApiHub" target="_blank" rel="noopener">NAVER API HUB</a></td>
+            <td class="api-quota">하루 2만 5천 건<span class="api-sub">월 77만 5천 건</span></td>
           </tr>
           <tr>
             <td class="api-name">DART 전자공시<span class="api-sub">오늘 쓴 것</span></td>
-            <td>상장사 공시. 계정당 인증키 1개, 개인은 즉시 발급</td>
+            <td>상장사 공시. 계정당 인증키 1개</td>
             <td><a href="https://opendart.fss.or.kr/" target="_blank" rel="noopener">opendart.fss.or.kr</a></td>
-            <td class="api-quota">하루 2만 건</td>
+            <td class="api-quota">발급처에서 확인</td>
           </tr>
           <tr>
             <td class="api-name">구글 뉴스<span class="api-sub">오늘 쓴 것</span></td>
@@ -1098,8 +1098,8 @@ APIS_PAGE = '''
       </table>
       </div>
       <p class="tiny" style="margin-top:8px;">주황색으로 표시한 셋이 우리 업무에 가장 가깝다.
-        공공데이터포털 항목의 한도는 개발용 계정 기준이고, 실제 서비스용으로 신청하면
-        하루 10만 건까지 늘어난다.</p>
+        공공데이터포털 한도는 API 마다 다르다 — 나라장터는 개발계정 하루 1,000건이고,
+        활용사례를 등록하면 늘릴 수 있다.</p>
     </div>
 
     <div class="criteria-box">
@@ -1187,17 +1187,18 @@ APIS_PAGE = '''
       <ul>
         <li><strong>키 하나로 전부 되는 게 아니다.</strong> 계정 인증키는 하나지만,
           <strong>쓰려는 API 마다 「활용신청」 을 따로</strong> 해야 한다.</li>
-        <li>자동승인되는 것도 있지만 <strong>심의 대상이면 1~2일</strong> 걸린다.
+        <li>자동승인되는 것도 있고 <strong>심의를 거치는 것</strong>도 있다.
           쓸 API 를 미리 정해 신청까지 끝내둬야 한다.</li>
         <li>신청하지 않은 API 를 부르면 키가 멀쩡한데도 거부된다.
           <strong>키가 틀린 것으로 오해하기 쉬운 지점이다.</strong></li>
-        <li>개발용 계정은 <strong>하루 1,000건</strong>, 실제 서비스용으로 신청하면
-          <strong>하루 10만 건</strong>까지 늘어난다. 혼자 쓰기에는 개발용으로 충분하다.</li>
+        <li>하루 한도는 <strong>API 마다 다르다</strong> (나라장터는 개발계정 하루 1,000건).
+          부족하면 활용사례를 등록해 늘린다. 혼자 쓰기에는 개발계정으로 충분하다.</li>
       </ul>
     </div>
 
     <div class="callout">
-      <p><strong>한도와 가격은 바뀐다.</strong> 위 숫자는 2026년 9월에 확인한 값이다.
+      <p><strong>한도와 가격은 바뀐다.</strong> 위 숫자는 2026년 9월 각 발급처 공식 페이지에서
+        확인한 것만 적었고, 확인하지 못한 곳은 「발급처에서 확인」 으로 두었다.
         실제로 쓸 때는 발급처 화면의 안내를 따른다. 그리고 어떤 API 든 오늘과 똑같이
         <strong>「막히면 에러 문장을 그대로 AI 에게 붙여넣기」</strong> 가 가장 빠른 해결책이다.</p>
     </div>

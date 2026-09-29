@@ -628,6 +628,11 @@ STYLE = '''<style>
 
   .tiny { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
 
+  /* 사전 준비 · 뉴스 소스 목록 */
+  .news-sources { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); line-height: 1.75; }
+  .news-sources li { margin-bottom: 3px; }
+  .news-sources a { color: var(--accent); }
+
   /* STEP 0 의 완성 창 그림 */
   .shot { margin: 14px 0 6px; }
   .shot img {

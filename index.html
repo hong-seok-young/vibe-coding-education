@@ -395,6 +395,11 @@
 
   .tiny { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
 
+  /* 사전 준비 · 뉴스 소스 목록 */
+  .news-sources { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); line-height: 1.75; }
+  .news-sources li { margin-bottom: 3px; }
+  .news-sources a { color: var(--accent); }
+
   /* STEP 0 의 완성 창 그림 */
   .shot { margin: 14px 0 6px; }
   .shot img {
@@ -824,6 +829,16 @@
         </span>
       </label>
 
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">C</span>
+      <h2>뉴스</h2>
+    </div>
+
+    <div class="items">
       <label class="item">
         <span class="check-col"><input type="checkbox" class="check" data-id="news-nokey"></span>
         <span>
@@ -831,7 +846,19 @@
             뉴스는 발급받을 것 없음
             <span class="tag free">무료</span>
           </span>
-          <p class="tiny">구글 뉴스는 가입도 인증키도 필요 없다. 읽고 넘어가면 된다.</p>
+          <p class="tiny">구글 뉴스는 검색 결과를 <strong>RSS</strong> 라는 공개 목록으로 내준다.
+            주소에 검색어만 넣으면 누구나 받아가도록 열어둔 것이라 가입도 인증키도 필요 없다.</p>
+          <p class="tiny" style="margin-top:8px;"><strong>다른 뉴스 소스</strong></p>
+          <ul class="news-sources">
+            <li><strong>구글 뉴스</strong> — 인증키 없음. 오늘 실습에서 쓰는 것</li>
+            <li><strong>언론사 RSS</strong> (연합뉴스·한국경제) — 인증키 없음. 그 언론사 최신 기사를
+              통째로 받는다. 검색어로 찾기는 안 된다</li>
+            <li><strong>네이버 검색 API</strong> — 무료 인증키, 하루 2만 5천 건.
+              <a href="https://developers.naver.com/" target="_blank" rel="noopener">developers.naver.com</a></li>
+            <li><strong>빅카인즈</strong> (한국언론진흥재단) — 신청서를 내고 기관 승인을 받아야 한다.
+              개인이 바로 받기는 어렵다.
+              <a href="https://www.bigkinds.or.kr/" target="_blank" rel="noopener">bigkinds.or.kr</a></li>
+          </ul>
         </span>
       </label>
     </div>
@@ -839,7 +866,7 @@
 
   <section class="group">
     <div class="group-head">
-      <span class="num">C</span>
+      <span class="num">D</span>
       <h2>아웃룩 확인</h2>
     </div>
 

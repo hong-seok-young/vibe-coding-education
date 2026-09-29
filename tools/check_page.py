@@ -31,8 +31,9 @@ EXPECTED_CHECKBOXES = 5    # 사전 준비 페이지의 체크리스트만
 PAIRED_TAGS = ("div", "ul", "li", "p", "section", "details", "pre", "code", "span",
                "strong", "em", "table", "thead", "tbody", "tr", "th", "td")
 # 낡은 표현 + 2026-09-08 검증에서 틀린 것으로 확인돼 되돌아오면 안 되는 처방들.
-# VERIFY_X509_STRICT 제거는 사내 PC 에서 먹히지 않았다 (self-signed certificate in
-# certificate chain). SMTP 는 포트가 막힌 게 아니라 STARTTLS 단계에서 끊긴다.
+# VERIFY_X509_STRICT 는 requests 에서 먹히지 않았고 (self-signed certificate in
+# certificate chain), urllib 에서 필요한 날은 샘플 코드(main.py)가 처리한다 — 프롬프트와
+# 교안에는 어려운 말이라 넣지 않는다 (2026-09-30 결정). SMTP 는 포트가 막힌 게 아니라 STARTTLS 단계에서 끊긴다.
 # "search.naver.com" — 예전에 네이버 검색 페이지를 긁던 방식. 금지어는 그 방식이지
 # 네이버 API 자체가 아니다 (참고 페이지에서 정식 API 로 안내한다).
 STALE_WORDS = ("결과창", "NewsAPI", "search.naver.com", ".env", "python3.12", "맥OS", "macOS",

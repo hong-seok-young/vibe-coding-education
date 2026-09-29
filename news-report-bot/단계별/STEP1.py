@@ -11,8 +11,11 @@
 
 이 프로그램이 왜 이렇게 생겼는지 (프롬프트에서 짚어야 하는 것):
   · 인터넷 접속에 requests 를 쓰지 않는다. 사내 보안장비가 HTTPS 를 중간에서 열어보기
-    때문에 requests(certifi 목록만 신뢰)는 첫 접속부터 실패한다. urllib / feedparser 는
-    윈도우 인증서 저장소를 보므로 그냥 된다.
+    때문에 requests(certifi 목록만 신뢰)는 첫 접속부터 실패한다. urllib 은 윈도우
+    인증서 저장소를 보므로 회사 인증서를 믿는다.
+  · 그 회사 인증서가 최신 파이썬(3.13~)의 엄격 검사에 걸리는 날이 있다 (2026-09-30
+    구글·네이버에서 Missing Authority Key Identifier, DART 는 정상). 그래서 엄격 검사만
+    끈 SSL_CONTEXT 로 접속한다. 인증서 확인 자체는 그대로 한다.
   · DART 는 회사 이름으로 검색하는 기능이 없다. 회사명을 보내도 status 000 정상 이라고
     응답이 오면서 전체를 준다. 그래서 기간 전체를 끝까지 받아 직접 골라낸다.
   · 메일은 SMTP 로 못 보낸다. 포트는 열려 있지만 STARTTLS 단계에서 연결이 끊긴다.
@@ -22,6 +25,7 @@
 
 import json
 import os
+import ssl
 import sys
 import threading
 import tkinter as tk
@@ -37,6 +41,10 @@ from tkinter import scrolledtext
 import feedparser
 
 KST = timezone(timedelta(hours=9))
+
+# 인증서 확인은 그대로 하고, 3.13 부터 켜진 「엄격 검사」 한 가지만 끈다.
+SSL_CONTEXT = ssl.create_default_context()
+SSL_CONTEXT.verify_flags &= ~ssl.VERIFY_X509_STRICT
 
 # 수집·출력 상한 — 없으면 결과 칸이 수천 줄이 되어 창이 멈춘다.
 # 실측: 상한 없이 키워드 1개 108건 -> 326줄, 회사 필터 「삼성」 -> 280줄/18,043자
@@ -138,10 +146,12 @@ def collect_news():
     items = []
     for keyword in keywords:
         query = urllib.parse.urlencode(dict(q=keyword, hl="ko", gl="KR", ceid="KR:ko"))
-        # feedparser 는 내부에서 urllib 를 쓴다 -> 윈도우 인증서 저장소를 보므로
-        # 사내 보안장비 환경에서도 그냥 된다. requests 로 바꾸면 첫 접속부터 실패한다.
+        # 주소를 feedparser 에 바로 주면 엄격 검사에 걸리는 날이 있다 -> 직접 받아서
+        # 내용만 넘긴다. requests 로 바꾸면 첫 접속부터 실패한다.
         try:
-            feed = feedparser.parse(NEWS_RSS + "?" + query)
+            with urllib.request.urlopen(NEWS_RSS + "?" + query, timeout=20,
+                                        context=SSL_CONTEXT) as res:
+                feed = feedparser.parse(res.read())
         except Exception as ex:
             log("[%s] 가져오는 중 문제가 생겼습니다: %s - %s"
                 % (keyword, type(ex).__name__, ex))

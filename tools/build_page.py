@@ -628,6 +628,13 @@ STYLE = '''<style>
 
   .tiny { font-size: 12px; color: var(--muted); margin: 10px 0 0; }
 
+  .item > span:last-child { min-width: 0; }
+
+  /* 사전 준비 · RSS 와 API 비교 (좁은 표라 최소 너비를 풀어준다) */
+  /* .apitable 의 min-width: 640px 가 뒤에 와서 이기지 않도록 두 클래스로 지정한다 */
+  .apitable.rss-vs-api { min-width: 0; margin-top: 6px; }
+  .rss-vs-api td, .rss-vs-api th { font-size: 12.5px; }
+
   /* 사전 준비 · 뉴스 소스 목록 */
   .news-sources { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); line-height: 1.75; }
   .news-sources li { margin-bottom: 3px; }

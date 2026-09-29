@@ -1026,6 +1026,17 @@
         <li>못 가져온 경우와 기사가 없는 경우 구분해서 알리기</li>
       </ol>
     </div>
+    <div class="workflow-note">
+      <p class="workflow-note-title">3번 · 회사망 인증서 벽이란</p>
+      <ol>
+        <li><strong>https</strong> 주소는 내용을 봉투에 넣고 봉인해서 주고받는다. 받는 쪽은 봉인(<strong>인증서</strong>)을 보고 진짜 그 사이트가 보낸 건지 확인한다</li>
+        <li>회사 보안장비는 검사하려고 봉투를 중간에서 뜯어보고 <strong>회사 봉인</strong>으로 다시 붙여 보낸다</li>
+        <li>브라우저는 윈도우에 등록된 봉인 목록을 본다. 거기에 회사 봉인이 있어서 잘 열린다</li>
+        <li><code>requests</code>(인터넷에서 자료를 받는 부품)는 자기가 들고 다니는 목록만 본다. 회사 봉인이 없어서 가짜로 보고 끊는다 → <code>CERTIFICATE_VERIFY_FAILED</code></li>
+        <li><code>feedparser</code> 는 파이썬 기본 부품 <code>urllib</code> 으로 받고, <code>urllib</code> 은 윈도우 목록을 본다 → 통과</li>
+        <li>「인증서 검증 끄기」는 봉인을 아예 안 보는 것이라 쓰지 않는다</li>
+      </ol>
+    </div>
 
       <div class="cmd-box">
         <span class="cmd-label">터미널에 먼저 입력 — 사전 준비에서 이미 받아뒀으면 넘어가기</span>

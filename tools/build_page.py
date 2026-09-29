@@ -122,6 +122,15 @@ def render_step_page(step, index, total):
         todo_html = "<p class=" + chr(34) + "step-desc" + chr(34) + ">" + esc(step["desc"]) + "</p>"
     intro = SHOT_HTML if step["id"] == "s0" else ""
 
+    # todo 중 설명이 필요한 항목을 풀어주는 상자 (note 가 있는 단계만). items 는 HTML 그대로.
+    note_html = ""
+    if step.get("note"):
+        n = step["note"]
+        items = LINEBREAK.join(f'        <li>{t}</li>' for t in n["items"])
+        note_html = (f'    <div class="workflow-note">{LINEBREAK}'
+                     f'      <p class="workflow-note-title">{esc(n["title"])}</p>{LINEBREAK}'
+                     f'      <ol>{LINEBREAK}{items}{LINEBREAK}      </ol>{LINEBREAK}    </div>{LINEBREAK}')
+
     trouble_html = ""
     if step.get("trouble"):
         t = step["trouble"]
@@ -149,7 +158,7 @@ def render_step_page(step, index, total):
       </div>
       {todo_html}
     </div>
-{intro}{lib_html}
+{note_html}{intro}{lib_html}
     <details class="prompt-box">
       <summary class="prompt-box-head">
         <span class="prompt-label">모범 프롬프트 보기</span>

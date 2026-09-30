@@ -686,13 +686,14 @@
           </div>
           <div class="apitable-wrap">
           <table class="apitable rss-vs-api">
-            <thead><tr><th></th><th>RSS</th><th>API</th></tr></thead>
+            <colgroup><col class="c-label"><col><col></colgroup>
+            <thead><tr><th></th><th class="c-rss">RSS</th><th class="c-api">API</th></tr></thead>
             <tbody>
-              <tr><td class="api-name">방식</td><td>공개된 목록을 그냥 받음</td><td>조건을 넣어 요청하면 답을 줌</td></tr>
-              <tr><td class="api-name">인증키</td><td>거의 없음</td><td>대부분 필요</td></tr>
-              <tr><td class="api-name">검색</td><td>사이트마다 다름 (구글 뉴스는 검색어 가능, 언론사 RSS 는 정해진 목록만)</td><td>검색어·날짜 등 조건 지정 가능</td></tr>
-              <tr><td class="api-name">양</td><td>한 번에 약 100건 — 다음 페이지가 없어 그게 끝</td><td>한 번에 최대 100건 — 다음 페이지로 끝까지 받을 수 있음</td></tr>
-              <tr><td class="api-name">예</td><td>구글 뉴스, 연합뉴스·한국경제 RSS</td><td>DART, 네이버 검색 API</td></tr>
+              <tr><th scope="row">방식</th><td class="c-rss">공개된 목록을 그냥 받음</td><td class="c-api">조건을 넣어 요청하면 답을 줌</td></tr>
+              <tr><th scope="row">인증키</th><td class="c-rss">거의 없음</td><td class="c-api">대부분 필요</td></tr>
+              <tr><th scope="row">검색</th><td class="c-rss">사이트마다 다름<small>구글 뉴스 ○ · 언론사 RSS ✕</small></td><td class="c-api">검색어 · 날짜 등 조건 지정</td></tr>
+              <tr><th scope="row">양</th><td class="c-rss">한 번에 약 100건<small>다음 페이지 없음</small></td><td class="c-api">한 번에 최대 100건<small>다음 페이지로 끝까지</small></td></tr>
+              <tr><th scope="row">예</th><td class="c-rss">구글 뉴스, 언론사 RSS</td><td class="c-api">DART, 네이버 검색 API</td></tr>
             </tbody>
           </table>
           </div>

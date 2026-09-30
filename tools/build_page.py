@@ -678,6 +678,20 @@ STYLE = '''<style>
   /* .apitable 의 min-width: 640px 가 뒤에 와서 이기지 않도록 두 클래스로 지정한다 */
   .apitable.rss-vs-api { min-width: 0; margin-top: 6px; }
   .rss-vs-api td, .rss-vs-api th { font-size: 12.5px; }
+  /* RSS vs API 비교표 — 열마다 색을 입혀 좌우 비교가 한눈에 */
+  .apitable.rss-vs-api { table-layout: fixed; border-collapse: separate; border-spacing: 6px 0; width: 100%; }
+  .rss-vs-api col.c-label { width: 58px; }
+  .rss-vs-api thead th { text-align: center; font-size: 13px; font-weight: 700; padding: 8px 6px; border: 0;
+                         border-radius: 8px 8px 0 0; letter-spacing: 0.04em; }
+  .rss-vs-api thead th.c-rss { background: var(--good); color: var(--surface); }
+  .rss-vs-api thead th.c-api { background: var(--accent); color: var(--accent-ink); }
+  .rss-vs-api tbody th { text-align: left; font-weight: 700; color: var(--ink); padding: 9px 4px; border-bottom: 1px solid var(--line); }
+  .rss-vs-api tbody td { text-align: center; padding: 9px 8px; color: var(--ink); border-bottom: 1px solid rgba(0, 0, 0, 0.06); line-height: 1.45; }
+  .rss-vs-api tbody td.c-rss { background: var(--good-wash); }
+  .rss-vs-api tbody td.c-api { background: var(--accent-wash); }
+  .rss-vs-api tbody tr:last-child td { border-bottom: 0; border-radius: 0 0 8px 8px; }
+  .rss-vs-api tbody tr:last-child th { border-bottom: 0; }
+  .rss-vs-api td small { display: block; font-size: 11px; color: var(--muted); }
 
   /* 사전 준비 · 뉴스 소스 목록 */
   .news-sources { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); line-height: 1.75; }

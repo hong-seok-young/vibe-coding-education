@@ -411,6 +411,20 @@
   /* .apitable 의 min-width: 640px 가 뒤에 와서 이기지 않도록 두 클래스로 지정한다 */
   .apitable.rss-vs-api { min-width: 0; margin-top: 6px; }
   .rss-vs-api td, .rss-vs-api th { font-size: 12.5px; }
+  /* RSS vs API 비교표 — 열마다 색을 입혀 좌우 비교가 한눈에 */
+  .apitable.rss-vs-api { table-layout: fixed; border-collapse: separate; border-spacing: 6px 0; width: 100%; }
+  .rss-vs-api col.c-label { width: 58px; }
+  .rss-vs-api thead th { text-align: center; font-size: 13px; font-weight: 700; padding: 8px 6px; border: 0;
+                         border-radius: 8px 8px 0 0; letter-spacing: 0.04em; }
+  .rss-vs-api thead th.c-rss { background: var(--good); color: var(--surface); }
+  .rss-vs-api thead th.c-api { background: var(--accent); color: var(--accent-ink); }
+  .rss-vs-api tbody th { text-align: left; font-weight: 700; color: var(--ink); padding: 9px 4px; border-bottom: 1px solid var(--line); }
+  .rss-vs-api tbody td { text-align: center; padding: 9px 8px; color: var(--ink); border-bottom: 1px solid rgba(0, 0, 0, 0.06); line-height: 1.45; }
+  .rss-vs-api tbody td.c-rss { background: var(--good-wash); }
+  .rss-vs-api tbody td.c-api { background: var(--accent-wash); }
+  .rss-vs-api tbody tr:last-child td { border-bottom: 0; border-radius: 0 0 8px 8px; }
+  .rss-vs-api tbody tr:last-child th { border-bottom: 0; }
+  .rss-vs-api td small { display: block; font-size: 11px; color: var(--muted); }
 
   /* 사전 준비 · 뉴스 소스 목록 */
   .news-sources { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--ink-soft); line-height: 1.75; }
@@ -1330,13 +1344,14 @@
           </div>
           <div class="apitable-wrap">
           <table class="apitable rss-vs-api">
-            <thead><tr><th></th><th>RSS</th><th>API</th></tr></thead>
+            <colgroup><col class="c-label"><col><col></colgroup>
+            <thead><tr><th></th><th class="c-rss">RSS</th><th class="c-api">API</th></tr></thead>
             <tbody>
-              <tr><td class="api-name">방식</td><td>공개된 목록을 그냥 받음</td><td>조건을 넣어 요청하면 답을 줌</td></tr>
-              <tr><td class="api-name">인증키</td><td>거의 없음</td><td>대부분 필요</td></tr>
-              <tr><td class="api-name">검색</td><td>사이트마다 다름 (구글 뉴스는 검색어 가능, 언론사 RSS 는 정해진 목록만)</td><td>검색어·날짜 등 조건 지정 가능</td></tr>
-              <tr><td class="api-name">양</td><td>한 번에 약 100건 — 다음 페이지가 없어 그게 끝</td><td>한 번에 최대 100건 — 다음 페이지로 끝까지 받을 수 있음</td></tr>
-              <tr><td class="api-name">예</td><td>구글 뉴스, 연합뉴스·한국경제 RSS</td><td>DART, 네이버 검색 API</td></tr>
+              <tr><th scope="row">방식</th><td class="c-rss">공개된 목록을 그냥 받음</td><td class="c-api">조건을 넣어 요청하면 답을 줌</td></tr>
+              <tr><th scope="row">인증키</th><td class="c-rss">거의 없음</td><td class="c-api">대부분 필요</td></tr>
+              <tr><th scope="row">검색</th><td class="c-rss">사이트마다 다름<small>구글 뉴스 ○ · 언론사 RSS ✕</small></td><td class="c-api">검색어 · 날짜 등 조건 지정</td></tr>
+              <tr><th scope="row">양</th><td class="c-rss">한 번에 약 100건<small>다음 페이지 없음</small></td><td class="c-api">한 번에 최대 100건<small>다음 페이지로 끝까지</small></td></tr>
+              <tr><th scope="row">예</th><td class="c-rss">구글 뉴스, 언론사 RSS</td><td class="c-api">DART, 네이버 검색 API</td></tr>
             </tbody>
           </table>
           </div>
@@ -1692,7 +1707,13 @@ DART 는 함정이 넷 있어. 놓치면 결과가 조용히 틀리니 그대로
 
     <details class="answer-details">
       <summary>공시가 나오긴 하는데 내가 적은 회사 것이 아니면</summary>
-      <p class="tiny" style="margin-top: 4px;">회사 이름을 요청에 실어 보낸 것이다. DART 는 그 값을 무시하고 전체를 주면서도 「정상」 이라고 응답하기 때문에, 에러가 없는데 결과가 엉뚱하다.</p>
+      <ol class="trouble-list">
+        <li>AI 가 코드를 짤 때 DART 에 「<strong>현대건설</strong> 공시만 줘」 하고 회사 이름을 같이 보내는 경우가 많다</li>
+        <li>그런데 DART 는 그 이름을 <strong>무시하고 그 기간 모든 회사 공시</strong>를 준다</li>
+        <li>그러면서 에러 없이 「<strong>정상</strong>」 이라고 답한다 → 프로그램은 걸러진 줄 알고 그대로 보여준다</li>
+        <li>고치는 법 — 이름은 빼고 <strong>전부 받은 뒤, 프로그램이 직접 회사 이름으로 골라낸다</strong></li>
+      </ol>
+      <p class="tiny" style="margin-top: 4px;">에러가 안 나서 알아채기 어렵다. 결과에 다른 회사가 섞여 있으면 이 경우다.</p>
       <details class="prompt-box" style="margin-top: 10px;">
         <summary class="prompt-box-head">
           <span class="prompt-label">이어서 넣을 프롬프트 보기</span>

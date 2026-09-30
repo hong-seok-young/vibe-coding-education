@@ -802,10 +802,8 @@
   .vs-card li { font-size: 13px; color: var(--ink-soft); }
 
   .tips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .tip { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 2px; align-items: center;
-         background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
-  .tip-no { grid-row: span 2; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
-            background: var(--accent-wash); color: var(--accent); font-weight: 700; font-size: 13px; }
+  .tip { display: flex; flex-direction: column; gap: 3px; background: var(--surface); border: 1px solid var(--line);
+         border-left: 3px solid var(--accent); border-radius: 10px; padding: 12px 14px; }
   .tip strong { font-size: 13.5px; color: var(--ink); }
   .tip small { font-size: 12px; color: var(--muted); }
 
@@ -1069,10 +1067,12 @@
 
     <p class="v-title">말로 시킬 때 요령</p>
     <div class="tips">
-      <div class="tip"><span class="tip-no">1</span><strong>번호 매겨 정확히</strong><small>애매하면 AI 는 조용히 틀린다</small></div>
-      <div class="tip"><span class="tip-no">2</span><strong>안 될 때 알림까지</strong><small>에러는 사람 말로, 0건이면 이유를</small></div>
-      <div class="tip"><span class="tip-no">3</span><strong>양 정하기</strong><small>「10건까지만」 — 안 정하면 창이 멈춘다</small></div>
-      <div class="tip"><span class="tip-no">4</span><strong>통째로 파일로</strong><small>부분만 받으면 되던 기능이 빠진다</small></div>
+      <div class="tip"><strong>성공한 모습부터</strong><small>「버튼 누르면 제목 10개가 뜬다」 처럼 끝 그림을 먼저</small></div>
+      <div class="tip"><strong>한 번에 하나씩</strong><small>기능 하나 시키고, 되면 다음</small></div>
+      <div class="tip"><strong>예시를 들어서</strong><small>「09/08 14:30 처럼」 — 설명보다 예시가 정확하다</small></div>
+      <div class="tip"><strong>에러는 그대로</strong><small>내 말로 요약하지 말고 전문을 복사해서 붙여넣기</small></div>
+      <div class="tip"><strong>안 될 때도 알리게</strong><small>0건이면 왜 0건인지 — 조용한 실패가 제일 무섭다</small></div>
+      <div class="tip"><strong>되는 버전은 남겨두기</strong><small>다음 기능을 붙이기 전에 파일을 복사해둔다</small></div>
     </div>
   </section>
 

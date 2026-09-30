@@ -26,7 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 PAGE = os.path.join(REPO, "DART 뉴스 크롤링 및 메일발송 프로그램 만들기.html")
 
-EXPECTED_PAGES = 9         # 사전 준비 + STEP 6개 + API 목록 + The APPS
+EXPECTED_PAGES = 10        # 서론 + 사전 준비 + STEP 6개 + API 목록 + The APPS
 EXPECTED_CHECKBOXES = 5    # 사전 준비 페이지의 체크리스트만
 PAIRED_TAGS = ("div", "ul", "li", "p", "section", "details", "pre", "code", "span",
                "strong", "em", "table", "thead", "tbody", "tr", "th", "td")

@@ -636,6 +636,15 @@
   .workflow-note strong { color: var(--ink); }
   .workflow-note code { background: var(--surface); }
 
+  .intro-box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+               padding: 16px 18px; margin-bottom: 14px; }
+  .intro-box-title { font-size: 14px; font-weight: 700; color: var(--ink); margin: 0 0 10px; }
+  .intro-box ul, .intro-box ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
+  .intro-box li { font-size: 13.5px; color: var(--ink-soft); line-height: 1.65; }
+  .intro-box li::marker { color: var(--accent); font-weight: 700; }
+  .intro-box strong { color: var(--ink); }
+  .intro-box .apitable-wrap { margin: 0; }
+
   .criteria-box { background: var(--good-wash); border-radius: 10px; padding: 14px 16px; margin-bottom: 4px; }
 
   .criteria-label {
@@ -735,6 +744,7 @@
   <button class="toc-close" id="tocClose" aria-label="목차 닫기">✕</button>
   <div class="toc-brand">DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기</div>
 
+  <a class="toc-link" data-page="intro" href="#intro"><span class="toc-badge">i</span>서론 · 바이브코딩이란</a>
   <a class="toc-link" data-page="prep" href="#prep"><span class="toc-badge">0</span>사전 준비</a>
 
   <div class="toc-group-label">실습 1 · 수집</div>
@@ -757,6 +767,89 @@
 <div class="content-outer">
   <div class="wrap">
 
+
+  <section class="page" data-page="intro" id="intro">
+    <div class="page-head">
+      <span class="page-eyebrow">서론</span>
+      <div class="page-title-row">
+        <h2>바이브코딩이란</h2>
+      </div>
+      <p class="step-desc"><strong>코드를 직접 쓰지 않고, 만들고 싶은 것을 말로 설명해서 AI 가 코드를 쓰게
+        하는 방식</strong>이다. 나는 「무엇을」 정하고 확인하고, AI 는 「어떻게」 를 코드로 옮긴다.</p>
+    </div>
+
+    <div class="workflow-note">
+      <p class="workflow-note-title">역할 나누기</p>
+      <ol>
+        <li><strong>나</strong> — 무엇을 만들지 정하기 · 결과가 맞는지 눈으로 확인하기 · 틀리면 다시 말하기</li>
+        <li><strong>AI</strong> — 코드 쓰기 · 에러 고치기 · 필요한 부품 고르기</li>
+        <li><strong>필요한 능력</strong> — 코딩 지식보다 <strong>원하는 걸 정확히 말하는 능력</strong>과
+          <strong>결과를 확인하는 눈</strong></li>
+      </ol>
+    </div>
+
+    <div class="intro-box">
+      <p class="intro-box-title">일반적인 순서 — 틀 먼저, 부품은 하나씩</p>
+      <ol>
+        <li><strong>한 줄로 정하기</strong> — 무엇을 넣으면 무엇이 나오는 프로그램인지.
+          예) 회사 이름을 넣으면 뉴스와 공시를 모아 메일로 보내준다</li>
+        <li><strong>틀 만들기</strong> — 기능 없이 화면만. 입력 칸 · 버튼 · 결과 칸</li>
+        <li><strong>부품 하나씩 채우기</strong> — 버튼 하나에 기능 하나. 한 번에 하나만 시킨다</li>
+        <li><strong>매번 실행해서 확인</strong> — 채울 때마다 돌려보고, 되면 다음 부품</li>
+        <li><strong>막히면 에러 문장 그대로</strong> — 화면에 뜬 에러를 복사해서 AI 에게 붙여넣는다</li>
+        <li><strong>합치기</strong> — 부품이 다 되면 한 번에 돌리는 버튼으로 묶는다</li>
+      </ol>
+    </div>
+
+    <div class="intro-box">
+      <p class="intro-box-title">왜 틀부터 잡나</p>
+      <ul>
+        <li><strong>요구사항이 확실해진다</strong> — 화면을 먼저 그리면 무엇을 입력받고 무엇을 보여줄지가
+          눈에 보인다. 빠진 게 있으면 코드를 만들기 전에 드러난다</li>
+        <li><strong>AI 가 덜 틀린다</strong> — 한 번에 다 시키면 여기저기서 조용히 틀린다.
+          하나씩 시키면 요구가 짧고 분명해진다</li>
+        <li><strong>고장 난 곳이 바로 보인다</strong> — 문제가 생기면 방금 채운 부품만 보면 된다</li>
+        <li><strong>되던 기능이 안 깨진다</strong> — 틀이 정해져 있어서 새 부품이 기존 부품을 건드리지 않는다</li>
+      </ul>
+    </div>
+
+    <div class="intro-box">
+      <p class="intro-box-title">한 번에 다 시키기 vs 틀 먼저 하나씩</p>
+      <div class="apitable-wrap">
+      <table class="apitable rss-vs-api">
+        <thead><tr><th></th><th>한 번에 다</th><th>틀 먼저, 하나씩</th></tr></thead>
+        <tbody>
+          <tr><td class="api-name">요구사항</td><td>머릿속에만 있다가 나중에 빠진 게 드러남</td><td>화면을 보며 정리됨</td></tr>
+          <tr><td class="api-name">에러</td><td>어디서 났는지 모름</td><td>방금 채운 곳</td></tr>
+          <tr><td class="api-name">고치기</td><td>하나 고치면 다른 게 깨짐</td><td>그 부품만 고침</td></tr>
+          <tr><td class="api-name">확인</td><td>마지막에 한꺼번에</td><td>단계마다</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="intro-box">
+      <p class="intro-box-title">오늘 실습에 대입하면</p>
+      <ul>
+        <li><strong>한 줄</strong> — 회사 이름을 넣으면 뉴스와 DART 공시를 모아 보고서로 만들고 메일로 보낸다</li>
+        <li><strong>틀</strong> — STEP 0 · 프로그램 창 (입력 칸 3 · 버튼 5 · 결과 칸 3)</li>
+        <li><strong>부품</strong> — STEP 1 뉴스 · STEP 2 DART · STEP 3 HTML 보고서 · STEP 4 아웃룩 메일</li>
+        <li><strong>합치기</strong> — STEP 5 · 전체 실행 버튼</li>
+      </ul>
+    </div>
+
+    <div class="intro-box">
+      <p class="intro-box-title">말로 시킬 때 요령</p>
+      <ul>
+        <li><strong>평소 말투로, 대신 꼭 정확해야 할 것은 번호를 매겨서</strong> — 애매하게 쓰면 AI 는
+          에러 없이 조용히 틀린다</li>
+        <li><strong>「안 될 때 어떻게 알려줄지」 까지 시키기</strong> — 에러는 화면에 사람 말로,
+          0건이면 왜 0건인지. 가장 무서운 건 에러가 아니라 조용한 실패다</li>
+        <li><strong>양 정하기</strong> — 「10건까지만」 처럼. 안 정하면 수천 줄이 쏟아져 창이 멈춘다</li>
+        <li><strong>코드는 통째로 파일로 받기</strong> — 바뀐 부분만 받아 붙이다 보면 되던 기능이 빠진다</li>
+      </ul>
+    </div>
+  </section>
 
   <section class="page" data-page="prep" id="prep">
     <div class="page-inner">
@@ -1734,7 +1827,7 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
 
     <div class="page-nav">
       <button class="page-nav-btn" id="pageNavPrev">← 이전</button>
-      <span class="page-nav-pos" id="pageNavPos">1 / 9</span>
+      <span class="page-nav-pos" id="pageNavPos">1 / 10</span>
       <button class="page-nav-btn next" id="pageNavNext">다음 →</button>
     </div>
 
@@ -1747,7 +1840,7 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
 
 <script>
 (function () {
-  var PAGE_IDS = ["prep", "s0", "s1", "s2", "s3", "s4", "s5", "apis", "apps"];
+  var PAGE_IDS = ["intro", "prep", "s0", "s1", "s2", "s3", "s4", "s5", "apis", "apps"];
   var STORAGE_KEY = "issuebot-checklist";
   var STATE_KEY = "issuebot-current-page";
 

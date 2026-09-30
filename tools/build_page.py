@@ -1029,12 +1029,17 @@ STYLE = '''<style>
   .pv-parcels { display: flex; flex-direction: column; gap: 12px; margin: 10px 0; padding: 14px; border-radius: 10px;
                 background: var(--paper); border: 1px solid var(--line); }
   .pv-parcel-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  .pv-parcel { position: relative; width: 78px; padding: 16px 8px 7px; border-radius: 6px; text-align: center;
+  .pv-parcel { position: relative; width: 84px; padding: 16px 8px 7px; border-radius: 6px; text-align: center;
                background: #e9c79a; border: 1.5px solid #b9864a; display: flex; flex-direction: column; gap: 3px; }
   .pv-parcel::before { content: ""; position: absolute; top: 0; left: 50%; width: 12px; height: 100%;
                        transform: translateX(-50%); background: rgba(255, 255, 255, 0.35); }
   .pv-parcel b { position: relative; font-size: 11.5px; color: #4a2f10; }
-  .pv-parcel i { position: relative; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.85); }
+  .pv-fill { position: relative; display: block; height: 12px; margin: 3px 0; border-radius: 3px;
+             background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0, 0, 0, 0.2); overflow: hidden; }
+  .pv-fill em { position: absolute; left: 0; top: 0; bottom: 0; }
+  .pv-fill em.p10 { width: 10%; background: #8a5a22; }
+  .pv-fill em.p100 { width: 100%; background: #3f63a3; }
+  .pv-parcel small.cap { font-size: 10px; opacity: 0.75; }
   .pv-parcel small { position: relative; font-size: 10.5px; color: #4a2f10; }
   .pv-parcel.dart { background: #cfdcf1; border-color: #6d8fc4; }
   .pv-parcel.dart b, .pv-parcel.dart small { color: #1f3a66; }

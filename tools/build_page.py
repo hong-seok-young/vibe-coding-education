@@ -94,6 +94,19 @@ import base64 as _b64
 with open(f"{HERE}/program-window.png", "rb") as _f:
     SHOT_B64 = _b64.b64encode(_f.read()).decode("ascii")
 
+# STEP 1~5 페이지에 넣는 「그 단계를 마친 화면」. tools/capture_steps.py 로 찍는다.
+# 그림이 없는 단계는 그냥 비워둔다 (아직 안 찍었거나, 메일 발송이 필요한 단계).
+STEP_SHOTS = {}
+for _n in range(1, 6):
+    _path = f"{HERE}/step-shots/step{_n}.png"
+    if os.path.exists(_path):
+        with open(_path, "rb") as _f:
+            _b = _b64.b64encode(_f.read()).decode("ascii")
+        STEP_SHOTS[f"s{_n}"] = (LINEBREAK + '    <figure class="shot">' + LINEBREAK +
+                                f'      <img src="data:image/png;base64,{_b}" alt="STEP {_n} 을 마친 프로그램 화면">' + LINEBREAK +
+                                '      <figcaption>이 단계를 마치면 이런 화면</figcaption>' + LINEBREAK +
+                                '    </figure>' + LINEBREAK)
+
 SHOT_HTML = f'''
     <figure class="shot">
       <img src="data:image/png;base64,{SHOT_B64}"
@@ -114,7 +127,7 @@ def render_step_page(step, index, total):
         todo_html = f'<ol class="step-todo">{LINEBREAK}{items}{LINEBREAK}      </ol>'
     else:
         todo_html = "<p class=" + chr(34) + "step-desc" + chr(34) + ">" + esc(step["desc"]) + "</p>"
-    intro = SHOT_HTML if step["id"] == "s0" else ""
+    intro = SHOT_HTML if step["id"] == "s0" else STEP_SHOTS.get(step["id"], "")
 
     # todo 중 설명이 필요한 항목을 풀어주는 상자 (note 가 있는 단계만). items 는 HTML 그대로.
     note_html = ""
@@ -130,6 +143,8 @@ def render_step_page(step, index, total):
         t = step["trouble"]
         # 왜 그 에러가 나는지 먼저 풀어주는 목록 (있을 때만). items 는 HTML 그대로.
         why_html = ""
+        if t.get("visual"):
+            why_html = LINEBREAK + "      " + t["visual"]
         if t.get("items"):
             lis = LINEBREAK.join(f'        <li>{x}</li>' for x in t["items"])
             why_html = f'{LINEBREAK}      <ol class="trouble-list">{LINEBREAK}{lis}{LINEBREAK}      </ol>'
@@ -663,6 +678,7 @@ STYLE = '''<style>
 
   /* STEP 0 의 완성 창 그림 */
   .shot { margin: 14px 0 6px; }
+  .shot figcaption { margin-top: 6px; font-size: 12px; color: var(--muted); text-align: center; }
   .shot img {
     display: block; width: 100%; height: auto; background: #fff;
     border: 1px solid var(--line-strong); border-radius: 6px; box-shadow: var(--shadow);
@@ -901,6 +917,32 @@ STYLE = '''<style>
   .workflow-note li { font-size: 13px; color: var(--ink-soft); }
   .workflow-note strong { color: var(--ink); }
   .workflow-note code { background: var(--surface); }
+
+  /* ── STEP 1 인증서 오류 그림 ── */
+  .cert { margin: 4px 0 12px; padding: 14px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }
+  .cert-path { display: flex; align-items: center; gap: 4px; margin-bottom: 14px; }
+  .cert-path .pv-line { margin-top: 12px; }
+  .cert-lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cert-lane { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 10px; border-radius: 10px; border: 1.5px solid; }
+  .cert-lane.bad { border-color: var(--bad); background: var(--bad-wash); }
+  .cert-lane.good { border-color: var(--good); background: var(--good-wash); }
+  .cert-lane p { margin: 0; text-align: center; }
+  .cert-who { font-size: 13px; font-weight: 700; margin-bottom: 8px !important; color: var(--ink); }
+  .cert-who small { font-weight: 500; color: var(--muted); font-size: 11px; }
+  .cert-box { font-size: 12.5px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 7px 8px; }
+  .cert-box small { display: block; font-size: 11px; color: var(--muted); }
+  .cert-box + .cert-box { position: relative; margin-top: 16px; }
+  .cert-box + .cert-box::before { content: "↓"; position: absolute; top: -16px; left: 0; right: 0; font-size: 12px; line-height: 16px; color: var(--muted); }
+  .cert-lane.bad .cert-end { border-color: var(--bad); color: var(--bad); font-weight: 700; }
+  .cert-lane.good .cert-end { border-color: var(--good); color: var(--good); font-weight: 700; }
+  .cert-end small { font-weight: 500; font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  .chip.hl { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .cert-when { margin-top: 14px; }
+  .cert-note { margin: 10px 0 0; }
+  @media (max-width: 560px) {
+    .cert-lanes { grid-template-columns: 1fr; }
+    .cert-path .pv-node { min-width: 0; padding: 6px; font-size: 11px; }
+  }
 
   /* ── 사전 준비 — 그림 ── */
   .pv-map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 4px 0 6px; }

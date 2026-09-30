@@ -118,22 +118,39 @@ STEPS = [
         need_install="pip install feedparser",
         trouble=dict(
             summary="인증서 오류 (CERTIFICATE_VERIFY_FAILED) 가 뜨면?",
-            items=[
-                "<code>requests</code> · <code>feedparser</code> — 파이썬이 인터넷에서 자료를 받아올 때 쓰는 부품",
-                "회사 인터넷은 보안장비가 중간에서 한 번 검사하고 <strong>회사 도장</strong>을 찍어서 넘겨준다",
-                "윈도우에는 <strong>믿어도 되는 도장 목록</strong>이 있다. 회사가 PC 를 나눠줄 때 회사 도장을 여기 넣어뒀다 (직접 보기: 윈도우 + R → <code class=\"cmd\">certmgr.msc</code> → 신뢰할 수 있는 루트 인증 기관)",
-                "<code>requests</code> 는 윈도우 목록 대신 <strong>설치될 때 딸려온 자기 목록</strong>을 본다 → 회사 도장이 없어서 거절 (<code>CERTIFICATE_VERIFY_FAILED</code> 에러)",
-                "<code>feedparser</code> 는 <strong>윈도우 목록</strong>을 본다 → 회사 도장이 있어서 통과",
-                "그래서 AI 에게 「requests 말고 feedparser 로 바꿔줘」 라고 한다 → 아래 프롬프트",
-            ],
-            # 인증서를 언제 보는지 — 접속할 때 한 번, 데이터를 받기 전
-            flow="""1. 도구 → "news.google.com 접속할게요"
-2. 회사 보안장비가 중간에서 가로채서 → 회사 도장이 찍힌 인증서를 보여줌
-3. 도구가 도장 확인            ← 여기서 인증서가 필요
-     ├ 믿는 도장   → 4번으로
-     └ 모르는 도장 → 연결 끊음 (CERTIFICATE_VERIFY_FAILED)
-4. 암호화된 통로가 열림
-5. 그 통로로 RSS 목록을 받음   ← 데이터는 여기서야 옴""",
+            # 왜 막히는지 그림 — 페이지에 그대로 들어가는 HTML
+            visual="""<div class="cert">
+        <div class="cert-path">
+          <span class="pv-node">파이썬 프로그램</span>
+          <span class="pv-line right"><em>접속</em></span>
+          <span class="pv-node src api">회사 보안장비<small>회사 도장을 찍어 넘김</small></span>
+          <span class="pv-line right"><em>&nbsp;</em></span>
+          <span class="pv-node">news.google.com</span>
+        </div>
+        <div class="cert-lanes">
+          <div class="cert-lane bad">
+            <p class="cert-who"><code>requests</code></p>
+            <p class="cert-box">자기 목록을 본다<small>설치할 때 딸려온 목록</small></p>
+            <p class="cert-box">회사 도장이 없다</p>
+            <p class="cert-box cert-end">✕ 연결 끊음<small>CERTIFICATE_VERIFY_FAILED</small></p>
+          </div>
+          <div class="cert-lane good">
+            <p class="cert-who"><code>feedparser</code> <small>안에서 urllib</small></p>
+            <p class="cert-box">윈도우 목록을 본다<small>회사가 PC 줄 때 회사 도장을 넣어둠</small></p>
+            <p class="cert-box">회사 도장이 있다</p>
+            <p class="cert-box cert-end">✓ 통과<small>RSS 목록을 받는다</small></p>
+          </div>
+        </div>
+        <div class="cycle cert-when">
+          <span class="cycle-label">순서</span>
+          <span class="chip">접속 요청</span><span class="carrow">→</span>
+          <span class="chip hl">도장 확인</span><span class="carrow">→</span>
+          <span class="chip">통로 열림</span><span class="carrow">→</span>
+          <span class="chip next">데이터 받음</span>
+        </div>
+        <p class="tiny cert-note">인증서는 <strong>도장 확인</strong>에서 한 번만 본다 — 여기서 막히면 데이터는 한 줄도 안 온다.
+          윈도우 목록 직접 보기: 윈도우 + R → <code class="cmd">certmgr.msc</code> → 신뢰할 수 있는 루트 인증 기관</p>
+      </div>""",
             body="이 에러가 떴다면 AI 가 <code>requests</code> 를 쓴 것이다. 회사망에서는 자주 일어난다 — "
                  "같은 프롬프트를 줘도 AI 가 어느 부품을 고르느냐에 따라 성패가 갈린다.",
             prompt="""CERTIFICATE_VERIFY_FAILED 에러가 나. 지금 코드가 인터넷에서 자료를 받아올 때 requests 를

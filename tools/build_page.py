@@ -58,7 +58,7 @@ def esc(s):
     return h.escape(s)
 
 
-# ── prep.html 에서 섹션 A~D 와 콜아웃 추출 ──────────────────
+# ── prep.html 에서 섹션 A~E 추출 ──────────────────
 prep_src = open(f"{HERE}/prep.html", encoding="utf-8").read()
 
 
@@ -558,6 +558,9 @@ STYLE = '''<style>
     padding: 14px 16px;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
+
+  /* 체크할 게 없는 설명 카드 (사전 준비 D) */
+  .item.item-info { grid-template-columns: 1fr; }
 
   .item:has(.check:checked) { border-color: var(--good); background: var(--good-wash); }
 

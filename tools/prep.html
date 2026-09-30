@@ -232,6 +232,8 @@
     transition: border-color 0.15s ease, background 0.15s ease;
   }
 
+  .item.item-info { grid-template-columns: 1fr; }
+
   .item:has(.check:checked) {
     border-color: var(--good);
     background: var(--good-wash);
@@ -606,7 +608,23 @@
             뉴스는 발급받을 것 없음
             <span class="tag free">무료</span>
           </span>
-          <p class="tiny"><strong>RSS 란</strong> — 사이트가 새 글 목록을
+          <p class="tiny">구글 뉴스는 인증키 없이 검색어로 받는다. 원리는 아래 D 에서.</p>
+        </span>
+      </label>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="group-head">
+      <span class="num">D</span>
+      <h2>RSS, API 란?</h2>
+    </div>
+
+    <div class="items">
+      <div class="item item-info">
+        <span>
+          <span class="item-title">RSS 란</span>
+          <p class="tiny">사이트가 새 글 목록을
             <strong>엑셀 표처럼</strong> 정리해서 공개해둔 것이다.
             홈페이지는 사람이 보라고 꾸민 <strong>PDF 보고서</strong> 같아서 프로그램이 거기서
             제목만 골라내기 어렵다. RSS 는 같은 내용을 <strong>제목 · 링크 · 날짜</strong>
@@ -614,6 +632,21 @@
           <p class="tiny"><strong>인증키가 필요 없는 이유</strong> — 가게 앞에 「가져가세요」 하고
             내놓은 무료 신문 같은 것이라, 누가 가져가는지 확인하지 않는다. 구글 뉴스는
             <strong>검색 결과까지</strong> 이렇게 내놔서 인증키 없이 검색어로 찾을 수 있다.</p>
+        </span>
+      </div>
+
+      <div class="item item-info">
+        <span>
+          <span class="item-title">API 란</span>
+          <p class="tiny">홈페이지는 사람이 보라고, API 는 <strong>프로그램이 받아가라고 열어둔 창구</strong>다.
+            「이 회사 · 이 기간 공시 줘」 처럼 <strong>조건을 넣어 요청하면 답을 준다</strong>.</p>
+          <p class="tiny"><strong>인증키는 출입증</strong> — 누가 얼마나 쓰는지 세려고 발급한다. 남에게 주지 않는다.</p>
+        </span>
+      </div>
+
+      <div class="item item-info">
+        <span>
+          <span class="item-title">RSS vs API</span>
           <div class="apitable-wrap">
           <table class="apitable rss-vs-api">
             <thead><tr><th></th><th>RSS</th><th>API</th></tr></thead>
@@ -626,21 +659,36 @@
             </tbody>
           </table>
           </div>
-          <p class="tiny" style="margin-top:10px;"><strong>구글 뉴스 RSS 는 한 번에 약 100개</strong> — 다음 페이지가
-            없어서 그 이상은 못 받는다.</p>
+        </span>
+      </div>
+
+      <div class="item item-info">
+        <span>
+          <span class="item-title">구글 뉴스 RSS 는 한 번에 약 100개</span>
+          <p class="tiny">다음 페이지가 없어서 그 이상은 못 받는다.</p>
           <ul class="news-sources">
             <li>기간을 따로 정하지 않으면 → <strong>최근 100개</strong>. 기사가 많은 회사는 며칠치, 적은 회사는 몇 달치</li>
             <li>기간을 정하면 → <strong>그 기간 안에서 최근 100개</strong>. 검색어 뒤에
               <code>after:2023-09-01 before:2023-09-30</code> 처럼 붙인다</li>
           </ul>
-          <p class="tiny" style="margin-top:10px;"><strong>API 한도 세는 법</strong> — 받은 기사 수가 아니라
-            <strong>요청 횟수</strong>로 센다. 한 번에 100건을 받아도 1회다.</p>
+        </span>
+      </div>
+
+      <div class="item item-info">
+        <span>
+          <span class="item-title">API 한도 세는 법</span>
+          <p class="tiny">받은 기사 수가 아니라 <strong>요청 횟수</strong>로 센다. 한 번에 100건을 받아도 1회다.</p>
           <ul class="news-sources">
             <li>네이버 검색 API 는 한 번에 최대 100건. 회사당 10건만 쓰면 회사당 1회</li>
             <li>검색어 <code>삼성전자, 현대차, LG화학</code> → 요청 3회. 하루 한도 2만 5천 회에 비하면 거의 안 쓰는 셈</li>
             <li>DART 는 회사 이름으로 걸러주지 않아서 그날 공시 약 3,000건을 100건씩 받는다 → 약 30회</li>
           </ul>
-          <p class="tiny" style="margin-top:10px;"><strong>다른 뉴스 소스</strong></p>
+        </span>
+      </div>
+
+      <div class="item item-info">
+        <span>
+          <span class="item-title">다른 뉴스 소스</span>
           <ul class="news-sources">
             <li><strong>구글 뉴스</strong> — 인증키 없음. 오늘 실습에서 쓰는 것</li>
             <li><strong>언론사 RSS</strong> (연합뉴스·한국경제) — 인증키 없음. 그 언론사 최신 기사를
@@ -650,13 +698,13 @@
               <a href="https://www.ncloud.com/product/applicationService/naverApiHub" target="_blank" rel="noopener">NAVER API HUB</a></li>
           </ul>
         </span>
-      </label>
+      </div>
     </div>
   </section>
 
   <section class="group">
     <div class="group-head">
-      <span class="num">D</span>
+      <span class="num">E</span>
       <h2>아웃룩 확인</h2>
     </div>
 

@@ -1197,7 +1197,7 @@ TOC_HTML = f'''<button class="toc-toggle" id="tocToggle" aria-label="목차 열�
 {toc_part3}
 
   <div class="toc-group-label">참고</div>
-      <a class="toc-link" data-page="apis" href="#apis"><span class="toc-badge">?</span>API 목록</a>
+      <a class="toc-link" data-page="apis" href="#apis"><span class="toc-badge">?</span>API 모음</a>
       <a class="toc-link" data-page="apps" href="#apps"><span class="toc-badge">+</span>The APPS</a>
 </nav>'''
 
@@ -1210,10 +1210,8 @@ APIS_PAGE = '''
     <div class="page-head">
       <span class="page-eyebrow">참고</span>
       <div class="page-title-row">
-        <h2>다음에 붙여볼 API 목록</h2>
+        <h2>유용한 API 모음</h2>
       </div>
-      <p class="step-desc">오늘 만든 것은 <strong>「인증키로 자료 받아 메일 보내는 틀」</strong> 이다.
-        주소와 인증키만 바꾸면 아래 것들이 똑같이 돌아간다.</p>
     </div>
 
     <div class="criteria-box">

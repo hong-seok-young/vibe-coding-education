@@ -142,7 +142,8 @@ def collect_news():
         render(news_box, [])
         return []
 
-    keywords = [k.strip() for k in raw.replace(",", " ").split() if k.strip()]
+    # 쉼표로만 나눈다. 띄어쓰기로도 나누면 "SK 하이닉스" 가 검색어 두 개가 된다.
+    keywords = [k.strip() for k in raw.split(",") if k.strip()]
     items = []
     for keyword in keywords:
         query = urllib.parse.urlencode(dict(q=keyword, hl="ko", gl="KR", ceid="KR:ko"))

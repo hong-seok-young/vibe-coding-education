@@ -142,7 +142,8 @@ def collect_news():
         render(news_box, [])
         return []
 
-    keywords = [k.strip() for k in raw.replace(",", " ").split() if k.strip()]
+    # 쉼표로만 나눈다. 띄어쓰기로도 나누면 "SK 하이닉스" 가 검색어 두 개가 된다.
+    keywords = [k.strip() for k in raw.split(",") if k.strip()]
     items = []
     for keyword in keywords:
         query = urllib.parse.urlencode(dict(q=keyword, hl="ko", gl="KR", ceid="KR:ko"))
@@ -217,7 +218,7 @@ def dart_fetch_all(key, begin, end):
 def collect_dart():
     key = key_entry.get().strip()
     # 뉴스 검색어와 같은 칸을 쓴다 — 실무에서 둘 다 회사명이라 나눠 받을 이유가 없다.
-    companies = [c.strip() for c in kw_entry.get().replace(",", " ").split() if c.strip()]
+    companies = [c.strip() for c in kw_entry.get().split(",") if c.strip()]
     if not key:
         log("DART 인증키가 없어 건너뜁니다.")
         render(dart_box, [])
@@ -255,7 +256,9 @@ def collect_dart():
     looked = len(raw)
     if companies:
         picked = [it for it in raw
-                  if any(name in it["corp_name"] for name in companies)]
+                  # 띄어쓰기는 양쪽 다 빼고 비교 — "SK 하이닉스" 와 "SK하이닉스" 를 같게 본다
+                  if any(name.replace(" ", "") in it["corp_name"].replace(" ", "")
+                         for name in companies)]
     else:
         picked = raw[:NO_COMPANY_LIMIT]
 

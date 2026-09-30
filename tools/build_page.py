@@ -270,6 +270,8 @@ STYLE = '''<style>
     --accent-wash: #fbe9d7;
     --good: #3f7a52;
     --good-wash: #e3f0e6;
+    --bad: #b3452f;
+    --bad-wash: #f8e6e1;
     --focus: #2f6fb0;
     --shadow: 0 1px 2px rgba(20, 24, 22, 0.06), 0 6px 20px -8px rgba(20, 24, 22, 0.12);
     --toc-w: 250px;
@@ -290,6 +292,8 @@ STYLE = '''<style>
       --accent-wash: #3a2712;
       --good: #7ec293;
       --good-wash: #1c2c20;
+      --bad: #e8836d;
+      --bad-wash: #34201b;
       --focus: #7db3e8;
       --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.5);
     }
@@ -309,6 +313,8 @@ STYLE = '''<style>
     --accent-wash: #3a2712;
     --good: #7ec293;
     --good-wash: #1c2c20;
+    --bad: #e8836d;
+    --bad-wash: #34201b;
     --focus: #7db3e8;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -10px rgba(0, 0, 0, 0.5);
   }
@@ -880,14 +886,87 @@ STYLE = '''<style>
   .workflow-note strong { color: var(--ink); }
   .workflow-note code { background: var(--surface); }
 
-  .intro-box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-               padding: 16px 18px; margin-bottom: 14px; }
-  .intro-box-title { font-size: 14px; font-weight: 700; color: var(--ink); margin: 0 0 10px; }
-  .intro-box ul, .intro-box ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
-  .intro-box li { font-size: 13.5px; color: var(--ink-soft); line-height: 1.65; }
-  .intro-box li::marker { color: var(--accent); font-weight: 700; }
-  .intro-box strong { color: var(--ink); }
-  .intro-box .apitable-wrap { margin: 0; }
+  /* ── 서론 — 글 대신 그림으로 ── */
+  .v-title { font-size: 15px; font-weight: 700; color: var(--ink); margin: 28px 0 12px; }
+
+  .v-block { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  .vflow { display: flex; align-items: stretch; justify-content: center; gap: 10px; }
+  .vnode { flex: 1; max-width: 170px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+           padding: 14px 10px; border: 1.5px solid var(--line-strong); border-radius: 12px; text-align: center; }
+  .vnode.ai { border-color: var(--accent); background: var(--accent-wash); }
+  .vrole { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+           background: var(--ink); color: var(--surface); font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .vnode.ai .vrole { background: var(--accent); color: var(--accent-ink); }
+  .vnode strong { font-size: 14px; color: var(--ink); }
+  .vnode small { font-size: 12px; color: var(--muted); }
+  .varrow { align-self: center; font-size: 20px; color: var(--muted); }
+  .vloop { margin: 14px auto 0; width: fit-content; max-width: 100%; padding: 6px 14px; border-radius: 999px;
+           border: 1.5px dashed var(--accent); color: var(--accent); font-size: 12.5px; font-weight: 600; text-align: center; }
+
+  .build-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0; }
+  .build { margin: 0; }
+  .build figcaption { margin-top: 6px; font-size: 12.5px; color: var(--ink-soft); text-align: center; }
+  .build figcaption span { display: block; font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.03em; }
+  .mw { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 0 8px 8px;
+        display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow); }
+  .mw-bar { display: flex; gap: 3px; padding: 6px 0 2px; border-bottom: 1px solid var(--line); margin: 0 -8px; padding-left: 8px; }
+  .mw-bar span { width: 6px; height: 6px; border-radius: 50%; background: var(--line-strong); }
+  .mw-in, .mw-out { display: flex; flex-direction: column; gap: 3px; }
+  .mw-in i { height: 5px; border-radius: 3px; background: var(--surface-2); }
+  .mw-in i:nth-child(2) { width: 80%; }
+  .mw-in i:nth-child(3) { width: 60%; }
+  .mw-out { flex-direction: row; gap: 4px; }
+  .mw-out i { flex: 1; height: 22px; border-radius: 4px; border: 1px dashed var(--line-strong); }
+  .mw-out i.on { border-style: solid; border-color: var(--good); background: var(--good-wash); }
+  .mw-btns { display: flex; flex-wrap: wrap; gap: 3px; }
+  .mw-btns b { font-size: 10px; font-weight: 600; line-height: 1; padding: 4px 5px; border-radius: 4px;
+               border: 1px dashed var(--line-strong); color: var(--muted); }
+  .mw-btns b.on { border-style: solid; border-color: var(--accent); color: var(--accent); }
+  .mw-btns b.new { border-style: solid; border-color: var(--accent); background: var(--accent); color: var(--accent-ink);
+                   box-shadow: 0 0 0 2px var(--accent-wash); }
+
+  .cycle { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin-top: 16px; }
+  .cycle-label { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-right: 4px; }
+  .chip { font-size: 12.5px; padding: 5px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink); }
+  .chip.next { background: var(--good-wash); border-color: var(--good); color: var(--good); font-weight: 600; }
+  .carrow { color: var(--muted); font-size: 14px; }
+
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .vs-card { border-radius: 12px; padding: 16px; border: 1.5px solid; }
+  .vs-card.bad { border-color: var(--bad); background: var(--bad-wash); }
+  .vs-card.good { border-color: var(--good); background: var(--good-wash); }
+  .vs-head { margin: 0 0 12px; font-size: 14px; font-weight: 700; }
+  .vs-card.bad .vs-head { color: var(--bad); }
+  .vs-card.good .vs-head { color: var(--good); }
+  .vs-pic { min-height: 140px; display: grid; place-items: center; margin-bottom: 12px; }
+  .blob { position: relative; width: 150px; height: 96px; border-radius: 40% 55% 45% 60%; background: var(--surface);
+          border: 1.5px solid var(--bad); display: grid; place-items: center; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+  .blob em { position: absolute; font-style: normal; font-weight: 800; color: var(--bad); font-size: 18px; }
+  .blob em:nth-of-type(1) { top: -6px; left: 14px; }
+  .blob em:nth-of-type(2) { top: 30px; right: -8px; }
+  .blob em:nth-of-type(3) { bottom: -8px; left: 60px; }
+  .stack { display: flex; flex-direction: column; gap: 3px; width: 130px; }
+  .stack span { font-size: 11.5px; font-weight: 600; text-align: center; padding: 3px 0; border-radius: 4px;
+                background: var(--surface); border: 1px solid var(--good); color: var(--good); }
+  .stack span.base { background: var(--good); color: var(--surface); border-color: var(--good); }
+  .vs-card ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .vs-card li { font-size: 13px; color: var(--ink-soft); }
+
+  .tips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tip { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 2px; align-items: center;
+         background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .tip-no { grid-row: span 2; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+            background: var(--accent-wash); color: var(--accent); font-weight: 700; font-size: 13px; }
+  .tip strong { font-size: 13.5px; color: var(--ink); }
+  .tip small { font-size: 12px; color: var(--muted); }
+
+  @media (max-width: 560px) {
+    .vflow { flex-direction: column; align-items: center; }
+    .vnode { width: 100%; max-width: none; }
+    .varrow { transform: rotate(90deg); }
+    .build-grid { grid-template-columns: repeat(2, 1fr); }
+    .vs, .tips { grid-template-columns: 1fr; }
+  }
 
   .criteria-box { background: var(--good-wash); border-radius: 10px; padding: 14px 16px; margin-bottom: 4px; }
 
@@ -1281,80 +1360,133 @@ INTRO_PAGE = '''
       <div class="page-title-row">
         <h2>바이브코딩이란</h2>
       </div>
-      <p class="step-desc"><strong>코드를 직접 쓰지 않고, 만들고 싶은 것을 말로 설명해서 AI 가 코드를 쓰게
-        하는 방식</strong>이다. 나는 「무엇을」 정하고 확인하고, AI 는 「어떻게」 를 코드로 옮긴다.</p>
+      <p class="step-desc"><strong>말로 시키고, 눈으로 확인한다.</strong> 코드는 AI 가 쓴다.</p>
     </div>
 
-    <div class="workflow-note">
-      <p class="workflow-note-title">역할 나누기</p>
-      <ol>
-        <li><strong>나</strong> — 무엇을 만들지 정하기 · 결과가 맞는지 눈으로 확인하기 · 틀리면 다시 말하기</li>
-        <li><strong>AI</strong> — 코드 쓰기 · 에러 고치기 · 필요한 부품 고르기</li>
-        <li><strong>필요한 능력</strong> — 코딩 지식보다 <strong>원하는 걸 정확히 말하는 능력</strong>과
-          <strong>결과를 확인하는 눈</strong></li>
-      </ol>
+    <div class="v-block">
+      <div class="vflow">
+        <div class="vnode">
+          <span class="vrole">나</span>
+          <strong>말로 설명</strong>
+          <small>무엇을 만들지</small>
+        </div>
+        <span class="varrow" aria-hidden="true">→</span>
+        <div class="vnode ai">
+          <span class="vrole">AI</span>
+          <strong>코드 작성</strong>
+          <small>어떻게 만들지</small>
+        </div>
+        <span class="varrow" aria-hidden="true">→</span>
+        <div class="vnode">
+          <span class="vrole">▶</span>
+          <strong>실행 · 확인</strong>
+          <small>눈으로 본다</small>
+        </div>
+      </div>
+      <div class="vloop">↺ 틀리면 다시 말한다 · 에러 문장은 그대로 붙여넣기</div>
     </div>
 
-    <div class="intro-box">
-      <p class="intro-box-title">일반적인 순서 — 틀 먼저, 부품은 하나씩</p>
-      <ol>
-        <li><strong>한 줄로 정하기</strong> — 무엇을 넣으면 무엇이 나오는 프로그램인지.
-          예) 회사 이름을 넣으면 뉴스와 공시를 모아 메일로 보내준다</li>
-        <li><strong>틀 만들기</strong> — 기능 없이 화면만. 입력 칸 · 버튼 · 결과 칸</li>
-        <li><strong>부품 하나씩 채우기</strong> — 버튼 하나에 기능 하나. 한 번에 하나만 시킨다</li>
-        <li><strong>매번 실행해서 확인</strong> — 채울 때마다 돌려보고, 되면 다음 부품</li>
-        <li><strong>막히면 에러 문장 그대로</strong> — 화면에 뜬 에러를 복사해서 AI 에게 붙여넣는다</li>
-        <li><strong>합치기</strong> — 부품이 다 되면 한 번에 돌리는 버튼으로 묶는다</li>
-      </ol>
+    <p class="v-title">순서 — 틀 먼저, 부품은 하나씩</p>
+    <div class="build-grid">
+      <figure class="build">
+        <div class="mw">
+          <div class="mw-bar"><span></span><span></span><span></span></div>
+          <div class="mw-in"><i></i><i></i><i></i></div>
+          <div class="mw-btns"><b>뉴스</b><b>DART</b><b>보고서</b><b>메일</b><b>전체</b></div>
+          <div class="mw-out"><i></i><i></i><i></i></div>
+        </div>
+        <figcaption><span>STEP 0</span>틀 — 화면만</figcaption>
+      </figure>
+      <figure class="build">
+        <div class="mw">
+          <div class="mw-bar"><span></span><span></span><span></span></div>
+          <div class="mw-in"><i></i><i></i><i></i></div>
+          <div class="mw-btns"><b class="new">뉴스</b><b>DART</b><b>보고서</b><b>메일</b><b>전체</b></div>
+          <div class="mw-out"><i class="on"></i><i></i><i></i></div>
+        </div>
+        <figcaption><span>STEP 1</span>+ 뉴스</figcaption>
+      </figure>
+      <figure class="build">
+        <div class="mw">
+          <div class="mw-bar"><span></span><span></span><span></span></div>
+          <div class="mw-in"><i></i><i></i><i></i></div>
+          <div class="mw-btns"><b class="on">뉴스</b><b class="new">DART</b><b>보고서</b><b>메일</b><b>전체</b></div>
+          <div class="mw-out"><i class="on"></i><i class="on"></i><i></i></div>
+        </div>
+        <figcaption><span>STEP 2</span>+ DART</figcaption>
+      </figure>
+      <figure class="build">
+        <div class="mw">
+          <div class="mw-bar"><span></span><span></span><span></span></div>
+          <div class="mw-in"><i></i><i></i><i></i></div>
+          <div class="mw-btns"><b class="on">뉴스</b><b class="on">DART</b><b class="new">보고서</b><b>메일</b><b>전체</b></div>
+          <div class="mw-out"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+        </div>
+        <figcaption><span>STEP 3</span>+ 보고서</figcaption>
+      </figure>
+      <figure class="build">
+        <div class="mw">
+          <div class="mw-bar"><span></span><span></span><span></span></div>
+          <div class="mw-in"><i></i><i></i><i></i></div>
+          <div class="mw-btns"><b class="on">뉴스</b><b class="on">DART</b><b class="on">보고서</b><b class="new">메일</b><b>전체</b></div>
+          <div class="mw-out"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+        </div>
+        <figcaption><span>STEP 4</span>+ 메일</figcaption>
+      </figure>
+      <figure class="build">
+        <div class="mw">
+          <div class="mw-bar"><span></span><span></span><span></span></div>
+          <div class="mw-in"><i></i><i></i><i></i></div>
+          <div class="mw-btns"><b class="on">뉴스</b><b class="on">DART</b><b class="on">보고서</b><b class="on">메일</b><b class="new">전체</b></div>
+          <div class="mw-out"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+        </div>
+        <figcaption><span>STEP 5</span>합치기</figcaption>
+      </figure>
     </div>
 
-    <div class="intro-box">
-      <p class="intro-box-title">왜 틀부터 잡나</p>
-      <ul>
-        <li><strong>요구사항이 확실해진다</strong> — 화면을 먼저 그리면 무엇을 입력받고 무엇을 보여줄지가
-          눈에 보인다. 빠진 게 있으면 코드를 만들기 전에 드러난다</li>
-        <li><strong>AI 가 덜 틀린다</strong> — 한 번에 다 시키면 여기저기서 조용히 틀린다.
-          하나씩 시키면 요구가 짧고 분명해진다</li>
-        <li><strong>고장 난 곳이 바로 보인다</strong> — 문제가 생기면 방금 채운 부품만 보면 된다</li>
-        <li><strong>되던 기능이 안 깨진다</strong> — 틀이 정해져 있어서 새 부품이 기존 부품을 건드리지 않는다</li>
-      </ul>
+    <div class="cycle">
+      <span class="cycle-label">부품마다</span>
+      <span class="chip">시키기</span><span class="carrow">→</span>
+      <span class="chip">실행</span><span class="carrow">→</span>
+      <span class="chip">확인</span><span class="carrow">→</span>
+      <span class="chip next">다음 부품</span>
     </div>
 
-    <div class="intro-box">
-      <p class="intro-box-title">한 번에 다 시키기 vs 틀 먼저 하나씩</p>
-      <div class="apitable-wrap">
-      <table class="apitable rss-vs-api">
-        <thead><tr><th></th><th>한 번에 다</th><th>틀 먼저, 하나씩</th></tr></thead>
-        <tbody>
-          <tr><td class="api-name">요구사항</td><td>머릿속에만 있다가 나중에 빠진 게 드러남</td><td>화면을 보며 정리됨</td></tr>
-          <tr><td class="api-name">에러</td><td>어디서 났는지 모름</td><td>방금 채운 곳</td></tr>
-          <tr><td class="api-name">고치기</td><td>하나 고치면 다른 게 깨짐</td><td>그 부품만 고침</td></tr>
-          <tr><td class="api-name">확인</td><td>마지막에 한꺼번에</td><td>단계마다</td></tr>
-        </tbody>
-      </table>
+    <p class="v-title">왜 틀부터?</p>
+    <div class="vs">
+      <div class="vs-card bad">
+        <p class="vs-head">✕ 한 번에 다</p>
+        <div class="vs-pic">
+          <div class="blob">전부 한꺼번에<em>?</em><em>?</em><em>?</em></div>
+        </div>
+        <ul>
+          <li>빠진 요구는 나중에 발견</li>
+          <li>에러가 어디서 났는지 모름</li>
+          <li>하나 고치면 다른 게 깨짐</li>
+        </ul>
+      </div>
+      <div class="vs-card good">
+        <p class="vs-head">✓ 틀 먼저, 하나씩</p>
+        <div class="vs-pic">
+          <div class="stack">
+            <span>메일 ✓</span><span>보고서 ✓</span><span>DART ✓</span><span>뉴스 ✓</span>
+            <span class="base">틀</span>
+          </div>
+        </div>
+        <ul>
+          <li>화면을 보며 요구가 정리됨</li>
+          <li>에러는 방금 채운 곳</li>
+          <li>그 부품만 고치면 끝</li>
+        </ul>
       </div>
     </div>
 
-    <div class="intro-box">
-      <p class="intro-box-title">오늘 실습에 대입하면</p>
-      <ul>
-        <li><strong>한 줄</strong> — 회사 이름을 넣으면 뉴스와 DART 공시를 모아 보고서로 만들고 메일로 보낸다</li>
-        <li><strong>틀</strong> — STEP 0 · 프로그램 창 (입력 칸 3 · 버튼 5 · 결과 칸 3)</li>
-        <li><strong>부품</strong> — STEP 1 뉴스 · STEP 2 DART · STEP 3 HTML 보고서 · STEP 4 아웃룩 메일</li>
-        <li><strong>합치기</strong> — STEP 5 · 전체 실행 버튼</li>
-      </ul>
-    </div>
-
-    <div class="intro-box">
-      <p class="intro-box-title">말로 시킬 때 요령</p>
-      <ul>
-        <li><strong>평소 말투로, 대신 꼭 정확해야 할 것은 번호를 매겨서</strong> — 애매하게 쓰면 AI 는
-          에러 없이 조용히 틀린다</li>
-        <li><strong>「안 될 때 어떻게 알려줄지」 까지 시키기</strong> — 에러는 화면에 사람 말로,
-          0건이면 왜 0건인지. 가장 무서운 건 에러가 아니라 조용한 실패다</li>
-        <li><strong>양 정하기</strong> — 「10건까지만」 처럼. 안 정하면 수천 줄이 쏟아져 창이 멈춘다</li>
-        <li><strong>코드는 통째로 파일로 받기</strong> — 바뀐 부분만 받아 붙이다 보면 되던 기능이 빠진다</li>
-      </ul>
+    <p class="v-title">말로 시킬 때 요령</p>
+    <div class="tips">
+      <div class="tip"><span class="tip-no">1</span><strong>번호 매겨 정확히</strong><small>애매하면 AI 는 조용히 틀린다</small></div>
+      <div class="tip"><span class="tip-no">2</span><strong>안 될 때 알림까지</strong><small>에러는 사람 말로, 0건이면 이유를</small></div>
+      <div class="tip"><span class="tip-no">3</span><strong>양 정하기</strong><small>「10건까지만」 — 안 정하면 창이 멈춘다</small></div>
+      <div class="tip"><span class="tip-no">4</span><strong>통째로 파일로</strong><small>부분만 받으면 되던 기능이 빠진다</small></div>
     </div>
   </section>'''
 

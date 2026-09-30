@@ -1574,7 +1574,7 @@ INTRO_PAGE = '''
 
     <p class="v-title">말로 시킬 때 요령</p>
     <div class="tips">
-      <div class="tip"><strong>성공한 모습부터</strong><small>「버튼 누르면 제목 10개가 뜬다」 처럼 끝 그림을 먼저</small></div>
+      <div class="tip"><strong>틀부터 만들기</strong><small>화면을 먼저 그려보면 무엇을 입력받고 무엇을 보여줄지, 요구사항이 분명해진다</small></div>
       <div class="tip"><strong>한 번에 하나씩</strong><small>기능 하나 시키고, 되면 다음</small></div>
       <div class="tip"><strong>예시를 들어서</strong><small>「09/08 14:30 처럼」 — 설명보다 예시가 정확하다</small></div>
       <div class="tip"><strong>에러는 그대로</strong><small>내 말로 요약하지 말고 전문을 복사해서 붙여넣기</small></div>

@@ -956,12 +956,12 @@ STYLE = '''<style>
   .ways-pros li.up::before { content: "✓"; position: absolute; left: 0; color: var(--good); font-weight: 700; }
   .ways-pros li.down::before { content: "✕"; position: absolute; left: 0; color: var(--bad); font-weight: 700; }
   .ways-note { margin: 10px 0 0 !important; }
-  .corp-dl { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
-  .corp-dl-btn { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 6px; text-decoration: none;
-                 background: var(--accent); color: var(--accent-ink); white-space: nowrap; }
-  .corp-dl-btn.sub { background: var(--surface); color: var(--accent); border: 1px solid var(--accent); }
-  .corp-dl-btn:hover { filter: brightness(1.05); }
-  .cert-box small.corp-dl-hint { margin-top: 4px; font-size: 10.5px; }
+  a.cert-box.corp-card { display: block; margin: 0; text-align: center; text-decoration: none; cursor: pointer; border: 1.5px dashed var(--accent);
+                         transition: background 0.15s ease; }
+  a.cert-box.corp-card:hover { background: var(--accent-wash); border-style: solid; }
+  .corp-dl-icon { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-left: 3px; border-radius: 50%;
+                  background: var(--accent); color: var(--accent-ink); font-size: 11px; vertical-align: 1px; }
+  .cert-box small.corp-dl-hint { margin-top: 2px; font-size: 10.5px; }
 
   /* ── STEP 1 인증서 오류 그림 ── */
   .cert { margin: 4px 0 12px; padding: 14px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }

@@ -186,14 +186,14 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
         </div>
         <div class="cert-lane alt">
           <p class="cert-who">B · 회사코드로 바로 찾기 <span class="ways-tag alt">이렇게도 된다</span></p>
-          <p class="cert-box">회사 목록 파일 받기<small>DART 가 주는 zip · 회사 약 12만 개</small><span class="corp-dl"><a class="corp-dl-btn" href="downloads/dart-corpcode-20260930.zip" download="DART_회사고유번호.zip">zip 받기</a><a class="corp-dl-btn sub" href="downloads/dart-corpcode-20260930.csv" download="DART_회사고유번호.csv">엑셀용 CSV</a></span><small class="corp-dl-hint">2026-09-30 기준 · 새 회사는 빠져 있을 수 있다</small></p>
+          <a class="cert-box corp-card" href="downloads/dart-corpcode-20260930.csv" download="DART_회사고유번호.csv">회사 목록 받기 <span class="corp-dl-icon">⬇</span><small>누르면 CSV — 회사명 · 고유번호 · 약 12만 개</small><small class="corp-dl-hint">2026-09-30 기준</small></a>
           <p class="cert-box">이름으로 고유번호 찾기<small>현대건설 → 00164478</small></p>
           <p class="cert-box cert-end">고유번호로 요청<small>→ 그 회사 공시만 · 3개월치 53건 · 요청 1회</small></p>
           <ul class="ways-pros">
             <li class="up">요청이 적다</li>
             <li class="up">기간을 길게 (1999년부터)</li>
             <li class="down">이름이 정확히 같아야 한다</li>
-            <li class="down">같은 이름 회사는 상장사로 골라야</li>
+            <li class="down">같은 이름 회사가 여럿일 수 있다</li>
           </ul>
         </div>
       </div>

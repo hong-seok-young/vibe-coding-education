@@ -1706,28 +1706,6 @@ DART 는 함정이 넷 있어. 놓치면 결과가 조용히 틀리니 그대로
 
 
     <details class="answer-details">
-      <summary>공시가 나오긴 하는데 내가 적은 회사 것이 아니면</summary>
-      <ol class="trouble-list">
-        <li>AI 가 코드를 짤 때 DART 에 「<strong>현대건설</strong> 공시만 줘」 하고 회사 이름을 같이 보내는 경우가 많다</li>
-        <li>그런데 DART 는 그 이름을 <strong>무시하고 그 기간 모든 회사 공시</strong>를 준다</li>
-        <li>그러면서 에러 없이 「<strong>정상</strong>」 이라고 답한다 → 프로그램은 걸러진 줄 알고 그대로 보여준다</li>
-        <li>고치는 법 — 이름은 빼고 <strong>전부 받은 뒤, 프로그램이 직접 회사 이름으로 골라낸다</strong></li>
-      </ol>
-      <p class="tiny" style="margin-top: 4px;">에러가 안 나서 알아채기 어렵다. 결과에 다른 회사가 섞여 있으면 이 경우다.</p>
-      <details class="prompt-box" style="margin-top: 10px;">
-        <summary class="prompt-box-head">
-          <span class="prompt-label">이어서 넣을 프롬프트 보기</span>
-          <span class="prompt-hint">클릭!</span>
-          <button class="copy-btn" data-copy="trouble-s2">복사</button>
-        </summary>
-        <pre class="prompt-text" id="trouble-s2">DART 결과에 내가 적은 회사가 아닌 다른 회사 공시가 나와. 지금 코드가 회사 이름을 DART 에
-요청할 때 같이 보내고 있는지 봐줘. 보내고 있으면 빼줘. DART 에는 회사 이름으로 찾는 기능이
-없어서 그 값을 무시하고 전체를 주는데 응답은 정상 이라고 와. 대신 그 기간 공시를 마지막
-페이지까지 다 받은 다음, 회사 이름이 들어간 것만 프로그램에서 직접 골라내줘. 지금 몇
-페이지째인지도 진행 상황 칸에 보여줘.</pre>
-      </details>
-    </details>
-    <details class="answer-details">
       <summary>안 되면? 이 단계까지 만든 프로그램 받기</summary>
       <p class="tiny" style="margin-top: 4px;">이 STEP 을 마쳤을 때 나와야 하는 파일이다.
         완성본이 아니라 <strong>딱 여기까지만</strong> 들어있으니, 받아서 그대로 실행하고

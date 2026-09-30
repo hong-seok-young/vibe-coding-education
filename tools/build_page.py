@@ -274,9 +274,9 @@ FAVICON = (
 fonts_head = '''<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Gaegu:wght@400;700&display=swap"
       media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"></noscript>'''
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Gaegu:wght@400;700&display=swap"></noscript>'''
 
 STYLE = '''<style>
   :root {
@@ -876,9 +876,10 @@ STYLE = '''<style>
   .prompt-text {
     margin: 0;
     padding: 16px;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
-    font-size: 13px;
-    line-height: 1.7;
+    /* 붙여넣는 글이라 딱딱한 고정폭 대신 손글씨 느낌으로 */
+    font-family: "Gaegu", "IBM Plex Sans KR", sans-serif;
+    font-size: 16.5px;
+    line-height: 1.6;
     white-space: pre-wrap;
     word-break: break-word;
     color: var(--ink);

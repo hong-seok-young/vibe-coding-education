@@ -701,6 +701,48 @@
     .cert-path .pv-node { min-width: 0; padding: 6px; font-size: 11px; }
   }
 
+  /* ── 사전 준비 D — RSS 란 / API 란 그림 ── */
+  .rv { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin: 10px 0 4px; padding: 14px;
+        border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }
+  .rv-sheet { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+  .rv-sheet-cap { font-size: 11px; color: var(--muted); padding: 6px 10px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .rv-sheet table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .rv-sheet th { background: var(--good-wash); color: var(--good); font-weight: 700; text-align: left; padding: 5px 8px;
+                 border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .rv-sheet td { padding: 5px 8px; color: var(--ink-soft); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+  .rv-sheet tr > :last-child { border-right: 0; }
+  .rv-sheet tr:last-child td { border-bottom: 0; }
+  .rv-side { display: flex; flex-direction: column; gap: 8px; }
+  .rv-badge { flex: 1; padding: 10px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
+  .rv-badge b { display: block; font-size: 13px; color: var(--ink); }
+  .rv-badge small { display: block; margin-top: 2px; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .rv-badge.free { border-color: var(--good); background: var(--good-wash); }
+  .rv-badge.free b { color: var(--good); }
+
+  .rv.rv-api { grid-template-columns: 1fr auto auto auto 1fr; align-items: center; gap: 8px; }
+  .rv-form, .rv-answer { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 10px; }
+  .rv-form-cap { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+  .rv-form p, .rv-answer p { margin: 0; font-size: 12px; color: var(--ink); line-height: 1.7; white-space: nowrap; }
+  .rv-form p span { display: inline-block; width: 42px; color: var(--muted); font-size: 11px; }
+  .rv-form p.key { color: var(--accent); font-weight: 700; }
+  .rv-answer p { overflow: hidden; text-overflow: ellipsis; }
+  .rv-arrow { position: relative; font-size: 11px; color: var(--ink-soft); text-align: center; padding-bottom: 8px; min-width: 34px; }
+  .rv-arrow i { position: absolute; left: 0; right: 6px; bottom: 0; height: 2px; background: var(--line-strong); }
+  .rv-arrow i::after { content: ""; position: absolute; right: -6px; top: -4px; border: 5px solid transparent; border-left-color: var(--line-strong); }
+  .rv-window { text-align: center; padding: 10px 12px; border-radius: 10px; background: var(--accent-wash); border: 1.5px solid var(--accent); }
+  .rv-window b { display: block; font-size: 14px; color: var(--ink); }
+  .rv-window small { display: block; font-size: 11px; color: var(--muted); }
+  .rv-window em { display: inline-block; margin-top: 4px; font-style: normal; font-size: 10.5px; font-weight: 700;
+                  padding: 2px 6px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
+  .rv-note { margin-top: 8px !important; }
+  @media (max-width: 560px) {
+    .rv, .rv.rv-api { grid-template-columns: 1fr; }
+    .rv-arrow { padding: 0; min-width: 0; }
+    .rv-arrow i { display: none; }
+    .rv-arrow::after { content: " ↓"; }
+  }
+
   /* ── 사전 준비 — 그림 ── */
   .pv-map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 4px 0 22px; }
   .pv-map-item { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center;
@@ -1303,22 +1345,47 @@
       <div class="item item-info">
         <span>
           <span class="item-title">RSS 란</span>
-          <p class="tiny">사이트가 새 글 목록을
-            <strong>엑셀 표처럼</strong> 정리해서 공개해둔 것이다.
-            RSS 는 같은 내용을 <strong>제목 · 링크 · 날짜</strong>
-            칸으로 나눠둔 표라서 프로그램이 바로 읽는다.</p>
-          <p class="tiny"><strong>인증키가 필요 없는 이유</strong> — 가게 앞에 「가져가세요」 하고
-            내놓은 무료 신문 같은 것이라, 누가 가져가는지 확인하지 않는다. 구글 뉴스는
-            <strong>검색 결과까지</strong> 이렇게 내놔서 인증키 없이 검색어로 찾을 수 있다.</p>
+          <p class="tiny">사이트가 새 글 목록을 <strong>엑셀 표처럼</strong> 공개해둔 것 — 칸이 나뉘어 있어서 프로그램이 바로 읽는다.</p>
+          <div class="rv">
+            <div class="rv-sheet">
+              <div class="rv-sheet-cap">news.google.com 이 공개해둔 목록</div>
+              <table>
+                <tr><th>제목</th><th>링크</th><th>날짜</th></tr>
+                <tr><td>현대건설, 평택 고덕에…</td><td>https://…</td><td>09/29</td></tr>
+                <tr><td>삼성전자, KCSI 조사서…</td><td>https://…</td><td>09/30</td></tr>
+                <tr><td>현대건설 주가 상승 중</td><td>https://…</td><td>09/30</td></tr>
+              </table>
+            </div>
+            <div class="rv-side">
+              <div class="rv-badge free"><b>인증키 없음</b><small>가게 앞 「가져가세요」 무료 신문처럼 누가 가져가는지 안 본다</small></div>
+              <div class="rv-badge"><b>구글 뉴스는 검색 결과까지</b><small>검색어를 넣으면 그 결과를 이 표로 준다</small></div>
+            </div>
+          </div>
         </span>
       </div>
 
       <div class="item item-info">
         <span>
           <span class="item-title">API 란</span>
-          <p class="tiny">홈페이지는 사람이 보라고, API 는 <strong>프로그램이 받아가라고 열어둔 창구</strong>다.
-            「이 회사 · 이 기간 공시 줘」 처럼 <strong>조건을 넣어 요청하면 답을 준다</strong>.</p>
-          <p class="tiny"><strong>인증키는 출입증</strong> — 누가 얼마나 쓰는지 세려고 발급한다. 남에게 주지 않는다.</p>
+          <p class="tiny">프로그램이 <strong>조건을 넣어 요청하면 답을 주는 창구</strong> — 홈페이지는 사람이 보라고, API 는 프로그램이 받아가라고 열어둔 곳.</p>
+          <div class="rv rv-api">
+            <div class="rv-form">
+              <div class="rv-form-cap">요청서</div>
+              <p><span>회사</span>현대건설</p>
+              <p><span>기간</span>이번 주</p>
+              <p class="key"><span>인증키</span>●●●●●●</p>
+            </div>
+            <div class="rv-arrow">보냄<i></i></div>
+            <div class="rv-window"><b>창구</b><small>DART</small><em>출입증 확인</em></div>
+            <div class="rv-arrow">답<i></i></div>
+            <div class="rv-answer">
+              <div class="rv-form-cap">답</div>
+              <p>[현대건설] 중대재해발생</p>
+              <p>[현대건설] 기업설명회(IR)</p>
+              <p>[현대건설] 공급계약체결</p>
+            </div>
+          </div>
+          <p class="tiny rv-note"><strong>인증키 = 출입증</strong> — 누가 얼마나 쓰는지 세려고 발급한다. 남에게 주지 않는다.</p>
         </span>
       </div>
 
@@ -1360,18 +1427,6 @@
 
       <div class="item item-info">
         <span>
-          <span class="item-title">구글 뉴스 RSS 는 한 번에 약 100개</span>
-          <p class="tiny">다음 페이지가 없어서 그 이상은 못 받는다.</p>
-          <ul class="news-sources">
-            <li>기간을 따로 정하지 않으면 → <strong>최근 100개</strong>. 기사가 많은 회사는 며칠치, 적은 회사는 몇 달치</li>
-            <li>기간을 정하면 → <strong>그 기간 안에서 최근 100개</strong>. 검색어 뒤에
-              <code>after:2023-09-01 before:2023-09-30</code> 처럼 붙인다</li>
-          </ul>
-        </span>
-      </div>
-
-      <div class="item item-info">
-        <span>
           <span class="item-title">API 한도 세는 법</span>
           <p class="tiny">요청 한 번 = <strong>택배 상자 하나</strong>. 상자 하나에 <strong>최대 100건</strong>까지 담긴다.
             한도는 <strong>상자 개수</strong>로 센다 — 10건을 담든 100건을 꽉 채우든 1회다.</p>
@@ -1394,19 +1449,6 @@
         </span>
       </div>
 
-      <div class="item item-info">
-        <span>
-          <span class="item-title">다른 뉴스 소스</span>
-          <ul class="news-sources">
-            <li><strong>구글 뉴스</strong> — 인증키 없음. 오늘 실습에서 쓰는 것</li>
-            <li><strong>언론사 RSS</strong> (연합뉴스·한국경제) — 인증키 없음. 그 언론사 최신 기사를
-              통째로 받는다. 검색어로 찾기는 안 된다</li>
-            <li><strong>네이버 검색 API</strong> — 무료 인증키, 요청 하루 2만 5천 회 · 월 77만 5천 회.
-              네이버 클라우드 계정이 필요하다.
-              <a href="https://www.ncloud.com/product/applicationService/naverApiHub" target="_blank" rel="noopener">NAVER API HUB</a></li>
-          </ul>
-        </span>
-      </div>
     </div>
   </section>
 

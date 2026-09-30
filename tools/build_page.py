@@ -968,6 +968,48 @@ STYLE = '''<style>
     .cert-path .pv-node { min-width: 0; padding: 6px; font-size: 11px; }
   }
 
+  /* ── 사전 준비 D — RSS 란 / API 란 그림 ── */
+  .rv { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin: 10px 0 4px; padding: 14px;
+        border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }
+  .rv-sheet { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+  .rv-sheet-cap { font-size: 11px; color: var(--muted); padding: 6px 10px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .rv-sheet table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .rv-sheet th { background: var(--good-wash); color: var(--good); font-weight: 700; text-align: left; padding: 5px 8px;
+                 border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .rv-sheet td { padding: 5px 8px; color: var(--ink-soft); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+  .rv-sheet tr > :last-child { border-right: 0; }
+  .rv-sheet tr:last-child td { border-bottom: 0; }
+  .rv-side { display: flex; flex-direction: column; gap: 8px; }
+  .rv-badge { flex: 1; padding: 10px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
+  .rv-badge b { display: block; font-size: 13px; color: var(--ink); }
+  .rv-badge small { display: block; margin-top: 2px; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .rv-badge.free { border-color: var(--good); background: var(--good-wash); }
+  .rv-badge.free b { color: var(--good); }
+
+  .rv.rv-api { grid-template-columns: 1fr auto auto auto 1fr; align-items: center; gap: 8px; }
+  .rv-form, .rv-answer { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 10px; }
+  .rv-form-cap { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+  .rv-form p, .rv-answer p { margin: 0; font-size: 12px; color: var(--ink); line-height: 1.7; white-space: nowrap; }
+  .rv-form p span { display: inline-block; width: 42px; color: var(--muted); font-size: 11px; }
+  .rv-form p.key { color: var(--accent); font-weight: 700; }
+  .rv-answer p { overflow: hidden; text-overflow: ellipsis; }
+  .rv-arrow { position: relative; font-size: 11px; color: var(--ink-soft); text-align: center; padding-bottom: 8px; min-width: 34px; }
+  .rv-arrow i { position: absolute; left: 0; right: 6px; bottom: 0; height: 2px; background: var(--line-strong); }
+  .rv-arrow i::after { content: ""; position: absolute; right: -6px; top: -4px; border: 5px solid transparent; border-left-color: var(--line-strong); }
+  .rv-window { text-align: center; padding: 10px 12px; border-radius: 10px; background: var(--accent-wash); border: 1.5px solid var(--accent); }
+  .rv-window b { display: block; font-size: 14px; color: var(--ink); }
+  .rv-window small { display: block; font-size: 11px; color: var(--muted); }
+  .rv-window em { display: inline-block; margin-top: 4px; font-style: normal; font-size: 10.5px; font-weight: 700;
+                  padding: 2px 6px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
+  .rv-note { margin-top: 8px !important; }
+  @media (max-width: 560px) {
+    .rv, .rv.rv-api { grid-template-columns: 1fr; }
+    .rv-arrow { padding: 0; min-width: 0; }
+    .rv-arrow i { display: none; }
+    .rv-arrow::after { content: " ↓"; }
+  }
+
   /* ── 사전 준비 — 그림 ── */
   .pv-map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 4px 0 22px; }
   .pv-map-item { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center;

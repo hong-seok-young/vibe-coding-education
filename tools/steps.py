@@ -110,8 +110,8 @@ STEPS = [
             items=[
                 "<code>requests</code> · <code>feedparser</code> — 파이썬이 인터넷에서 자료를 받아올 때 쓰는 부품",
                 "회사 인터넷은 보안장비가 중간에서 한 번 검사하고 <strong>회사 도장</strong>을 찍어서 넘겨준다",
-                "윈도우에는 <strong>믿어도 되는 도장 목록</strong>이 있다. 회사가 PC 를 나눠줄 때 회사 도장을 여기 넣어뒀다",
-                "<code>requests</code> 는 윈도우 목록 대신 <strong>자기가 따로 들고 다니는 목록</strong>을 본다 → 회사 도장이 없어서 거절 (<code>CERTIFICATE_VERIFY_FAILED</code> 에러)",
+                "윈도우에는 <strong>믿어도 되는 도장 목록</strong>이 있다. 회사가 PC 를 나눠줄 때 회사 도장을 여기 넣어뒀다 (직접 보기: 윈도우 + R → <code>certmgr.msc</code> → 신뢰할 수 있는 루트 인증 기관)",
+                "<code>requests</code> 는 윈도우 목록 대신 <strong>설치될 때 딸려온 자기 목록</strong>을 본다 → 회사 도장이 없어서 거절 (<code>CERTIFICATE_VERIFY_FAILED</code> 에러)",
                 "<code>feedparser</code> 는 <strong>윈도우 목록</strong>을 본다 → 회사 도장이 있어서 통과",
                 "그래서 프롬프트에 「requests 말고 feedparser」 라고 적는다",
             ],

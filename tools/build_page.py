@@ -982,6 +982,19 @@ STYLE = '''<style>
     .pv-tag { width: 28px; }
   }
 
+  /* ── The APPS ── */
+  .apps-flow { gap: 6px; }
+  .apps-flow .vnode { padding: 12px 6px; }
+  .apps-flow .vnode strong { font-size: 13px; }
+  .apps-flow .vnode small { font-size: 11px; }
+  .apps-flow .varrow { font-size: 16px; }
+  .vnode.done { border-color: var(--good); background: var(--good-wash); }
+  .vnode.done .vrole { background: var(--good); color: var(--surface); }
+  .apps-go { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+             margin-top: 22px; padding: 16px 18px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+  .apps-go-title { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .apps-go-sub { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
   /* ── 서론 — 글 대신 그림으로 ── */
   .v-title { font-size: 15px; font-weight: 700; color: var(--ink); margin: 28px 0 12px; }
 
@@ -1306,28 +1319,36 @@ APPS_PAGE = '''
         사내 앱 스토어 <strong>The APPS</strong> 에 등록한다.</p>
     </div>
 
-    <div class="workflow-note">
-      <p class="workflow-note-title">The APPS 는 이런 곳이다</p>
-      <ol>
-        <li><strong>찾기는 로그인 없이</strong> — "출장비 정산" 처럼 하는 일로 검색해도 나온다.</li>
-        <li><strong>등록은 누구나 신청</strong> — 파일로 쓰는 도구도, 주소로 접속하는 웹앱도 된다.</li>
-        <li><strong>운영·보안 두 심사를 거쳐 게시</strong> — 보안 심사에서 <strong>파일 안에
-          인증키나 비밀번호가 있는지</strong> 본다. 오늘 인증키를 코드에 안 적은 이유와 같다.</li>
-        <li><strong>설치 횟수와 별점이 쌓인다</strong> — 누가 실제로 쓰는지 숫자로 남는다.</li>
-      </ol>
+    <div class="v-block">
+      <div class="vflow apps-flow">
+        <div class="vnode"><span class="vrole">1</span><strong>내 PC</strong><small>오늘 만든 프로그램</small></div>
+        <span class="varrow" aria-hidden="true">→</span>
+        <div class="vnode"><span class="vrole">2</span><strong>등록 신청</strong><small>누구나 · 파일도 웹앱도</small></div>
+        <span class="varrow" aria-hidden="true">→</span>
+        <div class="vnode"><span class="vrole">3</span><strong>운영 심사</strong><small>쓸 만한 도구인지</small></div>
+        <span class="varrow" aria-hidden="true">→</span>
+        <div class="vnode ai"><span class="vrole">4</span><strong>보안 심사</strong><small>인증키·비밀번호 검사</small></div>
+        <span class="varrow" aria-hidden="true">→</span>
+        <div class="vnode done"><span class="vrole">✓</span><strong>게시</strong><small>팀원이 검색·설치</small></div>
+      </div>
+      <div class="vloop">보안 심사에서 파일 안에 인증키가 있으면 걸린다 · 오늘 인증키를 입력 칸으로 받은 이유</div>
     </div>
 
-    <div class="criteria-box">
-      <p class="criteria-label">바로 가기</p>
-      <ul>
-        <li><strong>주소</strong> —
-          <a href="https://vibe-registry.xicna.app/" target="_blank" rel="noopener">vibe-registry.xicna.app</a>
-          <strong>(오픈 전)</strong>
-          <br>아직 정식 오픈 전이라 지금 눌러도 열리지 않을 수 있다. 오픈하면 따로 안내한다.
-          열린 뒤에도 <strong>사내망에서만</strong> 접속되니, 집이나 휴대폰 네트워크에서
-          안 열리면 회사 네트워크인지 먼저 확인한다.</li>
-        <li><strong>사용 매뉴얼</strong> — 계정·권한·등록 절차를 담은 안내 자료는 따로 전달한다.</li>
-      </ul>
+    <p class="v-title">The APPS 에서 할 수 있는 것</p>
+    <div class="tips">
+      <div class="tip"><strong>찾기 — 로그인 없이</strong><small>「출장비 정산」 처럼 하는 일로 검색해도 나온다</small></div>
+      <div class="tip"><strong>올리기 — 누구나 신청</strong><small>파일로 쓰는 도구도, 주소로 접속하는 웹앱도 된다</small></div>
+      <div class="tip"><strong>심사 — 운영 · 보안 두 번</strong><small>통과하면 게시된다</small></div>
+      <div class="tip"><strong>기록 — 설치 수 · 별점</strong><small>누가 실제로 쓰는지 숫자로 남는다</small></div>
+    </div>
+
+    <div class="apps-go">
+      <div>
+        <p class="apps-go-title">The APPS <span class="tag partial">오픈 전</span></p>
+        <p class="apps-go-sub">아직 열리지 않을 수 있다 · 열린 뒤에도 <strong>사내망에서만</strong> 접속된다<br>
+          계정·권한·등록 절차 매뉴얼은 따로 전달한다</p>
+      </div>
+      <a class="btn primary" href="https://vibe-registry.xicna.app/" target="_blank" rel="noopener">vibe-registry.xicna.app</a>
     </div>
   </section>'''
 

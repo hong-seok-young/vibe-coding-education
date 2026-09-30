@@ -186,7 +186,7 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
         </div>
         <div class="cert-lane alt">
           <p class="cert-who">B · 회사코드로 바로 찾기 <span class="ways-tag alt">이렇게도 된다</span></p>
-          <p class="cert-box">회사 목록 파일 받기<small>DART 가 주는 zip · 회사 약 12만 개</small></p>
+          <p class="cert-box">회사 목록 파일 받기<small>DART 가 주는 zip · 회사 약 12만 개</small><span class="corp-dl"><input type="password" class="corp-key" placeholder="내 DART 인증키" aria-label="DART 인증키"><button type="button" class="corp-dl-btn">zip 받기</button></span><small class="corp-dl-hint">키는 저장하지 않고 DART 로만 보낸다</small></p>
           <p class="cert-box">이름으로 고유번호 찾기<small>현대건설 → 00164478</small></p>
           <p class="cert-box cert-end">고유번호로 요청<small>→ 그 회사 공시만 · 3개월치 53건 · 요청 1회</small></p>
           <ul class="ways-pros">

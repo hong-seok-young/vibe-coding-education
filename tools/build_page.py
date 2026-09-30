@@ -956,6 +956,13 @@ STYLE = '''<style>
   .ways-pros li.up::before { content: "✓"; position: absolute; left: 0; color: var(--good); font-weight: 700; }
   .ways-pros li.down::before { content: "✕"; position: absolute; left: 0; color: var(--bad); font-weight: 700; }
   .ways-note { margin: 10px 0 0 !important; }
+  .corp-dl { display: flex; gap: 6px; margin-top: 8px; }
+  .corp-key { flex: 1; min-width: 0; font: inherit; font-size: 12px; padding: 5px 8px; border-radius: 6px;
+              border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); }
+  .corp-dl-btn { font: inherit; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 6px; cursor: pointer;
+                 border: 0; background: var(--accent); color: var(--accent-ink); white-space: nowrap; }
+  .corp-dl-btn:hover { filter: brightness(1.05); }
+  .cert-box small.corp-dl-hint { margin-top: 4px; font-size: 10.5px; }
 
   /* ── STEP 1 인증서 오류 그림 ── */
   .cert { margin: 4px 0 12px; padding: 14px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }
@@ -1823,6 +1830,24 @@ SCRIPT = '''<script>
       var target = document.getElementById(btn.dataset.copy);
       if (!target) return;
       copyText(target.textContent, btn);
+    });
+  });
+
+  /* ── DART 회사 목록 zip 받기 — 입력한 인증키로 DART 주소를 새 탭에 연다.
+     키는 어디에도 저장하지 않는다. 맞으면 CORPCODE.zip 이 받아지고, 틀리면 DART 가 에러 글자를 보여준다. ── */
+  Array.prototype.slice.call(document.querySelectorAll(".corp-dl-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var input = btn.parentNode.querySelector(".corp-key");
+      var key = (input.value || "").trim();
+      if (!key) { input.focus(); input.placeholder = "인증키를 먼저 넣어주세요"; return; }
+      var a = document.createElement("a");
+      a.href = "https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=" + encodeURIComponent(key);
+      a.target = "_blank";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      input.value = "";
     });
   });
 

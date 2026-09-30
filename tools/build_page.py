@@ -133,6 +133,9 @@ def render_step_page(step, index, total):
         if t.get("items"):
             lis = LINEBREAK.join(f'        <li>{x}</li>' for x in t["items"])
             why_html = f'{LINEBREAK}      <ol class="trouble-list">{LINEBREAK}{lis}{LINEBREAK}      </ol>'
+        if t.get("flow"):
+            why_html += (f'{LINEBREAK}      <p class="trouble-flow-title">인증서는 언제 보나 — 접속할 때, 데이터를 받기 전</p>'
+                         f'{LINEBREAK}      <pre class="trouble-flow">{esc(t["flow"])}</pre>')
         trouble_html = f'''
     <details class="answer-details">
       <summary>{esc(t['summary'])}</summary>{why_html}
@@ -689,6 +692,10 @@ STYLE = '''<style>
   .trouble-list li { margin-bottom: 4px; }
   .trouble-list li::marker { color: var(--accent); font-weight: 600; }
   .trouble-list strong { color: var(--ink); }
+  .trouble-flow-title { font-size: 13px; font-weight: 700; color: var(--ink); margin: 4px 0 6px; }
+  .trouble-flow { margin: 0 0 12px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line);
+                  border-radius: 8px; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px;
+                  line-height: 1.7; color: var(--ink-soft); white-space: pre; overflow-x: auto; }
   .install-list li::marker { color: var(--accent); font-weight: 600; }
   .install-list strong { color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.95em; }
   .prep-fallback { margin-top: 12px; }

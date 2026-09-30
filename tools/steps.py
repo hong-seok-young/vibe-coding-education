@@ -23,7 +23,8 @@ HTML 이 다시 만들어진다. HTML 을 직접 고치면 다음 실행에 덮�
   prompt        AI 에게 그대로 붙여넣는 본문. 파일 요청 문구는 build_page.py 가
                 뒤에 자동으로 붙이므로 여기 쓰지 않는다
   need_install  프롬프트 위에 띄우는 설치 안내
-  trouble       (선택) 막혔을 때 이어서 넣을 프롬프트 dict(summary, body, prompt)
+  trouble       (선택) 막혔을 때 이어서 넣을 프롬프트 dict(summary, body, prompt,
+                items=왜 그런지 목록, flow=순서 그림)
   criteria      성공 기준 체크리스트 — 눈으로 확인할 수 있는 것만 쓴다
 
 프롬프트를 쓸 때 지키는 것 (라운드를 돌면서 얻은 것들이다)
@@ -126,6 +127,14 @@ STEPS = [
                 "<code>feedparser</code> 는 <strong>윈도우 목록</strong>을 본다 → 회사 도장이 있어서 통과",
                 "그래서 AI 에게 「requests 말고 feedparser 로 바꿔줘」 라고 한다 → 아래 프롬프트",
             ],
+            # 인증서를 언제 보는지 — 접속할 때 한 번, 데이터를 받기 전
+            flow="""1. 도구 → "news.google.com 접속할게요"
+2. 회사 보안장비가 중간에서 가로채서 → 회사 도장이 찍힌 인증서를 보여줌
+3. 도구가 도장 확인            ← 여기서 인증서가 필요
+     ├ 믿는 도장   → 4번으로
+     └ 모르는 도장 → 연결 끊음 (CERTIFICATE_VERIFY_FAILED)
+4. 암호화된 통로가 열림
+5. 그 통로로 RSS 목록을 받음   ← 데이터는 여기서야 옴""",
             body="이 에러가 떴다면 AI 가 <code>requests</code> 를 쓴 것이다. 회사망에서는 자주 일어난다 — "
                  "같은 프롬프트를 줘도 AI 가 어느 부품을 고르느냐에 따라 성패가 갈린다.",
             prompt="""CERTIFICATE_VERIFY_FAILED 에러가 나. 지금 코드가 인터넷에서 자료를 받아올 때 requests 를

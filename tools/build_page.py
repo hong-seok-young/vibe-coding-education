@@ -97,15 +97,23 @@ with open(f"{HERE}/program-window.png", "rb") as _f:
 # STEP 1~5 페이지에 넣는 「그 단계를 마친 화면」. tools/capture_steps.py 로 찍는다.
 # 그림이 없는 단계는 그냥 비워둔다 (아직 안 찍었거나, 메일 발송이 필요한 단계).
 STEP_SHOTS = {}
-for _n in range(1, 6):
-    _path = f"{HERE}/step-shots/step{_n}.png"
-    if os.path.exists(_path):
-        with open(_path, "rb") as _f:
-            _b = _b64.b64encode(_f.read()).decode("ascii")
-        STEP_SHOTS[f"s{_n}"] = (LINEBREAK + '    <figure class="shot">' + LINEBREAK +
-                                f'      <img src="data:image/png;base64,{_b}" alt="STEP {_n} 을 마친 프로그램 화면">' + LINEBREAK +
-                                '      <figcaption>이 단계를 마치면 이런 화면</figcaption>' + LINEBREAK +
-                                '    </figure>' + LINEBREAK)
+_SHOT_SPECS = [   # (단계, 파일, 설명, 세로로 긴 그림인가)
+    ("s1", "step1.png", "뉴스 수집을 마친 프로그램 화면", False),
+    ("s2", "step2.png", "DART 수집까지 마친 프로그램 화면", False),
+    ("s3", "step3-report.png", "「보고서 만들기」 를 누르면 브라우저에 뜨는 보고서", True),
+    ("s4", "step4-mail.png", "아웃룩으로 받은 메일", True),
+]
+for _sid, _file, _cap, _tall in _SHOT_SPECS:
+    _path = f"{HERE}/step-shots/{_file}"
+    if not os.path.exists(_path):
+        continue
+    with open(_path, "rb") as _f:
+        _b = _b64.b64encode(_f.read()).decode("ascii")
+    _cls = "shot tall" if _tall else "shot"
+    STEP_SHOTS[_sid] = (LINEBREAK + f'    <figure class="{_cls}">' + LINEBREAK +
+                        f'      <img src="data:image/png;base64,{_b}" alt="{_cap}">' + LINEBREAK +
+                        f'      <figcaption>{_cap}</figcaption>' + LINEBREAK +
+                        '    </figure>' + LINEBREAK)
 
 SHOT_HTML = f'''
     <figure class="shot">
@@ -678,6 +686,7 @@ STYLE = '''<style>
 
   /* STEP 0 의 완성 창 그림 */
   .shot { margin: 14px 0 6px; }
+  .shot.tall { max-width: 560px; margin-left: auto; margin-right: auto; }
   .shot figcaption { margin-top: 6px; font-size: 12px; color: var(--muted); text-align: center; }
   .shot img {
     display: block; width: 100%; height: auto; background: #fff;

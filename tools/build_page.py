@@ -1026,16 +1026,22 @@ STYLE = '''<style>
   .pv-line.left::before { left: -6px; border-right-color: var(--line-strong); }
   .pv-line.right::after { right: -6px; border-left-color: var(--line-strong); }
 
-  .pv-count { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 8px; }
-  .pv-count-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .pv-box { min-width: 64px; padding: 6px 8px; border-radius: 6px; text-align: center; font-size: 12px; font-weight: 700;
-            color: var(--ink); background: var(--accent-wash); border: 1.5px solid var(--accent); }
-  .pv-box small { display: block; font-size: 10.5px; font-weight: 500; color: var(--ink-soft); }
-  .pv-eq { font-size: 12.5px; color: var(--ink-soft); margin-left: 4px; }
-  .pv-eq strong { color: var(--accent); }
-  .pv-dots { width: 212px; height: 22px; border-radius: 4px;
-             background-image: radial-gradient(circle, var(--accent) 2.6px, transparent 3px);
-             background-size: 14px 11px; }
+  .pv-parcels { display: flex; flex-direction: column; gap: 12px; margin: 10px 0; padding: 14px; border-radius: 10px;
+                background: var(--paper); border: 1px solid var(--line); }
+  .pv-parcel-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .pv-parcel { position: relative; width: 78px; padding: 16px 8px 7px; border-radius: 6px; text-align: center;
+               background: #e9c79a; border: 1.5px solid #b9864a; display: flex; flex-direction: column; gap: 3px; }
+  .pv-parcel::before { content: ""; position: absolute; top: 0; left: 50%; width: 12px; height: 100%;
+                       transform: translateX(-50%); background: rgba(255, 255, 255, 0.35); }
+  .pv-parcel b { position: relative; font-size: 11.5px; color: #4a2f10; }
+  .pv-parcel i { position: relative; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.85); }
+  .pv-parcel small { position: relative; font-size: 10.5px; color: #4a2f10; }
+  .pv-parcel.dart { background: #cfdcf1; border-color: #6d8fc4; }
+  .pv-parcel.dart b, .pv-parcel.dart small { color: #1f3a66; }
+  .pv-more { font-size: 16px; color: var(--muted); letter-spacing: 2px; }
+  .pv-sum { margin-left: 6px; font-size: 13px; color: var(--ink-soft); line-height: 1.4; }
+  .pv-sum strong { color: var(--accent); font-size: 14px; }
+  .pv-sum small { display: block; font-size: 11.5px; color: var(--muted); }
 
   @media (max-width: 560px) {
     .pv-map, .pv-steps.four { grid-template-columns: repeat(2, 1fr); }

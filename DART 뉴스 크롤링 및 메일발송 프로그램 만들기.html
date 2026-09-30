@@ -759,16 +759,22 @@
   .pv-line.left::before { left: -6px; border-right-color: var(--line-strong); }
   .pv-line.right::after { right: -6px; border-left-color: var(--line-strong); }
 
-  .pv-count { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 8px; }
-  .pv-count-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .pv-box { min-width: 64px; padding: 6px 8px; border-radius: 6px; text-align: center; font-size: 12px; font-weight: 700;
-            color: var(--ink); background: var(--accent-wash); border: 1.5px solid var(--accent); }
-  .pv-box small { display: block; font-size: 10.5px; font-weight: 500; color: var(--ink-soft); }
-  .pv-eq { font-size: 12.5px; color: var(--ink-soft); margin-left: 4px; }
-  .pv-eq strong { color: var(--accent); }
-  .pv-dots { width: 212px; height: 22px; border-radius: 4px;
-             background-image: radial-gradient(circle, var(--accent) 2.6px, transparent 3px);
-             background-size: 14px 11px; }
+  .pv-parcels { display: flex; flex-direction: column; gap: 12px; margin: 10px 0; padding: 14px; border-radius: 10px;
+                background: var(--paper); border: 1px solid var(--line); }
+  .pv-parcel-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .pv-parcel { position: relative; width: 78px; padding: 16px 8px 7px; border-radius: 6px; text-align: center;
+               background: #e9c79a; border: 1.5px solid #b9864a; display: flex; flex-direction: column; gap: 3px; }
+  .pv-parcel::before { content: ""; position: absolute; top: 0; left: 50%; width: 12px; height: 100%;
+                       transform: translateX(-50%); background: rgba(255, 255, 255, 0.35); }
+  .pv-parcel b { position: relative; font-size: 11.5px; color: #4a2f10; }
+  .pv-parcel i { position: relative; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.85); }
+  .pv-parcel small { position: relative; font-size: 10.5px; color: #4a2f10; }
+  .pv-parcel.dart { background: #cfdcf1; border-color: #6d8fc4; }
+  .pv-parcel.dart b, .pv-parcel.dart small { color: #1f3a66; }
+  .pv-more { font-size: 16px; color: var(--muted); letter-spacing: 2px; }
+  .pv-sum { margin-left: 6px; font-size: 13px; color: var(--ink-soft); line-height: 1.4; }
+  .pv-sum strong { color: var(--accent); font-size: 14px; }
+  .pv-sum small { display: block; font-size: 11.5px; color: var(--muted); }
 
   @media (max-width: 560px) {
     .pv-map, .pv-steps.four { grid-template-columns: repeat(2, 1fr); }
@@ -1349,24 +1355,24 @@
       <div class="item item-info">
         <span>
           <span class="item-title">API 한도 세는 법</span>
-          <p class="tiny">받은 기사 수가 아니라 <strong>요청 횟수</strong>로 센다. 한 번에 100건을 받아도 1회다.</p>
-          <div class="pv-count">
-            <div class="pv-count-row">
-              <span class="pv-box">삼성전자<small>10건</small></span>
-              <span class="pv-box">현대차<small>10건</small></span>
-              <span class="pv-box">LG화학<small>10건</small></span>
-              <span class="pv-eq">= 요청 <strong>3회</strong></span>
+          <p class="tiny">요청 한 번 = <strong>택배 상자 하나</strong>. 한도는 <strong>상자 개수</strong>로 센다 —
+            상자 안에 기사가 몇 건 들었는지는 상관없다.</p>
+          <div class="pv-parcels">
+            <div class="pv-parcel-row">
+              <span class="pv-parcel"><b>삼성전자</b><i></i><i></i><i></i><small>기사 10건</small></span>
+              <span class="pv-parcel"><b>현대차</b><i></i><i></i><i></i><small>기사 10건</small></span>
+              <span class="pv-parcel"><b>LG화학</b><i></i><i></i><i></i><small>기사 10건</small></span>
+              <span class="pv-sum">상자 3개 = <strong>요청 3회</strong><small>기사는 30건</small></span>
             </div>
-            <div class="pv-count-row">
-              <span class="pv-dots" aria-hidden="true"></span>
-              <span class="pv-eq">DART 100건씩 = 약 <strong>30회</strong></span>
+            <div class="pv-parcel-row">
+              <span class="pv-parcel dart"><b>DART 1</b><i></i><i></i><i></i><small>공시 100건</small></span>
+              <span class="pv-parcel dart"><b>DART 2</b><i></i><i></i><i></i><small>공시 100건</small></span>
+              <span class="pv-more">· · ·</span>
+              <span class="pv-parcel dart"><b>DART 30</b><i></i><i></i><i></i><small>공시 100건</small></span>
+              <span class="pv-sum">상자 30개 = <strong>요청 30회</strong><small>공시는 약 3,000건</small></span>
             </div>
           </div>
-          <ul class="news-sources">
-            <li>네이버 검색 API 는 한 번에 최대 100건. 회사당 10건만 쓰면 회사당 1회</li>
-            <li>검색어 <code>삼성전자, 현대차, LG화학</code> → 요청 3회. 하루 한도 2만 5천 회에 비하면 거의 안 쓰는 셈</li>
-            <li>DART 는 회사 이름으로 걸러주지 않아서 그날 공시 약 3,000건을 100건씩 받는다 → 약 30회</li>
-          </ul>
+          <p class="tiny">하루 한도는 네이버 2만 5천 회, DART 2만 회 — 실습처럼 하루 몇 번 돌리는 정도로는 닿지 않는다.</p>
         </span>
       </div>
 

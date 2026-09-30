@@ -687,6 +687,16 @@ STYLE = '''<style>
   .apitable .api-quota .tag { margin: 0 0 3px; }
   .apitable .tag.free { background: var(--surface); border: 1px solid var(--good); }
   .apitable .api-pick { color: var(--accent); font-weight: 600; }
+  /* 한 줄짜리 목록 표 */
+  .apitable.compact { min-width: 600px; }
+  .apitable.compact td { padding: 6px 10px; white-space: nowrap; vertical-align: middle; }
+  .apitable.compact td.api-use { white-space: normal; color: var(--ink-soft); }
+  .apitable.compact .api-name a { color: inherit; text-decoration: none; border-bottom: 1px dashed currentColor; }
+  .apitable.compact .api-name a:hover { color: var(--accent); border-bottom-style: solid; }
+  .apitable.compact .api-fee .tag { margin: 0; }
+  .apitable.compact tr.api-cat td { padding: 14px 10px 5px; font-size: 11.5px; font-weight: 700;
+                                    color: var(--good); letter-spacing: 0.03em; border-bottom: 1px solid var(--good); }
+  .apitable.compact tbody tr.api-cat:first-child td { padding-top: 6px; }
   .filetable { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
   .filetable th, .filetable td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
   .filetable th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -1203,94 +1213,52 @@ APIS_PAGE = '''
         <h2>다음에 붙여볼 API 목록</h2>
       </div>
       <p class="step-desc">오늘 만든 것은 <strong>「인증키로 자료 받아 메일 보내는 틀」</strong> 이다.
-        주소와 인증키만 바꾸면 아래 것들이 똑같이 돌아간다. 전부 사내망에서 응답을 확인했다.</p>
+        주소와 인증키만 바꾸면 아래 것들이 똑같이 돌아간다.</p>
     </div>
 
     <div class="criteria-box">
       <p class="criteria-label">무료 · 부분 무료 — 인증키만 받으면 쓸 수 있다</p>
+      <p class="tiny" style="margin:0 0 4px;">이름을 누르면 그 API 신청 페이지가 바로 열린다.</p>
       <div class="apitable-wrap">
-      <table class="apitable">
-        <thead><tr><th>API</th><th>무엇에 쓰나</th><th>바로 가기</th><th>요금 · 한도</th></tr></thead>
+      <table class="apitable compact">
+        <thead><tr><th>API</th><th>무엇에 쓰나</th><th>요금</th><th>한도</th></tr></thead>
         <tbody>
-          <tr>
-            <td class="api-name api-pick">나라장터 입찰공고<span class="api-sub">조달청</span></td>
-            <td>공사·물품 입찰 공고를 업종·지역·금액으로 매일 받기. <strong>오늘 만든 것과 구조가 같다</strong> — 영업·견적에 바로 쓴다</td>
-            <td><a href="https://www.data.go.kr/data/15129394/openapi.do" target="_blank" rel="noopener">공공데이터포털</a><span class="api-sub">입찰공고정보서비스</span></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>하루 1,000건</td>
-          </tr>
-          <tr>
-            <td class="api-name api-pick">기상청 단기예보·특보</td>
-            <td>강우·강풍 예보로 현장 작업중지 판단, 공정 조정</td>
-            <td><a href="https://www.data.go.kr/data/15084084/openapi.do" target="_blank" rel="noopener">단기예보</a> · <a href="https://www.data.go.kr/data/15000415/openapi.do" target="_blank" rel="noopener">기상특보</a></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>각각 하루 1만 건</td>
-          </tr>
-          <tr>
-            <td class="api-name">에어코리아 대기질<span class="api-sub">한국환경공단</span></td>
-            <td>미세먼지 경보, 옥외작업·비산먼지 관리</td>
-            <td><a href="https://www.data.go.kr/data/15073861/openapi.do" target="_blank" rel="noopener">공공데이터포털</a><span class="api-sub">대기오염정보</span></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>하루 500건</td>
-          </tr>
-          <tr>
-            <td class="api-name api-pick">공휴일 정보<span class="api-sub">한국천문연구원</span></td>
-            <td><strong>공정표 작업일수 계산.</strong> 단순한데 활용도가 가장 높은 축</td>
-            <td><a href="https://www.data.go.kr/data/15012690/openapi.do" target="_blank" rel="noopener">공공데이터포털</a><span class="api-sub">특일 정보</span></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>하루 1만 건</td>
-          </tr>
-          <tr>
-            <td class="api-name">아파트 실거래가<span class="api-sub">국토교통부</span></td>
-            <td>매매 실거래, 분양·개발 검토</td>
-            <td><a href="https://www.data.go.kr/data/15126469/openapi.do" target="_blank" rel="noopener">공공데이터포털</a><span class="api-sub">아파트 매매 실거래가</span></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>하루 1만 건</td>
-          </tr>
-          <tr>
-            <td class="api-name">건축물대장<span class="api-sub">국토교통부 건축HUB</span></td>
-            <td>부지·건물 제원 조회</td>
-            <td><a href="https://www.data.go.kr/data/15134735/openapi.do" target="_blank" rel="noopener">공공데이터포털</a><span class="api-sub">건축물대장정보</span></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>하루 1만 건</td>
-          </tr>
-          <tr>
-            <td class="api-name">경제통계<span class="api-sub">한국은행 ECOS</span></td>
-            <td>금리·환율·건설기성 등</td>
-            <td><a href="https://ecos.bok.or.kr/api/" target="_blank" rel="noopener">ECOS Open API</a><span class="api-sub">상단 「인증키 신청」</span></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>한도 공지 없음</td>
-          </tr>
-          <tr>
-            <td class="api-name">국가통계<span class="api-sub">KOSIS</span></td>
-            <td>건설수주액, 자재 물가지수</td>
-            <td><a href="https://kosis.kr/openapi/" target="_blank" rel="noopener">KOSIS 공유서비스</a><span class="api-sub">상단 「활용신청」</span></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>분당 200건</td>
-          </tr>
-          <tr>
-            <td class="api-name">카카오 로컬</td>
-            <td>주소를 좌표로 바꾸기, 현장 위치 지도</td>
-            <td><a href="https://developers.kakao.com/docs/ko/kakaomap/common" target="_blank" rel="noopener">카카오맵 API</a><span class="api-sub">로컬 · 주소 변환</span></td>
-            <td class="api-quota"><span class="tag partial">부분 무료</span><br>하루 10만 건 무료<span class="api-sub">넘으면 건당 0.5~2원</span></td>
-          </tr>
-          <tr>
-            <td class="api-name">네이버 검색 API<span class="api-sub">NAVER API HUB</span></td>
-            <td>뉴스·블로그 검색 (구글 뉴스의 대안). 네이버 클라우드 계정이 필요하다</td>
-            <td><a href="https://www.ncloud.com/product/applicationService/naverApiHub" target="_blank" rel="noopener">NAVER API HUB</a></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>하루 2만 5천 건<span class="api-sub">월 77만 5천 건</span></td>
-          </tr>
-          <tr>
-            <td class="api-name">DART 전자공시<span class="api-sub">오늘 쓴 것</span></td>
-            <td>상장사 공시. 계정당 인증키 1개</td>
-            <td><a href="https://opendart.fss.or.kr/uss/umt/EgovMberInsertView.do" target="_blank" rel="noopener">OPEN DART 인증키 신청</a></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>하루 2만 건</td>
-          </tr>
-          <tr>
-            <td class="api-name">구글 뉴스<span class="api-sub">오늘 쓴 것</span></td>
-            <td>키워드 뉴스 검색. 구글이 공식 지원을 밝힌 적이 없어 바뀔 수 있다</td>
-            <td><span class="api-quota">발급 불필요</span></td>
-            <td class="api-quota"><span class="tag free">무료</span><br>인증키 없음</td>
-          </tr>
+          <tr class="api-cat"><td colspan="4">입찰 · 계약</td></tr>
+          <tr><td class="api-name api-pick" title="조달청"><a href="https://www.data.go.kr/data/15129394/openapi.do" target="_blank" rel="noopener">나라장터 입찰공고</a></td><td class="api-use">공사·물품 입찰공고 매일 받기</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1,000건</td></tr>
+          <tr><td class="api-name" title="조달청"><a href="https://www.data.go.kr/data/15129397/openapi.do" target="_blank" rel="noopener">나라장터 낙찰정보</a></td><td class="api-use">누가 얼마에 땄나 · 경쟁사 분석</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1,000건</td></tr>
+          <tr><td class="api-name" title="조달청"><a href="https://www.data.go.kr/data/15129462/openapi.do" target="_blank" rel="noopener">나라장터 발주계획</a></td><td class="api-use">올해 나올 공사 미리 보기</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1,000건</td></tr>
+          <tr><td class="api-name" title="조달청"><a href="https://www.data.go.kr/data/15129437/openapi.do" target="_blank" rel="noopener">나라장터 사전규격</a></td><td class="api-use">공고 전에 규격 먼저 보기</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1,000건</td></tr>
+          <tr><td class="api-name" title="조달청"><a href="https://www.data.go.kr/data/15129415/openapi.do" target="_blank" rel="noopener">나라장터 가격정보</a></td><td class="api-use">조달 자재 단가</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1,000건</td></tr>
+          <tr><td class="api-name" title="국토교통부"><a href="https://www.data.go.kr/data/15061362/openapi.do" target="_blank" rel="noopener">키스콘 건설업체정보</a></td><td class="api-use">협력·경쟁 업체 면허·실적</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1만 건</td></tr>
+          <tr class="api-cat"><td colspan="4">현장 · 안전</td></tr>
+          <tr><td class="api-name api-pick" title="기상청"><a href="https://www.data.go.kr/data/15084084/openapi.do" target="_blank" rel="noopener">기상청 단기예보</a></td><td class="api-use">3일 강우·강풍 · 작업중지 판단</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1만 건</td></tr>
+          <tr><td class="api-name" title="기상청"><a href="https://www.data.go.kr/data/15059468/openapi.do" target="_blank" rel="noopener">기상청 중기예보</a></td><td class="api-use">10일 날씨 · 공정 계획</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1만 건</td></tr>
+          <tr><td class="api-name" title="기상청"><a href="https://www.data.go.kr/data/15000415/openapi.do" target="_blank" rel="noopener">기상특보</a></td><td class="api-use">호우·강풍·한파 특보</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1만 건</td></tr>
+          <tr><td class="api-name" title="기상청"><a href="https://www.data.go.kr/data/15000420/openapi.do" target="_blank" rel="noopener">지진정보</a></td><td class="api-use">지진 발생 시 현장 점검</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1만 건</td></tr>
+          <tr><td class="api-name" title="한국환경공단"><a href="https://www.data.go.kr/data/15073861/openapi.do" target="_blank" rel="noopener">에어코리아 대기질</a></td><td class="api-use">미세먼지 · 옥외작업 관리</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 500건</td></tr>
+          <tr><td class="api-name" title="산업안전보건공단"><a href="https://www.data.go.kr/data/15121001/openapi.do" target="_blank" rel="noopener">국내 재해사례</a></td><td class="api-use">사고 사례로 안전교육</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1,000건</td></tr>
+          <tr><td class="api-name api-pick" title="한국천문연구원"><a href="https://www.data.go.kr/data/15012690/openapi.do" target="_blank" rel="noopener">공휴일 정보</a></td><td class="api-use">공정표 작업일수 계산</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1만 건</td></tr>
+          <tr class="api-cat"><td colspan="4">부동산 · 인허가</td></tr>
+          <tr><td class="api-name" title="국토교통부"><a href="https://www.data.go.kr/data/15136267/openapi.do" target="_blank" rel="noopener">건축인허가정보</a></td><td class="api-use">허가·착공 동향 · 영업</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1만 건</td></tr>
+          <tr><td class="api-name" title="국토교통부"><a href="https://www.data.go.kr/data/15134735/openapi.do" target="_blank" rel="noopener">건축물대장</a></td><td class="api-use">부지·건물 제원</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1만 건</td></tr>
+          <tr><td class="api-name" title="국토교통부"><a href="https://www.data.go.kr/data/15058410/openapi.do" target="_blank" rel="noopener">토지이용규제정보</a></td><td class="api-use">용도지역·규제 확인</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1,000건</td></tr>
+          <tr><td class="api-name" title="국토교통부"><a href="https://www.data.go.kr/data/15126469/openapi.do" target="_blank" rel="noopener">아파트 매매 실거래가</a></td><td class="api-use">실거래가 · 분양 검토</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 1만 건</td></tr>
+          <tr><td class="api-name" title="한국부동산원"><a href="https://www.data.go.kr/data/15098547/openapi.do" target="_blank" rel="noopener">청약홈 분양정보</a></td><td class="api-use">분양 일정 · 경쟁 단지</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 4만 건</td></tr>
+          <tr class="api-cat"><td colspan="4">경제 · 통계</td></tr>
+          <tr><td class="api-name" title="한국은행"><a href="https://ecos.bok.or.kr/api/" target="_blank" rel="noopener">경제통계 ECOS</a></td><td class="api-use">금리·환율</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">한도 공지 없음</td></tr>
+          <tr><td class="api-name" title="국가데이터처"><a href="https://kosis.kr/openapi/" target="_blank" rel="noopener">국가통계 KOSIS</a></td><td class="api-use">건설수주액 · 물가지수</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">분당 200건</td></tr>
+          <tr class="api-cat"><td colspan="4">공시 · 뉴스 · 위치</td></tr>
+          <tr><td class="api-name" title="금융감독원 · 오늘 쓴 것"><a href="https://opendart.fss.or.kr/uss/umt/EgovMberInsertView.do" target="_blank" rel="noopener">DART 전자공시</a></td><td class="api-use">상장사 공시</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 2만 건</td></tr>
+          <tr><td class="api-name" title="오늘 쓴 것 · 인증키 없음">구글 뉴스</td><td class="api-use">키워드 뉴스</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">인증키 없음</td></tr>
+          <tr><td class="api-name" title="NAVER API HUB"><a href="https://www.ncloud.com/product/applicationService/naverApiHub" target="_blank" rel="noopener">네이버 검색</a></td><td class="api-use">뉴스·블로그 검색</td><td class="api-fee"><span class="tag free">무료</span></td><td class="api-quota">하루 2만 5천 건</td></tr>
+          <tr><td class="api-name" title="카카오"><a href="https://developers.kakao.com/docs/ko/kakaomap/common" target="_blank" rel="noopener">카카오 로컬</a></td><td class="api-use">주소 → 좌표 · 현장 지도</td><td class="api-fee"><span class="tag partial">부분 무료</span></td><td class="api-quota">하루 10만 건 · 넘으면 유료</td></tr>
         </tbody>
       </table>
       </div>
-      <p class="tiny" style="margin-top:8px;">주황색으로 표시한 셋이 우리 업무에 가장 가깝다.
-        공공데이터포털 한도는 개발계정 기준이고, 활용사례를 등록하면 늘릴 수 있다.
-        <strong>부분 무료</strong>는 무료 한도를 넘으면 돈이 나간다 — 카카오는 결제 수단(비즈월렛)을
-        연결하고 유료 사용을 켜야만 넘어가므로 모르는 사이에 과금되지는 않는다.</p>
+      <p class="tiny" style="margin-top:8px;">주황색이 우리 업무에 가장 가깝다. 공공데이터포털 한도는
+        개발계정 기준이고 활용사례를 등록하면 늘릴 수 있다. <strong>부분 무료</strong>(카카오)는
+        무료 한도를 넘으면 건당 0.5~2원 — 결제 수단(비즈월렛)을 연결하고 유료 사용을 켜야만
+        넘어가므로 모르는 사이에 과금되지는 않는다.</p>
     </div>
 
     <div class="criteria-box">
@@ -1331,7 +1299,7 @@ APPS_PAGE = '''
         <span class="varrow" aria-hidden="true">→</span>
         <div class="vnode done"><span class="vrole">✓</span><strong>게시</strong><small>팀원이 검색·설치</small></div>
       </div>
-      <div class="vloop">보안 심사에서 파일 안에 인증키가 있으면 걸린다 · 오늘 인증키를 입력 칸으로 받은 이유</div>
+      <div class="vloop"><strong>API 키는 절대 노출되면 안 된다</strong> · 보안 심사에서 파일 안에 인증키가 있으면 걸린다</div>
     </div>
 
     <p class="v-title">The APPS 에서 할 수 있는 것</p>

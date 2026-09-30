@@ -168,6 +168,39 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
     dict(
         part=1, num="2", id="s2", time="20분",
         title="DART 수집 버튼 연결하기",
+        # 할 일 목록 아래에 넣는 그림 — 페이지에 그대로 들어가는 HTML
+        visual="""<div class="ways">
+      <p class="ways-title">DART 에서 회사 공시를 고르는 두 가지 방법</p>
+      <div class="cert-lanes">
+        <div class="cert-lane good">
+          <p class="cert-who">A · 전부 받고 내가 거르기 <span class="ways-tag">실습에서 쓰는 방법</span></p>
+          <p class="cert-box">기간만 넣어 요청<small>회사 이름은 넣어도 무시된다</small></p>
+          <p class="cert-box">그 주 모든 회사 공시가 온다<small>약 2,500건 · 요청 25회</small></p>
+          <p class="cert-box cert-end">프로그램이 회사 이름으로 거르기<small>→ 현대건설 3건</small></p>
+          <ul class="ways-pros">
+            <li class="up">단계가 적어 AI 가 덜 틀린다</li>
+            <li class="up">「삼성전자」 로 계열사까지 걸린다</li>
+            <li class="down">한 번에 3개월까지만</li>
+            <li class="down">요청 횟수가 많다</li>
+          </ul>
+        </div>
+        <div class="cert-lane alt">
+          <p class="cert-who">B · 회사코드로 바로 찾기 <span class="ways-tag alt">이렇게도 된다</span></p>
+          <p class="cert-box">회사 목록 파일 받기<small>DART 가 주는 zip · 회사 약 12만 개</small></p>
+          <p class="cert-box">이름으로 고유번호 찾기<small>현대건설 → 00164478</small></p>
+          <p class="cert-box cert-end">고유번호로 요청<small>→ 그 회사 공시만 · 3개월치 53건 · 요청 1회</small></p>
+          <ul class="ways-pros">
+            <li class="up">요청이 적다</li>
+            <li class="up">기간을 길게 (1999년부터)</li>
+            <li class="down">이름이 정확히 같아야 한다</li>
+            <li class="down">같은 이름 회사는 상장사로 골라야</li>
+          </ul>
+        </div>
+      </div>
+      <p class="tiny ways-note">B 로 하고 싶으면 프롬프트에 「회사 이름으로 DART 고유번호 목록 파일에서 번호를 찾아서,
+        그 번호(corp_code)로 공시를 조회해줘」 를 넣는다.</p>
+    </div>
+""",
         lib=None,
         desc="",
         todo=[

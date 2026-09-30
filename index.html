@@ -675,6 +675,21 @@
   .workflow-note strong { color: var(--ink); }
   .workflow-note code { background: var(--surface); }
 
+  /* ── STEP 2 두 가지 방법 ── */
+  .ways { margin: 14px 0 6px; padding: 14px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }
+  .ways-title { margin: 0 0 10px; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .cert-lane.alt { border-color: var(--accent); background: var(--accent-wash); }
+  .cert-lane.alt .cert-end { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .ways .cert-end small { font-family: inherit; }
+  .ways-tag { display: inline-block; margin-left: 4px; padding: 1px 7px; border-radius: 999px; font-size: 10.5px;
+              font-weight: 700; background: var(--good); color: var(--surface); vertical-align: 1px; }
+  .ways-tag.alt { background: var(--accent); color: var(--accent-ink); }
+  .ways-pros { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; text-align: left; }
+  .ways-pros li { font-size: 12px; color: var(--ink-soft); padding-left: 16px; position: relative; }
+  .ways-pros li.up::before { content: "✓"; position: absolute; left: 0; color: var(--good); font-weight: 700; }
+  .ways-pros li.down::before { content: "✕"; position: absolute; left: 0; color: var(--bad); font-weight: 700; }
+  .ways-note { margin: 10px 0 0 !important; }
+
   /* ── STEP 1 인증서 오류 그림 ── */
   .cert { margin: 4px 0 12px; padding: 14px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }
   .cert-path { display: flex; align-items: center; gap: 4px; margin-bottom: 14px; }
@@ -1689,6 +1704,37 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
         <li>0건인 이유 구분해서 알리기 — 공시 없음 · 그 회사 없음 · 인증키 문제</li>
         <li>회사별 건수 한 줄로 요약하기</li>
       </ol>
+    </div>
+<div class="ways">
+      <p class="ways-title">DART 에서 회사 공시를 고르는 두 가지 방법</p>
+      <div class="cert-lanes">
+        <div class="cert-lane good">
+          <p class="cert-who">A · 전부 받고 내가 거르기 <span class="ways-tag">실습에서 쓰는 방법</span></p>
+          <p class="cert-box">기간만 넣어 요청<small>회사 이름은 넣어도 무시된다</small></p>
+          <p class="cert-box">그 주 모든 회사 공시가 온다<small>약 2,500건 · 요청 25회</small></p>
+          <p class="cert-box cert-end">프로그램이 회사 이름으로 거르기<small>→ 현대건설 3건</small></p>
+          <ul class="ways-pros">
+            <li class="up">단계가 적어 AI 가 덜 틀린다</li>
+            <li class="up">「삼성전자」 로 계열사까지 걸린다</li>
+            <li class="down">한 번에 3개월까지만</li>
+            <li class="down">요청 횟수가 많다</li>
+          </ul>
+        </div>
+        <div class="cert-lane alt">
+          <p class="cert-who">B · 회사코드로 바로 찾기 <span class="ways-tag alt">이렇게도 된다</span></p>
+          <p class="cert-box">회사 목록 파일 받기<small>DART 가 주는 zip · 회사 약 12만 개</small></p>
+          <p class="cert-box">이름으로 고유번호 찾기<small>현대건설 → 00164478</small></p>
+          <p class="cert-box cert-end">고유번호로 요청<small>→ 그 회사 공시만 · 3개월치 53건 · 요청 1회</small></p>
+          <ul class="ways-pros">
+            <li class="up">요청이 적다</li>
+            <li class="up">기간을 길게 (1999년부터)</li>
+            <li class="down">이름이 정확히 같아야 한다</li>
+            <li class="down">같은 이름 회사는 상장사로 골라야</li>
+          </ul>
+        </div>
+      </div>
+      <p class="tiny ways-note">B 로 하고 싶으면 프롬프트에 「회사 이름으로 DART 고유번호 목록 파일에서 번호를 찾아서,
+        그 번호(corp_code)로 공시를 조회해줘」 를 넣는다.</p>
     </div>
 
     <figure class="shot">

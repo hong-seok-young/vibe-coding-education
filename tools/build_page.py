@@ -183,7 +183,7 @@ def render_step_page(step, index, total):
       </div>
       {todo_html}
     </div>
-{note_html}{intro}{lib_html}
+{note_html}{step.get("visual", "")}{intro}{lib_html}
     <details class="prompt-box">
       <summary class="prompt-box-head">
         <span class="prompt-label">모범 프롬프트 보기</span>
@@ -941,6 +941,21 @@ STYLE = '''<style>
   .workflow-note li { font-size: 13px; color: var(--ink-soft); }
   .workflow-note strong { color: var(--ink); }
   .workflow-note code { background: var(--surface); }
+
+  /* ── STEP 2 두 가지 방법 ── */
+  .ways { margin: 14px 0 6px; padding: 14px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }
+  .ways-title { margin: 0 0 10px; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .cert-lane.alt { border-color: var(--accent); background: var(--accent-wash); }
+  .cert-lane.alt .cert-end { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+  .ways .cert-end small { font-family: inherit; }
+  .ways-tag { display: inline-block; margin-left: 4px; padding: 1px 7px; border-radius: 999px; font-size: 10.5px;
+              font-weight: 700; background: var(--good); color: var(--surface); vertical-align: 1px; }
+  .ways-tag.alt { background: var(--accent); color: var(--accent-ink); }
+  .ways-pros { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; text-align: left; }
+  .ways-pros li { font-size: 12px; color: var(--ink-soft); padding-left: 16px; position: relative; }
+  .ways-pros li.up::before { content: "✓"; position: absolute; left: 0; color: var(--good); font-weight: 700; }
+  .ways-pros li.down::before { content: "✕"; position: absolute; left: 0; color: var(--bad); font-weight: 700; }
+  .ways-note { margin: 10px 0 0 !important; }
 
   /* ── STEP 1 인증서 오류 그림 ── */
   .cert { margin: 4px 0 12px; padding: 14px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); }

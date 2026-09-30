@@ -30,8 +30,8 @@ HTML 이 다시 만들어진다. HTML 을 직접 고치면 다음 실행에 덮�
   · 코딩을 모르는 사람이 실제로 쓸 만한 말투. 기술 용어를 나열하지 않는다
   · 애매하게 쓰면 AI 는 에러 없이 조용히 틀린다. 꼭 정확해야 하는 기술 사항은
     번호를 매겨 구체적으로 적는다
-  · 어느 라이브러리를 쓸지 못 박는다. 같은 프롬프트를 줘도 AI 가 feedparser 를
-    고르면 되고 requests 를 고르면 사내망에서 첫 접속부터 죽는다
+  · 어느 라이브러리를 쓸지는 AI 가 고르게 둔다. requests 를 고르면 사내망에서 첫 접속부터
+    죽는데, STEP 1 은 일부러 그 에러를 겪고 「인증서 오류가 뜨면?」 칸에서 설명 듣고 고친다
   · "에러를 화면에 사람 말로" 와 "0건일 때 왜 0건인지" 를 매 단계에 넣는다.
     이 실습의 최대 적은 에러가 아니라 조용한 실패다
   · 수집량·출력량 상한을 빼지 않는다. 없으면 결과 칸이 수천 줄이 되어 창이 멈춘다
@@ -114,16 +114,7 @@ STEPS = [
 5. 검색어 칸이 비어있으면 "검색어가 없어 건너뜀" 만 알리고 끝
 6. 못 가져올 때는 두 경우 구분해서 알리고 다음 단어로 계속 — 회사 네트워크가 막아서 아예 못
    받은 경우, 받아왔는데 걸리는 기사가 없는 경우
-7. 버튼 누른 동안 창 안 멈추게
-
-인터넷에서 받아오는 방식은 이렇게 해줘. 우리 회사는 보안 장비가 통신을 중간에서 열어봐서
-requests 로는 CERTIFICATE_VERIFY_FAILED 가 나. 브라우저로는 잘 보이는데 프로그램만 그래.
-
-1. requests 를 쓰지 마 — certifi 라는 자기 목록만 신뢰하는데 거기에 회사 인증서가 없어서
-   첫 접속부터 실패해
-2. 파이썬에 원래 들어있는 urllib 이나 그걸 쓰는 feedparser 를 써 — 윈도우 인증서 저장소를
-   보기 때문에 회사 인증서가 이미 신뢰돼 있어 그냥 돼
-3. 인증서 검증을 끄는 방법은 쓰지 마""",
+7. 버튼 누른 동안 창 안 멈추게""",
         need_install="pip install feedparser",
         trouble=dict(
             summary="인증서 오류 (CERTIFICATE_VERIFY_FAILED) 가 뜨면?",
@@ -133,11 +124,11 @@ requests 로는 CERTIFICATE_VERIFY_FAILED 가 나. 브라우저로는 잘 보이
                 "윈도우에는 <strong>믿어도 되는 도장 목록</strong>이 있다. 회사가 PC 를 나눠줄 때 회사 도장을 여기 넣어뒀다 (직접 보기: 윈도우 + R → <code class=\"cmd\">certmgr.msc</code> → 신뢰할 수 있는 루트 인증 기관)",
                 "<code>requests</code> 는 윈도우 목록 대신 <strong>설치될 때 딸려온 자기 목록</strong>을 본다 → 회사 도장이 없어서 거절 (<code>CERTIFICATE_VERIFY_FAILED</code> 에러)",
                 "<code>feedparser</code> 는 <strong>윈도우 목록</strong>을 본다 → 회사 도장이 있어서 통과",
-                "그래서 프롬프트에 「requests 말고 feedparser」 라고 적는다",
+                "그래서 AI 에게 「requests 말고 feedparser 로 바꿔줘」 라고 한다 → 아래 프롬프트",
             ],
-            body="이 에러가 떴다면 AI 가 지시를 무시하고 <code>requests</code> 를 쓴 것이다. 실제로 자주 일어난다 — "
-                 "같은 프롬프트를 줘도 어느 라이브러리를 고르느냐에 따라 성패가 갈린다.",
-            prompt="""아직 CERTIFICATE_VERIFY_FAILED 에러가 나. 지금 코드가 인터넷에서 자료를 받아올 때 requests 를
+            body="이 에러가 떴다면 AI 가 <code>requests</code> 를 쓴 것이다. 회사망에서는 자주 일어난다 — "
+                 "같은 프롬프트를 줘도 AI 가 어느 부품을 고르느냐에 따라 성패가 갈린다.",
+            prompt="""CERTIFICATE_VERIFY_FAILED 에러가 나. 지금 코드가 인터넷에서 자료를 받아올 때 requests 를
 쓰고 있는지 봐줘. 쓰고 있으면 feedparser 로 바꿔줘. feedparser 는 파이썬에 원래 들어있는
 urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 우리 회사 환경에서 그냥 돼.
 인증서 검증을 끄는 방법은 쓰지 말아줘.""",

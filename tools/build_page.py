@@ -1048,6 +1048,7 @@ STYLE = '''<style>
   .tips { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .tip { display: flex; flex-direction: column; gap: 3px; background: var(--surface); border: 1px solid var(--line);
          border-left: 3px solid var(--accent); border-radius: 10px; padding: 12px 14px; }
+  .tip:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .tip strong { font-size: 13.5px; color: var(--ink); }
   .tip small { font-size: 12px; color: var(--muted); }
 
@@ -1576,8 +1577,7 @@ INTRO_PAGE = '''
     <div class="tips">
       <div class="tip"><strong>틀부터 만들기</strong><small>화면을 먼저 그려보면 무엇을 입력받고 무엇을 보여줄지, 요구사항이 분명해진다</small></div>
       <div class="tip"><strong>한 번에 하나씩</strong><small>기능 하나 시키고, 되면 다음</small></div>
-      <div class="tip"><strong>예시를 들어서</strong><small>「09/08 14:30 처럼」 — 설명보다 예시가 정확하다</small></div>
-      <div class="tip"><strong>에러는 그대로</strong><small>내 말로 요약하지 말고 전문을 복사해서 붙여넣기</small></div>
+      <div class="tip"><strong>에러는 화면에 보이게</strong><small>프로그램 안에서 난 에러 · 오류 코드는 항상 사용자가 볼 수 있게 띄우라고 시킨다</small></div>
       <div class="tip"><strong>안 될 때도 알리게</strong><small>0건이면 왜 0건인지 — 조용한 실패가 제일 무섭다</small></div>
       <div class="tip"><strong>되는 버전은 남겨두기</strong><small>다음 기능을 붙이기 전에 파일을 복사해둔다</small></div>
     </div>

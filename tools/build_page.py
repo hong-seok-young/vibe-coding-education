@@ -81,7 +81,7 @@ sections_prep, _, _ = between(
 # 폴더 안에 이미 들어있는 로컬 파일로 취급하고(더블클릭만 안내), 이 페이지 하나만
 # 따로 받은 예외적인 경우에만 파이썬 공식 사이트 링크로 안내한다.
 
-PART_LABELS = {1: "실습 1 · 수집", 2: "실습 2 · 보고서", 3: "실습 3 · 메일 발송"}
+PART_LABELS = {1: "실습 1 · 수집", 2: "실습 2 · 보고서", 3: "실습 3 · 메일 발송", 4: "알파 실습 · 고도화"}
 
 # ── STEP 카드 렌더링 (한 STEP = 한 페이지) ──────────────────
 
@@ -102,6 +102,9 @@ _SHOT_SPECS = [   # (단계, 파일, 설명, 세로로 긴 그림인가)
     ("s2", "step2.png", "DART 수집까지 마친 프로그램 화면", False),
     ("s3", "step3-report.png", "「보고서 만들기」 를 누르면 브라우저에 뜨는 보고서", True),
     ("s4", "step4-mail.png", "아웃룩으로 받은 메일", True),
+    ("s6", "step6.png", "목적 「영업 · 수주」 로 모은 화면 — 관심 키워드가 든 기사 위주", False),
+    ("s7", "step7.png", "점수를 매긴 화면 — 날짜 옆 ★점수, 0점은 빠짐", False),
+    ("s8", "step8-report.png", "고도화 보고서 — 왼쪽 메뉴 · 검색 · 즐겨찾기 · TOP 10", False),
 ]
 for _sid, _file, _cap, _tall in _SHOT_SPECS:
     _path = f"{HERE}/step-shots/{_file}"
@@ -222,6 +225,7 @@ step_pages_html = "\n".join(render_step_page(s, i, len(STEPS)) for i, s in enume
 TOC_LABELS = {
     "s0": "뼈대", "s1": "구글 뉴스", "s2": "DART",
     "s3": "HTML 보고서", "s4": "아웃룩 발송", "s5": "통합 실행",
+    "s6": "목적별 수집", "s7": "스코어링", "s8": "보고서 고도화",
 }
 
 toc_part1 = "\n".join(
@@ -235,6 +239,10 @@ toc_part2 = "\n".join(
 toc_part3 = "\n".join(
     f'      <a class="toc-link" data-page="{s["id"]}" href="#{s["id"]}"><span class="toc-badge">{s["num"]}</span>{TOC_LABELS[s["id"]]}</a>'
     for s in STEPS if s["part"] == 3
+)
+toc_part4 = "\n".join(
+    f'      <a class="toc-link" data-page="{s["id"]}" href="#{s["id"]}"><span class="toc-badge">{s["num"]}</span>{TOC_LABELS[s["id"]]}</a>'
+    for s in STEPS if s["part"] == 4
 )
 
 ALL_PAGE_IDS = ["intro", "prep"] + [s["id"] for s in STEPS] + ["apis", "apps"]
@@ -250,7 +258,7 @@ import base64
 # 내려주면 STEP 0 에서 이미 다 된 프로그램을 받게 되어 실습이 사라진다.
 # 파일은 tools/make_stage_files.py 가 main.py 에서 만들어낸다.
 STAGE_B64 = {}
-for _s in range(6):
+for _s in range(9):          # 0~5 기본 실습, 6~8 알파 실습
     with open(f"{REPO}/news-report-bot/단계별/STEP{_s}.py", "rb") as _f:
         STAGE_B64[_s] = base64.b64encode(_f.read()).decode("ascii")
 STAGE_B64_JS = "{" + ",".join('"%d":"%s"' % (k, v) for k, v in STAGE_B64.items()) + "}"
@@ -1335,6 +1343,9 @@ TOC_HTML = f'''<button class="toc-toggle" id="tocToggle" aria-label="목차 열�
 
   <div class="toc-group-label">실습 3 · 메일 발송</div>
 {toc_part3}
+
+  <div class="toc-group-label">알파 실습 · 고도화</div>
+{toc_part4}
 
   <div class="toc-group-label">참고</div>
       <a class="toc-link" data-page="apis" href="#apis"><span class="toc-badge">?</span>API 모음</a>

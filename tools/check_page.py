@@ -26,7 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 PAGE = os.path.join(REPO, "DART 뉴스 크롤링 및 메일발송 프로그램 만들기.html")
 
-EXPECTED_PAGES = 10        # 서론 + 사전 준비 + STEP 6개 + API 목록 + The APPS
+EXPECTED_PAGES = 13        # 서론 + 사전 준비 + STEP 9개(0~5 기본, 6~8 알파) + API 목록 + The APPS
 EXPECTED_CHECKBOXES = 5    # 사전 준비 페이지의 체크리스트만
 PAIRED_TAGS = ("div", "ul", "li", "p", "section", "details", "pre", "code", "span",
                "strong", "em", "table", "thead", "tbody", "tr", "th", "td")
@@ -80,8 +80,8 @@ def main():
     # 단계마다 "그 단계까지 만든 상태" 파일이 제대로 박혀있는지. 하나라도 어긋나면
     # 수강생이 엉뚱한 단계의 코드를 받게 된다 (완성본을 받으면 실습이 사라진다).
     stages = dict(re.findall(r'"(\d)":"([A-Za-z0-9+/=]+)"', page))
-    if len(stages) != 6:
-        fail("단계별 정답 코드가 %d개만 박혀있다 (기대 6)" % len(stages))
+    if len(stages) != 9:
+        fail("단계별 정답 코드가 %d개만 박혀있다 (기대 9)" % len(stages))
     for num, b64 in stages.items():
         path = os.path.join(REPO, "news-report-bot", "단계별", "STEP%s.py" % num)
         if not os.path.exists(path):
@@ -91,8 +91,8 @@ def main():
             if base64.b64decode(b64) != f.read():
                 fail("박혀있는 STEP%s 코드가 파일과 다르다 — build_page.py 를 다시 실행할 것" % num)
     buttons = len(re.findall(r'class="btn primary download-stage-btn"', page))
-    if buttons != 6:
-        fail("단계별 코드 받기 버튼이 %d개다 (기대 6)" % buttons)
+    if buttons != 9:
+        fail("단계별 코드 받기 버튼이 %d개다 (기대 9)" % buttons)
 
     shot = re.search(r'<img src="data:image/png;base64,([A-Za-z0-9+/=]+)"', page)
     if not shot:

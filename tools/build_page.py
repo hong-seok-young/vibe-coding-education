@@ -1337,7 +1337,7 @@ APPS_PAGE = '''
     <p class="v-title">The APPS 에서 할 수 있는 것</p>
     <div class="tips">
       <div class="tip"><strong>Xi C&amp;A 앱스토어</strong><small>임직원이 직접 만든 앱 · 웹을 한곳에 모아서 볼 수 있다</small></div>
-      <div class="tip"><strong>올리기 — 누구나 신청</strong><small>파일로 쓰는 도구도, 주소로 접속하는 웹앱도 된다</small></div>
+      <div class="tip"><strong>웹/앱 올리기</strong><small>누구나 신청 · 파일로 쓰는 도구도, 주소로 접속하는 웹앱도 된다</small></div>
       <div class="tip"><strong>심사 — 운영 · 보안 두 번</strong><small>통과하면 게시된다</small></div>
       <div class="tip"><strong>기록 — 설치 수 · 별점</strong><small>누가 실제로 쓰는지 숫자로 남는다</small></div>
     </div>

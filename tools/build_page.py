@@ -246,6 +246,49 @@ toc_part4 = "\n".join(
 )
 
 ALL_PAGE_IDS = ["intro", "prep"] + [s["id"] for s in STEPS] + ["apis", "apps"]
+# 알파 실습 맨 앞에 실전 사례 한 장 — STEP 6 바로 앞
+ALL_PAGE_IDS.insert(ALL_PAGE_IDS.index("s6"), "case")
+
+# ── 알파 실습 · 실전 사례 ──────────────────────────────────
+# 영업팀 과제로 실제로 만든 수주레이더. 고도화 STEP 6~8 이 어디로 가는지 먼저 보여준다.
+# 그림은 공개 사이트를 엣지로 열어 찍었다 (tools/step-shots/case-radar.png).
+CASE_URL = "https://hong-seok-young.github.io/xicna-sujoo-radar/"
+with open(f"{HERE}/step-shots/case-radar.png", "rb") as _f:
+    _CASE_B64 = _b64.b64encode(_f.read()).decode("ascii")
+CASE_PAGE = f'''
+  <section class="page" data-page="case" id="case">
+    <div class="page-head">
+      <span class="page-eyebrow">알파 실습 · 고도화</span>
+      <div class="page-title-row">
+        <h2>실전 사례 — 자이씨앤에이 수주레이더</h2>
+      </div>
+      <p class="step-desc">영업팀 과제로 <strong>실제로 만든 결과물</strong>이다. 이어지는 STEP 6~8 이
+        이런 모습으로 가는 길이다.</p>
+    </div>
+
+    <a class="case-go" href="{CASE_URL}" target="_blank" rel="noopener">
+      <span><b>수주레이더 열어보기</b><small>{CASE_URL}</small></span>
+      <span class="case-go-arrow">→</span>
+    </a>
+
+    <figure class="shot">
+      <img src="data:image/png;base64,{_CASE_B64}" alt="자이씨앤에이 수주레이더 첫 화면">
+      <figcaption>첫 화면 — 영업 우선순위 · 카테고리 · S/A급 · TOP 10 프로젝트</figcaption>
+    </figure>
+
+    <p class="v-title">이번 고도화에서 만들 것과 이어진다</p>
+    <div class="case-map">
+      <div class="case-card"><span class="case-step">STEP 6 · 목적에 맞는 수집</span>
+        <strong>영업에 쓸 신호만 모은다</strong>
+        <small>DART 시설투자 공시 · 뉴스 · 식약처 GMP · 나라장터 — 최근 7일 1,524건</small></div>
+      <div class="case-card"><span class="case-step">STEP 7 · 스코어링</span>
+        <strong>점수와 등급으로 추린다</strong>
+        <small>행동(착공·신축·증설) + 대상(공장·클린룸) + 규모로 점수 → S급 80점+, A급 60~79, TOP 10</small></div>
+      <div class="case-card"><span class="case-step">STEP 8 · 보고서 고도화</span>
+        <strong>보는 사람이 쓰기 좋게</strong>
+        <small>우선순위 목차 · 카테고리 필터 · 키워드 검색 · ☆ 즐겨찾기 · 테마 · 글씨 크기</small></div>
+    </div>
+  </section>'''
 MAIN_PY_URL = "https://github.com/hong-seok-young/vibe-coding-education/blob/claude/vibe-coding-education-program-lgtqes/news-report-bot/main.py"
 ZIP_URL = "https://github.com/hong-seok-young/vibe-coding-education/archive/refs/heads/claude/vibe-coding-education-program-lgtqes.zip"
 
@@ -1140,6 +1183,22 @@ STYLE = '''<style>
     .pv-tag { width: 28px; }
   }
 
+  /* ── 알파 실습 · 실전 사례 ── */
+  .case-go { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 6px;
+             padding: 16px 20px; border-radius: 12px; background: var(--accent); color: var(--accent-ink);
+             text-decoration: none; box-shadow: var(--shadow); }
+  .case-go b { display: block; font-size: 16px; }
+  .case-go small { display: block; font-size: 12px; opacity: 0.85; word-break: break-all; }
+  .case-go-arrow { font-size: 24px; font-weight: 700; }
+  .case-go:hover { filter: brightness(1.06); }
+  .case-map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .case-card { display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 10px;
+               background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--accent); }
+  .case-step { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.02em; }
+  .case-card strong { font-size: 14px; color: var(--ink); }
+  .case-card small { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  @media (max-width: 560px) { .case-map { grid-template-columns: 1fr; } }
+
   /* ── The APPS ── */
   .apps-flow { gap: 6px; }
   .apps-flow .vnode { padding: 12px 6px; }
@@ -1345,6 +1404,7 @@ TOC_HTML = f'''<button class="toc-toggle" id="tocToggle" aria-label="목차 열�
 {toc_part3}
 
   <div class="toc-group-label">알파 실습 · 고도화</div>
+      <a class="toc-link" data-page="case" href="#case"><span class="toc-badge">★</span>실전 사례</a>
 {toc_part4}
 
   <div class="toc-group-label">참고</div>
@@ -1878,6 +1938,7 @@ body = f'''{TOC_HTML}
 {INTRO_PAGE}
 {PREP_PAGE}
 {step_pages_html}
+{CASE_PAGE}
 {APIS_PAGE}
 {APPS_PAGE}
 

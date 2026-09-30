@@ -99,23 +99,10 @@ STEPS = [
         todo=[
             "구글 뉴스에서 기사 가져오기 — 인증키 없이",
             "검색어 하나당 최신 10건까지만",
-            "회사망 인증서 벽 넘기 — requests 대신 feedparser",
             "날짜를 한국 시간으로 바꾸기",
             "제목 눌러 원문 열기",
             "못 가져온 경우와 기사가 없는 경우 구분해서 알리기",
         ],
-        # 3번 「회사망 인증서 벽」 설명 — 페이지에 그대로 들어가는 HTML
-        note=dict(
-            title="3번 · 회사망 인증서 벽이란",
-            items=[
-                "<code>requests</code> · <code>feedparser</code> — 파이썬이 인터넷에서 자료를 받아올 때 쓰는 부품",
-                "회사 인터넷은 보안장비가 중간에서 한 번 검사하고 <strong>회사 도장</strong>을 찍어서 넘겨준다",
-                "윈도우에는 <strong>믿어도 되는 도장 목록</strong>이 있다. 회사가 PC 를 나눠줄 때 회사 도장을 여기 넣어뒀다 (직접 보기: 윈도우 + R → <code>certmgr.msc</code> → 신뢰할 수 있는 루트 인증 기관)",
-                "<code>requests</code> 는 윈도우 목록 대신 <strong>설치될 때 딸려온 자기 목록</strong>을 본다 → 회사 도장이 없어서 거절 (<code>CERTIFICATE_VERIFY_FAILED</code> 에러)",
-                "<code>feedparser</code> 는 <strong>윈도우 목록</strong>을 본다 → 회사 도장이 있어서 통과",
-                "그래서 프롬프트에 「requests 말고 feedparser」 라고 적는다",
-            ],
-        ),
         prompt=""""뉴스 수집하기" 버튼이 구글 뉴스에서 기사를 가져오게 해줘. 인증키 없이 검색 결과를 받아올 수
 있어.
 
@@ -139,8 +126,16 @@ requests 로는 CERTIFICATE_VERIFY_FAILED 가 나. 브라우저로는 잘 보이
 3. 인증서 검증을 끄는 방법은 쓰지 마""",
         need_install="pip install feedparser",
         trouble=dict(
-            summary="그래도 뉴스 칸에 CERTIFICATE 어쩌고 하는 에러가 뜨면",
-            body="AI 가 지시를 무시하고 <code>requests</code> 를 쓴 것이다. 실제로 자주 일어난다 — "
+            summary="인증서 오류 (CERTIFICATE_VERIFY_FAILED) 가 뜨면?",
+            items=[
+                "<code>requests</code> · <code>feedparser</code> — 파이썬이 인터넷에서 자료를 받아올 때 쓰는 부품",
+                "회사 인터넷은 보안장비가 중간에서 한 번 검사하고 <strong>회사 도장</strong>을 찍어서 넘겨준다",
+                "윈도우에는 <strong>믿어도 되는 도장 목록</strong>이 있다. 회사가 PC 를 나눠줄 때 회사 도장을 여기 넣어뒀다 (직접 보기: 윈도우 + R → <code>certmgr.msc</code> → 신뢰할 수 있는 루트 인증 기관)",
+                "<code>requests</code> 는 윈도우 목록 대신 <strong>설치될 때 딸려온 자기 목록</strong>을 본다 → 회사 도장이 없어서 거절 (<code>CERTIFICATE_VERIFY_FAILED</code> 에러)",
+                "<code>feedparser</code> 는 <strong>윈도우 목록</strong>을 본다 → 회사 도장이 있어서 통과",
+                "그래서 프롬프트에 「requests 말고 feedparser」 라고 적는다",
+            ],
+            body="이 에러가 떴다면 AI 가 지시를 무시하고 <code>requests</code> 를 쓴 것이다. 실제로 자주 일어난다 — "
                  "같은 프롬프트를 줘도 어느 라이브러리를 고르느냐에 따라 성패가 갈린다.",
             prompt="""아직 CERTIFICATE_VERIFY_FAILED 에러가 나. 지금 코드가 인터넷에서 자료를 받아올 때 requests 를
 쓰고 있는지 봐줘. 쓰고 있으면 feedparser 로 바꿔줘. feedparser 는 파이썬에 원래 들어있는

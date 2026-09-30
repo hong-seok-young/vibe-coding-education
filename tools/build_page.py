@@ -128,9 +128,14 @@ def render_step_page(step, index, total):
     trouble_html = ""
     if step.get("trouble"):
         t = step["trouble"]
+        # 왜 그 에러가 나는지 먼저 풀어주는 목록 (있을 때만). items 는 HTML 그대로.
+        why_html = ""
+        if t.get("items"):
+            lis = LINEBREAK.join(f'        <li>{x}</li>' for x in t["items"])
+            why_html = f'{LINEBREAK}      <ol class="trouble-list">{LINEBREAK}{lis}{LINEBREAK}      </ol>'
         trouble_html = f'''
     <details class="answer-details">
-      <summary>{esc(t['summary'])}</summary>
+      <summary>{esc(t['summary'])}</summary>{why_html}
       <p class="tiny" style="margin-top: 4px;">{t['body']}</p>
       <details class="prompt-box" style="margin-top: 10px;">
         <summary class="prompt-box-head">
@@ -680,6 +685,10 @@ STYLE = '''<style>
   /* 번호가 보이도록 flex 를 쓰지 않는다 — flex 자식이 되면 li 의 번호 표식이 사라진다 */
   .install-list { margin: 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft); line-height: 1.75; }
   .install-list li { margin-bottom: 4px; }
+  .trouble-list { margin: 0 0 10px; padding-left: 20px; font-size: 13px; color: var(--ink-soft); line-height: 1.75; }
+  .trouble-list li { margin-bottom: 4px; }
+  .trouble-list li::marker { color: var(--accent); font-weight: 600; }
+  .trouble-list strong { color: var(--ink); }
   .install-list li::marker { color: var(--accent); font-weight: 600; }
   .install-list strong { color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.95em; }
   .prep-fallback { margin-top: 12px; }

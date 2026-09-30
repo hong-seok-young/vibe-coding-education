@@ -2018,104 +2018,14 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
     </div>
 
     <div class="criteria-box">
-      <p class="criteria-label">유료 — AI API (쓴 만큼 돈이 나간다)</p>
-      <p class="tiny" style="margin-bottom:6px;">모아온 기사를 <strong>요약·분류하고 중요도를
-        매기는</strong> 데 쓴다. 오늘 만든 보고서에 붙이면 「읽을 것만 골라주는」 리포트가 된다.
-        무료 한도가 아니라 <strong>쓴 만큼 과금</strong>된다(대개 선불 충전).</p>
-      <div class="apitable-wrap">
-      <table class="apitable">
-        <thead><tr><th>제공사</th><th>대표 모델</th><th>발급처</th><th>참고</th></tr></thead>
-        <tbody>
-          <tr>
-            <td class="api-name">Anthropic</td>
-            <td>Claude</td>
-            <td><a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a></td>
-            <td>긴 문서 정리에 강하다</td>
-          </tr>
-          <tr>
-            <td class="api-name">OpenAI</td>
-            <td>GPT</td>
-            <td><a href="https://platform.openai.com/" target="_blank" rel="noopener">platform.openai.com</a></td>
-            <td>자료와 예제가 가장 많다</td>
-          </tr>
-          <tr>
-            <td class="api-name">Google</td>
-            <td>Gemini</td>
-            <td><a href="https://aistudio.google.com/" target="_blank" rel="noopener">aistudio.google.com</a></td>
-            <td>무료 시험 한도가 있다</td>
-          </tr>
-          <tr>
-            <td class="api-name">네이버클라우드</td>
-            <td>HyperCLOVA X</td>
-            <td><a href="https://clovastudio.ncloud.com/" target="_blank" rel="noopener">clovastudio.ncloud.com</a></td>
-            <td>국내 서비스·국내 결제</td>
-          </tr>
-          <tr>
-            <td class="api-name">업스테이지</td>
-            <td>Solar</td>
-            <td><a href="https://console.upstage.ai/" target="_blank" rel="noopener">console.upstage.ai</a></td>
-            <td>국내 서비스, 문서 인식에 강하다</td>
-          </tr>
-          <tr>
-            <td class="api-name">Microsoft</td>
-            <td>Azure OpenAI</td>
-            <td><a href="https://azure.microsoft.com/ko-kr/products/ai-services/openai-service" target="_blank" rel="noopener">azure.microsoft.com</a></td>
-            <td><strong>사내 Azure 계약이 있으면 이쪽이 먼저다</strong></td>
-          </tr>
-        </tbody>
-      </table>
-      </div>
-      <p class="tiny" style="margin-top:8px;">가격은 글자 100만 자 단위로 매겨진다. 가벼운 모델은
-        100만 자에 1달러대, 가장 좋은 모델은 5달러대이고 <strong>받는 답변 쪽이 5배쯤 비싸다.</strong>
-        기사 몇백 건 요약은 몇백 원 수준이다. 정확한 값은 각 발급처의 요금 안내를 볼 것.</p>
-    </div>
-
-    <div class="callout">
-      <p><strong>AI API 는 혼자 신청하지 말 것.</strong> 두 가지가 먼저다 —
-        <strong>결제 수단</strong>(개인 카드로 회사 일을 결제하면 정산이 곤란해진다)과
-        <strong>보안 검토</strong>(사내 자료를 외부 AI 로 보내도 되는지는 자료 종류에 따라 다르다).
-        <strong>DX팀에 먼저 문의할 것.</strong></p>
-    </div>
-
-    <div class="criteria-box">
-      <p class="criteria-label">그 밖의 유료</p>
+      <p class="criteria-label">AI API — 웍스 AI API 를 쓴다</p>
       <ul>
-        <li><strong>유료 데이터 서비스</strong> — 증권사 시세, 신용평가, 해외 입찰정보 등은
-          업체별 계약이 필요하다. 개인이 발급받는 성격이 아니다.</li>
+        <li><strong>쓰는 곳</strong> — 모아온 기사를 요약·분류하고 중요도를 매기기. 오늘 만든 보고서에 붙이면
+          「읽을 것만 골라주는」 리포트가 된다.</li>
+        <li><strong>외부 유료 AI API</strong> (Claude · GPT · Gemini 등) 도 있지만, 사내 자료가 회사 밖으로
+          나가는 <strong>보안 문제</strong>가 있다.</li>
+        <li>그래서 회사는 <strong>웍스 AI API</strong> 사용을 권한다. 사용을 원하면 <strong>DX팀에 문의</strong>.</li>
       </ul>
-    </div>
-
-    <div class="workflow-note">
-      <p class="workflow-note-title">인증키 발급 — 어디나 순서가 같다</p>
-      <ol>
-        <li><strong>회원가입</strong> — 발급처 사이트에 가입한다 (대부분 회사 메일로 가능).</li>
-        <li><strong>인증키 신청</strong> — DART·ECOS·KOSIS 는 신청하면 <strong>바로 발급</strong>된다.
-          카카오·네이버는 「애플리케이션 등록」 을 먼저 하면 키가 나온다.</li>
-        <li><strong>공공데이터포털만 한 단계 더 있다</strong> — 아래 주의사항 참고.</li>
-        <li><strong>발급받은 키는 프로그램 입력 칸에 붙여넣는다.</strong>
-          코드 안에 적지 않는다. 오늘 만든 프로그램이 그렇게 되어 있다.</li>
-      </ol>
-    </div>
-
-    <div class="criteria-box">
-      <p class="criteria-label">주의 — 공공데이터포털은 DART 와 다르다</p>
-      <ul>
-        <li><strong>키 하나로 전부 되는 게 아니다.</strong> 계정 인증키는 하나지만,
-          <strong>쓰려는 API 마다 「활용신청」 을 따로</strong> 해야 한다.</li>
-        <li>자동승인되는 것도 있고 <strong>심의를 거치는 것</strong>도 있다.
-          쓸 API 를 미리 정해 신청까지 끝내둬야 한다.</li>
-        <li>신청하지 않은 API 를 부르면 키가 멀쩡한데도 거부된다.
-          <strong>키가 틀린 것으로 오해하기 쉬운 지점이다.</strong></li>
-        <li>하루 한도는 <strong>API 마다 다르다</strong> (나라장터는 개발계정 하루 1,000건).
-          부족하면 활용사례를 등록해 늘린다. 혼자 쓰기에는 개발계정으로 충분하다.</li>
-      </ul>
-    </div>
-
-    <div class="callout">
-      <p><strong>한도와 가격은 바뀐다.</strong> 위 숫자는 2026년 9월 각 발급처 공식 페이지에서
-        확인한 것만 적었고, 확인하지 못한 곳은 「발급처에서 확인」 으로 두었다.
-        실제로 쓸 때는 발급처 화면의 안내를 따른다. 그리고 어떤 API 든 오늘과 똑같이
-        <strong>「막히면 에러 문장을 그대로 AI 에게 붙여넣기」</strong> 가 가장 빠른 해결책이다.</p>
     </div>
   </section>
 

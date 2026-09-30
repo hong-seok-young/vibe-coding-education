@@ -889,6 +889,96 @@ STYLE = '''<style>
   .workflow-note strong { color: var(--ink); }
   .workflow-note code { background: var(--surface); }
 
+  /* ── 사전 준비 — 그림 ── */
+  .pv-map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 4px 0 6px; }
+  .pv-map-item { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center;
+                 background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 8px; }
+  .pv-map-num { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 4px;
+                background: var(--accent-wash); color: var(--accent); font-weight: 700; font-size: 13px; }
+  .pv-map-item strong { font-size: 14px; color: var(--ink); }
+  .pv-map-item small { font-size: 12px; color: var(--muted); }
+  .pv-map-note { margin: 0 0 22px; font-size: 12.5px; color: var(--muted); text-align: right; }
+
+  .pv-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0 8px; }
+  .pv-steps.four { grid-template-columns: repeat(4, 1fr); }
+  .pv-step p { margin: 6px 0 0; font-size: 12.5px; color: var(--ink-soft); text-align: center; line-height: 1.5; }
+  .pv-step p b { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 5px; border-radius: 50%;
+                 background: var(--accent); color: var(--accent-ink); font-size: 11px; vertical-align: 1px; }
+  .pv-step p code { font-size: 11.5px; }
+  .pv-step p small { display: block; font-size: 11px; color: var(--muted); }
+  .pv-pic { position: relative; height: 84px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line);
+            display: grid; place-items: center; overflow: hidden; }
+
+  .pv-folder { position: relative; width: 58px; height: 40px; margin-top: 6px; border-radius: 3px 7px 7px 7px;
+               background: var(--accent-wash); border: 1.5px solid var(--accent); color: var(--accent);
+               display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .pv-folder::before { content: ""; position: absolute; left: -1.5px; top: -9px; width: 24px; height: 8px;
+                       border: 1.5px solid var(--accent); border-bottom: 0; border-radius: 4px 4px 0 0; background: var(--accent-wash); }
+  .pv-file { width: 40px; height: 50px; border-radius: 3px 12px 3px 3px; background: var(--surface);
+             border: 1.5px solid var(--line-strong); display: grid; place-items: end center; padding-bottom: 6px;
+             font-size: 10px; font-weight: 700; color: var(--muted); box-sizing: border-box; }
+  .pv-dbl { position: absolute; right: 10px; bottom: 10px; font-size: 10.5px; font-weight: 700; padding: 3px 7px;
+            border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
+  .pv-term { width: 82%; display: flex; flex-direction: column; gap: 3px; padding: 8px 10px; box-sizing: border-box;
+             background: #1c2321; border-radius: 6px; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 10px; }
+  .pv-term i { font-style: normal; color: #aab4ae; }
+  .pv-term i.ok { color: #7ec293; font-weight: 700; }
+
+  .pv-browser { width: 86%; height: 62px; display: flex; flex-direction: column; overflow: hidden;
+                background: var(--surface); border: 1px solid var(--line-strong); border-radius: 6px; }
+  .pv-browser .bar { height: 9px; flex: none; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .pv-browser .logo { flex: 1; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: #1b6fd0; letter-spacing: 0.02em; }
+  .pv-browser .cards { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 5px; }
+  .pv-browser .cards i { border-radius: 3px; background: var(--surface-2); }
+  .pv-browser .cards i.hl { background: var(--accent); color: var(--accent-ink); font-style: normal; font-size: 9px;
+                            font-weight: 700; display: grid; place-items: center; }
+  .pv-browser .form { flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; }
+  .pv-browser .form i { height: 5px; border-radius: 3px; background: var(--surface-2); }
+  .pv-browser .form em { align-self: flex-end; font-style: normal; font-size: 9px; font-weight: 700; padding: 2px 8px;
+                         border-radius: 4px; background: var(--accent); color: var(--accent-ink); }
+  .pv-key { display: flex; align-items: center; gap: 6px; }
+  .pv-key span { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; padding: 5px 7px; border-radius: 5px;
+                 background: var(--surface); border: 1px solid var(--line-strong); color: var(--ink-soft); }
+  .pv-key em { font-style: normal; font-size: 10.5px; font-weight: 700; padding: 4px 8px; border-radius: 5px;
+               background: var(--accent); color: var(--accent-ink); }
+
+  .pv-flow { display: flex; flex-direction: column; gap: 14px; margin: 8px 0 14px; padding: 14px; border-radius: 10px;
+             background: var(--paper); border: 1px solid var(--line); }
+  .pv-row { display: flex; align-items: center; gap: 8px; }
+  .pv-tag { width: 38px; flex: none; font-size: 11px; font-weight: 800; color: var(--good); }
+  .pv-tag.api { color: var(--accent); }
+  .pv-node { flex: none; min-width: 74px; padding: 8px 10px; border-radius: 8px; text-align: center; font-size: 12.5px;
+             font-weight: 700; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line-strong); }
+  .pv-node small { display: block; font-size: 10.5px; font-weight: 500; color: var(--muted); }
+  .pv-node.src { border-color: var(--good); background: var(--good-wash); }
+  .pv-node.src.api { border-color: var(--accent); background: var(--accent-wash); }
+  .pv-lines { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+  .pv-line { position: relative; flex: 1; height: 2px; margin: 12px 4px 0; background: var(--line-strong); }
+  .pv-lines .pv-line { flex: none; margin-top: 12px; }
+  .pv-line em { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); white-space: nowrap;
+                font-style: normal; font-size: 11px; color: var(--ink-soft); }
+  .pv-line.left::before, .pv-line.right::after { content: ""; position: absolute; top: -4px; border: 5px solid transparent; }
+  .pv-line.left::before { left: -6px; border-right-color: var(--line-strong); }
+  .pv-line.right::after { right: -6px; border-left-color: var(--line-strong); }
+
+  .pv-count { display: flex; flex-direction: column; gap: 10px; margin: 10px 0 8px; }
+  .pv-count-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .pv-box { min-width: 64px; padding: 6px 8px; border-radius: 6px; text-align: center; font-size: 12px; font-weight: 700;
+            color: var(--ink); background: var(--accent-wash); border: 1.5px solid var(--accent); }
+  .pv-box small { display: block; font-size: 10.5px; font-weight: 500; color: var(--ink-soft); }
+  .pv-eq { font-size: 12.5px; color: var(--ink-soft); margin-left: 4px; }
+  .pv-eq strong { color: var(--accent); }
+  .pv-dots { width: 212px; height: 22px; border-radius: 4px;
+             background-image: radial-gradient(circle, var(--accent) 2.6px, transparent 3px);
+             background-size: 14px 11px; }
+
+  @media (max-width: 560px) {
+    .pv-map, .pv-steps.four { grid-template-columns: repeat(2, 1fr); }
+    .pv-steps { grid-template-columns: 1fr; }
+    .pv-node { min-width: 0; padding: 6px; font-size: 11.5px; }
+    .pv-tag { width: 28px; }
+  }
+
   /* ── 서론 — 글 대신 그림으로 ── */
   .v-title { font-size: 15px; font-weight: 700; color: var(--ink); margin: 28px 0 12px; }
 
@@ -1502,6 +1592,14 @@ PREP_PAGE = f'''
         <span class="num">0</span>
         <h2>사전 준비</h2>
       </div>
+
+      <div class="pv-map">
+        <div class="pv-map-item"><span class="pv-map-num">A</span><strong>설치</strong><small>더블클릭 한 번</small></div>
+        <div class="pv-map-item"><span class="pv-map-num">B</span><strong>DART 인증키</strong><small>무료 발급 · 메모장에</small></div>
+        <div class="pv-map-item"><span class="pv-map-num">C</span><strong>뉴스</strong><small>발급할 것 없음</small></div>
+        <div class="pv-map-item"><span class="pv-map-num">E</span><strong>아웃룩</strong><small>로그인만 확인</small></div>
+      </div>
+      <p class="pv-map-note">D 는 읽을거리 — RSS 와 API 가 무엇인지</p>
 
 {sections_prep}
     </div>

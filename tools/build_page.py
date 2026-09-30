@@ -198,7 +198,7 @@ step_pages_html = "\n".join(render_step_page(s, i, len(STEPS)) for i, s in enume
 # ── TOC ──────────────────────────────────────────────────
 TOC_LABELS = {
     "s0": "뼈대", "s1": "구글 뉴스", "s2": "DART",
-    "s3": "HTML 보고서", "s4": "아웃룩 발송", "s5": "완성",
+    "s3": "HTML 보고서", "s4": "아웃룩 발송", "s5": "통합 실행",
 }
 
 toc_part1 = "\n".join(
@@ -1403,7 +1403,7 @@ INTRO_PAGE = '''
           <div class="mw-btns"><b class="on">뉴스</b><b class="on">DART</b><b class="on">보고서</b><b class="on">메일</b><b class="new">전체</b></div>
           <div class="mw-out"><i class="on"></i><i class="on"></i><i class="on"></i></div>
         </div>
-        <figcaption><span>STEP 5</span>합치기</figcaption>
+        <figcaption><span>STEP 5</span>통합 실행</figcaption>
       </figure>
     </div>
 

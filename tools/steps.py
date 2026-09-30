@@ -353,7 +353,7 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
 
     dict(
         part=3, num="5", id="s5", time="10분",
-        title="전체 실행 버튼 — 완성",
+        title="통합 실행",
         lib=None,
         desc="",
         todo=[

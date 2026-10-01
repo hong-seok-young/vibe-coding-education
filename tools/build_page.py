@@ -102,9 +102,6 @@ _SHOT_SPECS = [   # (단계, 파일, 설명, 세로로 긴 그림인가)
     ("s2", "step2.png", "DART 수집까지 마친 프로그램 화면", False),
     ("s3", "step3-report.png", "「보고서 만들기」 를 누르면 브라우저에 뜨는 보고서", True),
     ("s4", "step4-mail.png", "아웃룩으로 받은 메일", True),
-    ("s6", "step6.png", "목적 「영업 · 수주」 로 모은 화면 — 관심 키워드가 든 기사 위주", False),
-    ("s7", "step7.png", "점수를 매긴 화면 — 날짜 옆 ★점수, 0점은 빠짐", False),
-    ("s8", "step8-report.png", "고도화 보고서 — 왼쪽 메뉴 · 검색 · 즐겨찾기 · TOP 10", False),
 ]
 for _sid, _file, _cap, _tall in _SHOT_SPECS:
     _path = f"{HERE}/step-shots/{_file}"
@@ -276,18 +273,9 @@ CASE_PAGE = f'''
       <figcaption>첫 화면 — 영업 우선순위 · 카테고리 · S/A급 · TOP 10 프로젝트</figcaption>
     </figure>
 
-    <p class="v-title">이번 고도화에서 만들 것과 이어진다</p>
-    <div class="case-map">
-      <div class="case-card"><span class="case-step">STEP 6 · 목적에 맞는 수집</span>
-        <strong>영업에 쓸 신호만 모은다</strong>
-        <small>DART 시설투자 공시 · 뉴스 · 식약처 GMP · 나라장터 — 최근 7일 1,524건</small></div>
-      <div class="case-card"><span class="case-step">STEP 7 · 스코어링</span>
-        <strong>점수와 등급으로 추린다</strong>
-        <small>행동(착공·신축·증설) + 대상(공장·클린룸) + 규모로 점수 → S급 80점+, A급 60~79, TOP 10</small></div>
-      <div class="case-card"><span class="case-step">STEP 8 · 보고서 고도화</span>
-        <strong>보는 사람이 쓰기 좋게</strong>
-        <small>우선순위 목차 · 카테고리 필터 · 키워드 검색 · ☆ 즐겨찾기 · 테마 · 글씨 크기</small></div>
-    </div>
+<p class="v-title">기본 실습에서 실전 사례까지 — 네 덩어리</p><div class="xf-pipe"><div><b>① 수집</b><small>출처 4종 · 매체 44개</small><em>STEP 6</em></div><div><b>② 거르기 · 점수</b><small>100점 · S/A 등급</small><em>STEP 7</em></div><div><b>③ 보고서</b><small>영업 우선순위 한 장</small><em>STEP 8</em></div><div class="auto"><b>④ 자동화</b><small>PC 없이 매주 발송</small><em>아래</em></div></div>
+    <div class="xf"><p class="xf-title"><span class="xf-badge">실전 사례에서는</span>PC 를 켜지 않아도 매주 금요일 아침에 나간다</p><div class="xf-cmp"><div class="xf-side"><span>기본 실습 · 우리가 만든 것</span>내 PC 에서 버튼을 눌러야 돈다 · 아웃룩으로 발송</div><div class="xf-arrow">→</div><div class="xf-side real"><span>실전 사례 · 수주레이더</span>GitHub 서버가 정해진 시각에 알아서 실행 · 웹 페이지 갱신 · 메일 발송</div></div><p class="xf-h">과정</p><ol class="xf-flow"><li>매일 06:00 — 매체 RSS 수집해 쌓기</li><li>금 06:40 — 7일치로 보고서 만들기 (안 되면 07:40 · 09:40 다시)</li><li>품질 검사 — 너무 작거나 핵심 섹션이 없으면 실패 처리</li><li>웹 페이지 갱신 + 날짜별 아카이브</li><li>영업팀에 메일 — 링크 + 보고서 첨부</li><li>금 11:00 — 안 나갔으면 운영자에게만 알림</li></ol><p class="xf-h">들어간 기술</p><div class="xf-chips"><span class="xf-chip">GitHub Actions — 예약 실행</span><span class="xf-chip">GitHub Secrets — 인증키 보관 (코드에 안 적음)</span><span class="xf-chip">GitHub Pages — 웹 주소로 공유</span><span class="xf-chip">메일 발송 (SMTP)</span><span class="xf-chip">이미 보냈는지 확인 — 중복 발송 방지</span></div><div class="xf-nums"><div class="xf-num"><b>매일</b><small>06:00 수집</small></div><div class="xf-num"><b>금요일</b><small>06:40 발송</small></div><div class="xf-num"><b>3번</b><small>발송 시도 06:40 · 07:40 · 09:40</small></div><div class="xf-num"><b>0대</b><small>켜둘 PC</small></div></div></div>
+    <div class="xf-dev"><p class="xf-h">이렇게 만들었다 — 바이브코딩으로</p><div class="xf-chips"><span class="xf-chip">Claude Code 로 개발</span><span class="xf-chip">CLAUDE.md — AI 에게 주는 작업 지침</span><span class="xf-chip">HANDOFF — 다음 대화로 넘기는 인수인계 메모</span><span class="xf-chip">커밋 88개 중 30개 AI 공동 작성</span><span class="xf-chip">2026-05-28 시작 · 4개월째 매주 운영</span></div></div>
   </section>'''
 MAIN_PY_URL = "https://github.com/hong-seok-young/vibe-coding-education/blob/claude/vibe-coding-education-program-lgtqes/news-report-bot/main.py"
 ZIP_URL = "https://github.com/hong-seok-young/vibe-coding-education/archive/refs/heads/claude/vibe-coding-education-program-lgtqes.zip"
@@ -1181,6 +1169,62 @@ STYLE = '''<style>
     .pv-steps { grid-template-columns: 1fr; }
     .pv-node { min-width: 0; padding: 6px; font-size: 11.5px; }
     .pv-tag { width: 28px; }
+  }
+
+  /* ── 알파 실습 — 실전 사례 과정·기술 그림 ── */
+  .xf { margin: 14px 0 6px; padding: 16px; border-radius: 12px; background: var(--paper); border: 1px solid var(--line); }
+  .xf-title { margin: 0 0 12px; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .xf-badge { display: inline-block; margin-right: 8px; padding: 2px 9px; border-radius: 999px; font-size: 11px;
+              background: var(--accent); color: var(--accent-ink); vertical-align: 2px; }
+  .xf-cmp { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: stretch; }
+  .xf-side { padding: 10px 12px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line);
+             font-size: 13px; color: var(--ink-soft); line-height: 1.55; }
+  .xf-side span { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 3px; }
+  .xf-side.real { border: 1.5px solid var(--accent); background: var(--accent-wash); color: var(--ink); }
+  .xf-side.real span { color: var(--accent); }
+  .xf-arrow { align-self: center; font-size: 20px; color: var(--accent); font-weight: 700; }
+  .xf-h { margin: 16px 0 8px; font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .xf-flow { list-style: none; counter-reset: xf; margin: 0; padding: 0; display: grid;
+             grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .xf-flow li { counter-increment: xf; position: relative; padding: 10px 10px 10px 36px; border-radius: 9px;
+                background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--ink); line-height: 1.5; }
+  .xf-flow li::before { content: counter(xf); position: absolute; left: 10px; top: 10px; width: 18px; height: 18px;
+                        border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700;
+                        background: var(--accent); color: var(--accent-ink); }
+  .xf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .xf-chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--surface);
+             border: 1px solid var(--line-strong); color: var(--ink); }
+  .xf-nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+  .xf-num { padding: 10px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line); text-align: center; }
+  .xf-num b { display: block; font-size: 18px; color: var(--accent); }
+  .xf-num small { display: block; font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .xf-bar { display: flex; gap: 3px; height: 54px; }
+  .xf-bar span { display: flex; flex-direction: column; justify-content: center; padding: 0 8px; border-radius: 6px;
+                 font-size: 12px; font-weight: 700; color: #fff; overflow: hidden; white-space: nowrap; }
+  .xf-bar span small { font-size: 10.5px; font-weight: 500; opacity: 0.9; overflow: hidden; text-overflow: ellipsis; }
+  .xf-bar span:nth-child(1) { background: #c96a1a; }
+  .xf-bar span:nth-child(2) { background: #d98a45; }
+  .xf-bar span:nth-child(3) { background: #3f7a52; }
+  .xf-bar span:nth-child(4) { background: #6b7570; }
+  .xf-grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+  .xf-grades span { padding: 7px; border-radius: 7px; text-align: center; font-size: 12.5px; font-weight: 700; }
+  .xf-grades small { display: block; font-size: 10.5px; font-weight: 500; }
+  .g-s { background: #b3452f; color: #fff; } .g-a { background: #c96a1a; color: #fff; }
+  .g-b { background: var(--surface-2); color: var(--ink); } .g-c { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+  .xf-pipe { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .xf-pipe div { position: relative; padding: 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line);
+                 border-top: 3px solid var(--accent); }
+  .xf-pipe div.auto { border-top-color: var(--good); }
+  .xf-pipe b { display: block; font-size: 14px; color: var(--ink); }
+  .xf-pipe small { display: block; font-size: 12px; color: var(--muted); }
+  .xf-pipe em { display: inline-block; margin-top: 6px; font-style: normal; font-size: 10.5px; font-weight: 700;
+                padding: 1px 7px; border-radius: 999px; background: var(--accent-wash); color: var(--accent); }
+  .xf-pipe div.auto em { background: var(--good-wash); color: var(--good); }
+  .xf-dev { margin-top: 14px; }
+  @media (max-width: 560px) {
+    .xf-cmp { grid-template-columns: 1fr; } .xf-arrow { transform: rotate(90deg); justify-self: center; }
+    .xf-flow, .xf-nums, .xf-grades, .xf-pipe { grid-template-columns: 1fr 1fr; }
+    .xf-bar span small { display: none; }
   }
 
   /* ── 알파 실습 · 실전 사례 ── */

@@ -2034,6 +2034,13 @@ SCRIPT = '''<script>
 })();
 </script>'''
 SCRIPT = SCRIPT.replace("__STAGE_B64__", STAGE_B64_JS)
+# 서비스 워커 등록 — 웹 주소로 열었을 때만 (파일을 더블클릭해 열면 브라우저가 막는다)
+SCRIPT += '''
+<script>
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  navigator.serviceWorker.register("sw.js").catch(function () {});
+}
+</script>'''
 
 body = f'''{TOC_HTML}
 
@@ -2064,6 +2071,10 @@ doc = f'''<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DART·뉴스 정보 크롤링 및 메일발송 프로그램 만들기</title>
 {FAVICON}
+<!-- 설치형 웹 앱(PWA) — 크롬·엣지 주소창에 설치 아이콘이 뜬다. 파일은 tools/make_pwa.py 가 만든다 -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#c96a1a">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 {fonts_head}
 {STYLE}
 </head>

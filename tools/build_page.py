@@ -46,6 +46,8 @@ _FULL_FILE_SUFFIX = (
     "다시 첨부해줘. 되던 기능은 하나도 빼지 말고, 바뀐 부분만 잘라서 주지 말고 항상 전체를." + _NO_BACKSLASH
 )
 for _step in STEPS:
+    if _step["part"] == 4:      # 알파 실습은 여러 파일짜리 프로젝트라 「.py 파일 하나로」 문구를 붙이지 않는다
+        continue
     _step["prompt"] = _step["prompt"] + (
         _FIRST_FILE_SUFFIX if _step["id"] == "s0" else _FULL_FILE_SUFFIX
     )
@@ -123,7 +125,29 @@ SHOT_HTML = f'''
 '''
 
 
+CRITERIA_TMPL = '''    <div class="criteria-box">
+      <p class="criteria-label">성공 기준</p>
+      <ul>
+{}
+      </ul>
+    </div>
+'''
+DOWNLOAD_TMPL = '''    <details class="answer-details">
+      <summary>안 되면? 이 단계까지 만든 프로그램 받기</summary>
+      <p class="tiny" style="margin-top: 4px;">이 STEP 을 마쳤을 때 나와야 하는 파일이다.
+        완성본이 아니라 <strong>딱 여기까지만</strong> 들어있으니, 받아서 그대로 실행하고
+        다음 단계를 이어가면 된다.</p>
+      <div class="actions" style="margin-top: 8px;">
+        <button type="button" class="btn primary download-stage-btn"
+                data-stage="{num}">
+          <span class="arrow">⬇</span> STEP {num} 까지의 프로그램 받기
+        </button>
+      </div>
+    </details>'''
+
+
 def render_step_page(step, index, total):
+    showcase = step["part"] == 4          # 알파 실습: 사례 설명 + 프롬프트만, 실습은 자율
     # 설치는 사전 준비의 bat 한 번으로 끝난다 — STEP 마다 설치 명령을 보여주지 않는다.
     lib_html = ""
 
@@ -179,40 +203,23 @@ def render_step_page(step, index, total):
       <span class="page-eyebrow">{PART_LABELS[step['part']]}</span>
       <div class="page-title-row">
         <h2>STEP {step['num']} · {esc(step['title'])}</h2>
-        <span class="step-time">{esc(step['time'])}</span>
+        {"" if showcase else '<span class="step-time">' + esc(step['time']) + '</span>'}
       </div>
       {todo_html}
     </div>
 {note_html}{step.get("visual", "")}{intro}{lib_html}
     <details class="prompt-box">
       <summary class="prompt-box-head">
-        <span class="prompt-label">모범 프롬프트 보기</span>
+        <span class="prompt-label">{"이렇게 만들려면 — 프롬프트 보기" if showcase else "모범 프롬프트 보기"}</span>
         <span class="prompt-hint">클릭!</span>
         <button class="copy-btn" data-copy="prompt-{step['id']}">복사</button>
       </summary>
       <pre class="prompt-text" id="prompt-{step['id']}">{esc(step['prompt'])}</pre>
     </details>
 
-    <div class="criteria-box">
-      <p class="criteria-label">성공 기준</p>
-      <ul>
-{criteria_html}
-      </ul>
-    </div>
-
+{"" if showcase else CRITERIA_TMPL.format(criteria_html)}
 {trouble_html}
-    <details class="answer-details">
-      <summary>안 되면? 이 단계까지 만든 프로그램 받기</summary>
-      <p class="tiny" style="margin-top: 4px;">이 STEP 을 마쳤을 때 나와야 하는 파일이다.
-        완성본이 아니라 <strong>딱 여기까지만</strong> 들어있으니, 받아서 그대로 실행하고
-        다음 단계를 이어가면 된다.</p>
-      <div class="actions" style="margin-top: 8px;">
-        <button type="button" class="btn primary download-stage-btn"
-                data-stage="{step['num']}">
-          <span class="arrow">⬇</span> STEP {step['num']} 까지의 프로그램 받기
-        </button>
-      </div>
-    </details>
+{"" if showcase else DOWNLOAD_TMPL.format(num=step['num'])}
   </section>'''
 
 
@@ -249,6 +256,18 @@ ALL_PAGE_IDS.insert(ALL_PAGE_IDS.index("s6"), "case")
 # ── 알파 실습 · 실전 사례 ──────────────────────────────────
 # 영업팀 과제로 실제로 만든 수주레이더. 고도화 STEP 6~8 이 어디로 가는지 먼저 보여준다.
 CASE_URL = "https://hong-seok-young.github.io/xicna-sujoo-radar/"
+CASE_PROMPT = """이 수주 레이더를 내 PC 없이 매주 자동으로 돌게 해줘. GitHub 에 올려서 쓸 거야.
+
+1. GitHub Actions 로 두 가지 예약 실행
+   - 매일 06:00(한국 시간) — 뉴스 RSS 만 받아서 쌓기
+   - 금요일 06:40 — 7일치로 보고서 만들고 영업팀에 메일. 안 되면 07:40, 09:40 에 한 번씩 다시
+2. 매일 모은 뉴스는 Actions 캐시로 다음 실행에 넘기기 (금요일 작업이 7일치를 쓰게)
+3. 보내기 전에 오늘 이미 보냈는지 확인 — 다시 시도할 때 두 번 가지 않게
+4. 보고서가 너무 작거나(20KB 미만) 핵심 칸이 빠졌으면 실패로 처리
+5. 보고서는 GitHub Pages 에 올리고, 날짜별로 따로 보관 + 지난 보고서 목록 페이지
+6. 영업팀 메일 — 본문은 짧게, 웹 링크와 보고서 파일 첨부
+7. 실패하거나 일부 출처만 실패했으면 담당자에게만 알림. 금요일 11:00 까지 안 나갔으면 그것도 알림
+8. 인증키와 메일 비밀번호는 GitHub Secrets 에만 — 코드와 저장소에는 절대 넣지 않기"""
 CASE_PAGE = f'''
   <section class="page" data-page="case" id="case">
     <div class="page-head">
@@ -267,7 +286,14 @@ CASE_PAGE = f'''
 
 <p class="v-title">기본 실습에서 실전 사례까지 — 네 덩어리</p><div class="xf-pipe"><div><b>① 수집</b><small>출처 4종 · 매체 44개</small><em>STEP 6</em></div><div><b>② 거르기 · 점수</b><small>100점 · S/A 등급</small><em>STEP 7</em></div><div><b>③ 보고서</b><small>영업 우선순위 한 장</small><em>STEP 8</em></div><div class="auto"><b>④ 자동화</b><small>PC 없이 매주 발송</small><em>아래</em></div></div>
     <div class="xf"><p class="xf-title"><span class="xf-badge">실전 사례에서는</span>PC 를 켜지 않아도 매주 금요일 아침에 나간다</p><div class="xf-cmp"><div class="xf-side"><span>기본 실습 · 우리가 만든 것</span>내 PC 에서 버튼을 눌러야 돈다 · 아웃룩으로 발송</div><div class="xf-arrow">→</div><div class="xf-side real"><span>실전 사례 · 수주레이더</span>GitHub 서버가 정해진 시각에 알아서 실행 · 웹 페이지 갱신 · 메일 발송</div></div><p class="xf-h">과정 — 실제 워크플로 흐름</p><figure class="dg"><div class="dg-scroll"><svg viewBox="0 0 960 360" role="img" aria-label="매일 수집 워크플로와 금요일 발송 워크플로가 캐시로 이어지는 자동화 흐름"><defs><marker id="mk-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk " d="M0,0 L10,5 L0,10 z"/></marker><marker id="mk-a-k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk k" d="M0,0 L10,5 L0,10 z"/></marker><marker id="mk-a-drop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk drop" d="M0,0 L10,5 L0,10 z"/></marker></defs><rect class="lane" x="8" y="10" width="944" height="120" rx="10"/><text class="lane-t" x="20" y="28">매일 06:00 — GitHub 서버가 알아서 실행</text><rect class="bx " x="24" y="44" width="136" height="54" rx="7"/><text class="h " x="92" y="67.5" text-anchor="middle">뉴스 보관함 꺼내기</text><text class="s" x="92" y="82.5" text-anchor="middle">어제까지 모은 것</text><rect class="bx " x="177" y="44" width="136" height="54" rx="7"/><text class="h " x="245" y="67.5" text-anchor="middle">새 뉴스 받기</text><text class="s" x="245" y="82.5" text-anchor="middle">언론사 44곳</text><polyline class="ln " points="160,71 173,71" marker-end="url(#mk-a)"/><rect class="bx " x="330" y="44" width="136" height="54" rx="7"/><text class="h " x="398" y="67.5" text-anchor="middle">보관함에 더하기</text><text class="s" x="398" y="82.5" text-anchor="middle">10일치까지</text><polyline class="ln " points="313,71 326,71" marker-end="url(#mk-a)"/><rect class="bx out" x="483" y="44" width="136" height="54" rx="7"/><text class="h " x="551" y="67.5" text-anchor="middle">보관함 넣어두기</text><text class="s" x="551" y="82.5" text-anchor="middle">다음 날 · 금요일용</text><polyline class="ln " points="466,71 479,71" marker-end="url(#mk-a)"/><rect class="bx " x="636" y="44" width="136" height="54" rx="7"/><text class="h " x="704" y="67.5" text-anchor="middle">금 11:00 감시</text><text class="s" x="704" y="82.5" text-anchor="middle">발송 성공했나?</text><rect class="bx drop" x="789" y="44" width="136" height="54" rx="7"/><text class="h " x="857" y="67.5" text-anchor="middle">담당자에게 알림</text><text class="s" x="857" y="82.5" text-anchor="middle">안 나갔으면</text><polyline class="ln drop" points="772,71 785,71" marker-end="url(#mk-a-drop)"/><rect class="lane" x="8" y="150" width="944" height="200" rx="10"/><text class="lane-t" x="20" y="168">금요일 06:40 — 안 되면 07:40 · 09:40 에 다시</text><rect class="bx " x="24" y="186" width="136" height="58" rx="7"/><text class="h " x="92" y="211.5" text-anchor="middle">오늘 이미 보냈나?</text><text class="s" x="92" y="226.5" text-anchor="middle">두 번 보내지 않게</text><rect class="bx " x="177" y="186" width="136" height="58" rx="7"/><text class="h " x="245" y="211.5" text-anchor="middle">모으기 · 점수 · 보고서</text><text class="s" x="245" y="226.5" text-anchor="middle">STEP 6~8 전부</text><polyline class="ln " points="160,215 173,215" marker-end="url(#mk-a)"/><rect class="bx " x="330" y="186" width="136" height="58" rx="7"/><text class="h " x="398" y="211.5" text-anchor="middle">보고서 점검</text><text class="s" x="398" y="226.5" text-anchor="middle">너무 짧으면 실패 처리</text><polyline class="ln " points="313,215 326,215" marker-end="url(#mk-a)"/><rect class="bx out" x="483" y="186" width="136" height="58" rx="7"/><text class="h " x="551" y="211.5" text-anchor="middle">웹 페이지에 올리기</text><text class="s" x="551" y="226.5" text-anchor="middle">지난 보고서 모음에도</text><polyline class="ln " points="466,215 479,215" marker-end="url(#mk-a)"/><rect class="bx k" x="636" y="186" width="136" height="58" rx="7"/><text class="h " x="704" y="211.5" text-anchor="middle">영업팀 메일</text><text class="s" x="704" y="226.5" text-anchor="middle">링크 + 보고서 첨부</text><polyline class="ln " points="619,215 632,215" marker-end="url(#mk-a)"/><rect class="bx " x="789" y="186" width="136" height="58" rx="7"/><text class="h " x="857" y="211.5" text-anchor="middle">올린 내용 저장</text><text class="s" x="857" y="226.5" text-anchor="middle">안 되면 3번까지 다시</text><polyline class="ln " points="772,215 785,215" marker-end="url(#mk-a)"/><polyline class="ln " points="551,98 551,140 245,140 245,182" marker-end="url(#mk-a)"/><text class="al " x="398" y="135" text-anchor="middle">모아둔 7일치 뉴스를 넘김</text><polyline class="ln " points="704,186 704,102" marker-end="url(#mk-a)"/><text class="al" x="712" y="160" text-anchor="start">보냈는지 확인</text><polyline class="ln drop" points="92,244 92,282" marker-end="url(#mk-a-drop)"/><rect class="bx drop" x="24" y="286" width="136" height="46" rx="7"/><text class="h " x="92" y="313.0" text-anchor="middle">보냈으면 건너뜀</text><polyline class="ln drop" points="398,244 398,282" marker-end="url(#mk-a-drop)"/><rect class="bx drop" x="330" y="286" width="136" height="46" rx="7"/><text class="h " x="398" y="305.5" text-anchor="middle">실패하면</text><text class="s" x="398" y="320.5" text-anchor="middle">담당자에게만 알림</text><text class="note" x="704" y="300" text-anchor="middle">인증키는 GitHub 비밀 보관함에만</text><text class="note" x="704" y="318" text-anchor="middle">프로그램 안에는 없다</text></svg></div><figcaption>PC 를 켜둘 필요가 없다. 매일 모은 뉴스는 보관함에 쌓였다가 금요일 작업으로 넘어가고, 중복 발송과 미발송은 앞뒤에서 한 번씩 확인한다.</figcaption></figure><div class="xf-nums"><div class="xf-num"><b>매일</b><small>06:00 수집</small></div><div class="xf-num"><b>금요일</b><small>06:40 발송</small></div><div class="xf-num"><b>3번</b><small>발송 시도 06:40 · 07:40 · 09:40</small></div><div class="xf-num"><b>0대</b><small>켜둘 PC</small></div></div></div>
-    <div class="xf-dev"><p class="xf-h">이렇게 만들었다 — 바이브코딩으로</p><div class="xf-chips"><span class="xf-chip">Claude Code 로 개발</span><span class="xf-chip">CLAUDE.md — AI 에게 주는 작업 지침</span><span class="xf-chip">HANDOFF — 다음 대화로 넘기는 인수인계 메모</span><span class="xf-chip">커밋 88개 중 30개 AI 공동 작성</span><span class="xf-chip">2026-05-28 시작 · 4개월째 매주 운영</span></div></div>
+    <details class="prompt-box">
+      <summary class="prompt-box-head">
+        <span class="prompt-label">이렇게 만들려면 — 프롬프트 보기</span>
+        <span class="prompt-hint">클릭!</span>
+        <button class="copy-btn" data-copy="prompt-case">복사</button>
+      </summary>
+      <pre class="prompt-text" id="prompt-case">{esc(CASE_PROMPT)}</pre>
+    </details>
   </section>'''
 MAIN_PY_URL = "https://github.com/hong-seok-young/vibe-coding-education/blob/claude/vibe-coding-education-program-lgtqes/news-report-bot/main.py"
 ZIP_URL = "https://github.com/hong-seok-young/vibe-coding-education/archive/refs/heads/claude/vibe-coding-education-program-lgtqes.zip"
@@ -281,7 +307,7 @@ import base64
 # 내려주면 STEP 0 에서 이미 다 된 프로그램을 받게 되어 실습이 사라진다.
 # 파일은 tools/make_stage_files.py 가 main.py 에서 만들어낸다.
 STAGE_B64 = {}
-for _s in range(9):          # 0~5 기본 실습, 6~8 알파 실습
+for _s in range(6):          # 기본 실습 0~5 — 알파 실습은 사례 설명만이라 받을 파일이 없다
     with open(f"{REPO}/news-report-bot/단계별/STEP{_s}.py", "rb") as _f:
         STAGE_B64[_s] = base64.b64encode(_f.read()).decode("ascii")
 STAGE_B64_JS = "{" + ",".join('"%d":"%s"' % (k, v) for k, v in STAGE_B64.items()) + "}"

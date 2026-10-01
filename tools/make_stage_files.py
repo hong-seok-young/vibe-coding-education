@@ -15,15 +15,7 @@ STEP 0~5 의 스냅샷을 만든다.
   STEP 0 = 1 에서 뉴스 빼기 (버튼은 다섯 개 다 있고 누르면 안내만 나온다)
 
 덜어낼 때 그 기능을 부르던 자리도 같이 손봐야 한다 (아래 CALL_PATCHES).
-
-알파 실습(STEP 6~8)은 고도화 완성본 news-report-bot/고도화_main.py 를 원본으로
-같은 방식으로 만든다.
-
-  STEP 8 = 고도화_main.py 그대로
-  STEP 7 = 8 에서 보고서 고도화 빼기 (보고서는 기본 보고서로)
-  STEP 6 = 7 에서 스코어링 빼기
-
-만들고 나면 tools/check_stage_files.py 로 아홉 개가 다 열리는지 확인한다.
+만들고 나면 tools/check_stage_files.py 로 여섯 개가 다 열리는지 확인한다.
 """
 
 import ast
@@ -33,7 +25,6 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 SRC = os.path.join(REPO, "news-report-bot", "main.py")
-PLUS_SRC = os.path.join(REPO, "news-report-bot", "고도화_main.py")
 OUT_DIR = os.path.join(REPO, "news-report-bot", "단계별")
 
 # 단계마다 "여기서 새로 생기는 함수" — 앞 단계 파일에는 없어야 한다.
@@ -133,72 +124,6 @@ def build_stage(stage, src):
     return text
 
 
-# ── 알파 실습 ────────────────────────────────────────────────
-# 단계마다 새로 생기는 것 (함수든 설정값이든 이름으로 적는다)
-PLUS_STAGE_NAMES = {
-    7: ["KEYWORD_POINT", "IMPORTANT_POINT", "IMPORTANT_DART", "score_item", "score_items"],
-    8: ["TOP_N", "REPORT_STYLE", "REPORT_SCRIPT", "report_item_html", "build_report_plus"],
-}
-BASIC_REPORT_PAGE = (
-    '    page = ("<!doctype html><html lang=ko><head><meta charset=utf-8>"\n'
-    '            "<title>오늘의 이슈 리포트</title></head>"\n'
-    '            "<body style=\\"background:#f6f7f6;padding:24px\\">"\n'
-    '            + build_report_html() + "</body></html>")\n')
-PLUS_CALL_PATCHES = [
-    (7, '    items = score_items(items, "뉴스")\n', ""),
-    (7, '    items = score_items(items, "DART")\n', ""),
-    (8, "    page = build_report_plus()\n", BASIC_REPORT_PAGE),
-]
-PLUS_BANNERS = {7: "# STEP 7. 스코어링", 8: "# STEP 8. 보고서 고도화"}
-
-
-def span_of(tree, src_lines, name):
-    """함수든 설정값(대입문)이든 이름으로 찾아 위에 붙은 주석까지 범위를 준다."""
-    for node in tree.body:
-        hit = (isinstance(node, ast.FunctionDef) and node.name == name) or (
-            isinstance(node, ast.Assign) and any(
-                isinstance(t, ast.Name) and t.id == name for t in node.targets))
-        if hit:
-            start = node.lineno - 1
-            while (start > 0 and src_lines[start - 1].lstrip().startswith("#")
-                   and not src_lines[start - 1].lstrip().startswith("# ═")):
-                start -= 1
-            end = node.end_lineno
-            while end < len(src_lines) and src_lines[end].strip() == "":
-                end += 1
-            return start, end
-    raise SystemExit("찾지 못했다: " + name)
-
-
-def build_plus_stage(stage, src):
-    if stage == 8:
-        return src                            # 고도화 완성본은 그대로
-    lines = src.splitlines(keepends=True)
-    tree = ast.parse(src)
-    drop = [span_of(tree, lines, n) for st, names in PLUS_STAGE_NAMES.items()
-            if st > stage for n in names]
-    for start, end in sorted(set(drop), reverse=True):
-        del lines[start:end]
-    text = "".join(lines)
-    # 빠진 단계의 구분 제목(═══ 세 줄)도 지운다
-    for st, title in PLUS_BANNERS.items():
-        if st > stage:
-            i = text.index(title)
-            a = text.rindex("# ═", 0, i)
-            b = text.index(chr(10), text.index("# ═", i)) + 1
-            while text[b:b + 1] == chr(10):
-                b += 1
-            text = text[:a] + text[b:]
-    for st, old, new in PLUS_CALL_PATCHES:
-        if st > stage:
-            assert old in text, old
-            text = text.replace(old, new)
-    text = text.replace(
-        '"""이슈 리포트 봇 — 고도화 완성본 (알파 실습 정답 코드)',
-        '"""이슈 리포트 봇 — STEP %d 까지 만든 상태 (알파 실습 정답 코드)' % stage, 1)
-    return text
-
-
 def main():
     src = io.open(SRC, encoding="utf-8").read()
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -211,17 +136,6 @@ def main():
             stage, text.count(chr(10)), len(text.encode("utf-8")) / 1024))
     print("완성본(STEP5)이 main.py 와 같은가:",
           io.open(os.path.join(OUT_DIR, "STEP5.py"), encoding="utf-8").read() == src)
-
-    plus = io.open(PLUS_SRC, encoding="utf-8").read()
-    for stage in (6, 7, 8):
-        text = build_plus_stage(stage, plus)
-        ast.parse(text)
-        path = os.path.join(OUT_DIR, "STEP%d.py" % stage)
-        io.open(path, "w", encoding="utf-8", newline="\n").write(text)
-        print("  STEP%d.py  %5d줄  %6.1f KB" % (
-            stage, text.count(chr(10)), len(text.encode("utf-8")) / 1024))
-    print("고도화 완성본(STEP8)이 고도화_main.py 와 같은가:",
-          io.open(os.path.join(OUT_DIR, "STEP8.py"), encoding="utf-8").read() == plus)
 
 
 if __name__ == "__main__":

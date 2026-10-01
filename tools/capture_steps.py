@@ -33,9 +33,7 @@ MAX_WIDTH = 900
 
 steps = sorted({int(a) for a in sys.argv[1:]}) or [1, 2, 3]
 mailto = os.environ.get("CAPTURE_MAILTO", "")   # 4·5 단계에서 실제로 받을 주소
-STAGE_DIR = os.path.join(REPO, "news-report-bot", "단계별")
-PURPOSE = "영업 · 수주"
-if any(4 <= n <= 5 for n in steps) and not mailto:
+if any(n >= 4 for n in steps) and not mailto:
     sys.exit("4·5 단계는 메일이 실제로 나간다 — CAPTURE_MAILTO 에 받을 주소를 넣고 실행할 것")
 
 
@@ -63,41 +61,7 @@ def grab(root, path):
     print("저장:", path, img.size, "%.0f KB" % (os.path.getsize(path) / 1024))
 
 
-def edge_shot(html_path, out):
-    """HTML 파일을 엣지로 열어 페이지 전체를 PNG 로. 화면을 긁지 않아 워터마크가 없다."""
-    import pathlib
-    import subprocess
-    from PIL import ImageChops
-    edge = os.path.join(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
-                        "Microsoft", "Edge", "Application", "msedge.exe")
-    subprocess.run([edge, "--headless=new", "--disable-gpu", "--hide-scrollbars",
-                    "--user-data-dir=" + os.path.join(os.environ["TEMP"], "edge-shot"),
-                    "--window-size=1100,2400", "--screenshot=" + out,
-                    pathlib.Path(html_path).as_uri()], capture_output=True, timeout=90)
-    img = Image.open(out).convert("RGB")
-    bg = Image.new("RGB", img.size, img.getpixel((img.width - 1, img.height - 1)))
-    box = ImageChops.difference(img, bg).getbbox()
-    if box:
-        img = img.crop((0, 0, img.width, min(img.height, box[3] + 24)))
-    img.save(out, "PNG", optimize=True)
-    print("저장:", out, img.size)
-
-
 def main():
-    basic = [n for n in steps if n <= 5]
-    if basic:
-        run_app(APP, basic)
-    for n in (6, 7, 8):
-        if n in steps:
-            run_app(os.path.join(STAGE_DIR, "STEP%d.py" % n), [n])
-    if 8 in steps:
-        import glob
-        reports = sorted(glob.glob(os.path.join(STAGE_DIR, "이슈리포트_*.html")),
-                         key=os.path.getmtime)
-        edge_shot(reports[-1], os.path.join(OUT_DIR, "step8-report.png"))
-
-
-def run_app(app, shots):
     os.makedirs(OUT_DIR, exist_ok=True)
     key = io.open(KEY_FILE, encoding="utf-8").read().strip()
 
@@ -106,9 +70,9 @@ def run_app(app, shots):
         with open(SETTINGS, "rb") as f:
             stashed = f.read()
 
-    src = io.open(app, encoding="utf-8").read()
+    src = io.open(APP, encoding="utf-8").read()
     src = src.replace("root.mainloop()", "__capture_hook__()\nroot.mainloop()")
-    ns = {"__name__": "__main__", "__file__": app}
+    ns = {"__name__": "__main__", "__file__": APP}
 
     def hook():
         root = ns["root"]
@@ -121,9 +85,6 @@ def run_app(app, shots):
         set_entry(kw, KEYWORDS)
         set_entry(to, mailto or SHOWN_MAILTO)
         set_entry(key_entry, key)
-        if "purpose_box" in ns:               # 알파 실습 — 목적을 고르면 관심 키워드가 채워진다
-            ns["purpose_box"].set(PURPOSE)
-            ns["apply_purpose"]()
 
         def shoot(n):
             done = threading.Event()
@@ -144,24 +105,15 @@ def run_app(app, shots):
         def work():
             import pythoncom          # 아웃룩(COM)은 부르는 스레드마다 초기화해야 한다
             pythoncom.CoInitialize()
-            if shots[0] >= 6:
-                # 알파 실습은 뉴스·DART 를 모은 화면을 찍는다. STEP 8 은 보고서까지 만든다.
-                ns["collect_news"]()
-                ns["collect_dart"]()
-                if shots[0] == 8:
-                    ns["save_report"]()
-                else:
-                    shoot(shots[0])
-                root.after(0, root.destroy)
-                return
             actions = {1: "collect_news", 2: "collect_dart", 3: "save_report",
                        4: "send_mail", 5: "run_all"}
-            for n in range(1, max(shots) + 1):
+            last = max(steps)
+            for n in range(1, last + 1):
                 if n == 5:
                     # 전체 실행은 결과 칸을 비운 상태에서 처음부터 다시 돈다
                     ns["COLLECTED"].clear()
                 ns[actions[n]]()
-                if n in shots:
+                if n in steps:
                     shoot(n)
             root.after(0, root.destroy)
 
@@ -169,7 +121,7 @@ def run_app(app, shots):
 
     ns["__capture_hook__"] = hook
     try:
-        exec(compile(src, app, "exec"), ns)
+        exec(compile(src, APP, "exec"), ns)
     finally:
         if stashed is not None:
             with open(SETTINGS, "wb") as f:

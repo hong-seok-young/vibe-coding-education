@@ -28,13 +28,10 @@ PENDING = {
     3: ["메일 보내기", "전체 실행"],
     4: ["전체 실행"],
     5: [],
-    6: [], 7: [], 8: [],          # 알파 실습 — 버튼은 모두 붙어 있다
 }
 # 그 단계에서 눌러도 인터넷을 쓰지 않는 버튼 (안전하게 눌러볼 수 있다)
 SAFE_CLICK = {0: "뉴스 수집하기", 1: "DART 수집하기", 2: "보고서 만들기",
-              3: "메일 보내기", 4: "전체 실행", 5: None, 6: None, 7: None, 8: None}
-# 입력 칸 수 — 알파 실습은 목적 고르기(Combobox 도 입력 칸으로 센다)와 관심 키워드가 더해진다
-ENTRIES = {n: (3 if n <= 5 else 5) for n in range(9)}
+              3: "메일 보내기", 4: "전체 실행", 5: None}
 
 problems = []
 
@@ -103,13 +100,13 @@ def main():
         print("단계별 폴더가 없다 — tools/make_stage_files.py 를 먼저 실행할 것")
         return 1
 
-    for stage in range(9):
+    for stage in range(6):
         r = run_stage(stage)
         if r is None:
             continue
         label = "STEP%d" % stage
-        if r["entries"] != ENTRIES[stage]:
-            problems.append("%s 입력 칸이 %d개다 (기대 %d)" % (label, r["entries"], ENTRIES[stage]))
+        if r["entries"] != 3:
+            problems.append("%s 입력 칸이 %d개다 (기대 3)" % (label, r["entries"]))
         if len(r["buttons"]) != 5:
             problems.append("%s 버튼이 %d개다 (기대 5)" % (label, len(r["buttons"])))
         if r["boxes"] != 3:
@@ -132,16 +129,13 @@ def main():
     last = io.open(os.path.join(STAGE_DIR, "STEP5.py"), encoding="utf-8").read()
     if src != last:
         problems.append("STEP5.py 가 main.py 와 다르다 — make_stage_files.py 를 다시 실행할 것")
-    plus = io.open(os.path.join(REPO, "news-report-bot", "고도화_main.py"), encoding="utf-8").read()
-    if plus != io.open(os.path.join(STAGE_DIR, "STEP8.py"), encoding="utf-8").read():
-        problems.append("STEP8.py 가 고도화_main.py 와 다르다 — make_stage_files.py 를 다시 실행할 것")
 
     if problems:
         print("\n문제 %d건" % len(problems))
         for p in problems:
             print("  -", p)
         return 1
-    print("\n이상 없음 — 단계별 파일 9개 모두 열리고 단계에 맞게 동작한다")
+    print("\n이상 없음 — 단계별 파일 6개 모두 열리고 단계에 맞게 동작한다")
     return 0
 
 

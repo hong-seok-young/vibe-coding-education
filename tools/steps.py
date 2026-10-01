@@ -406,32 +406,31 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
         # 실전 사례(수주레이더)는 이 단계를 어떻게 했나 — 페이지에 그대로 들어가는 HTML
         visual="""<div class="xf"><p class="xf-title"><span class="xf-badge">실전 사례에서는</span>영업에 쓸 신호만, 출처를 넓혀서 모은다</p><div class="xf-cmp"><div class="xf-side"><span>기본 실습 · 우리가 만든 것</span>구글 뉴스 RSS 하나 + DART 목록에서 회사 이름으로 거르기</div><div class="xf-arrow">→</div><div class="xf-side real"><span>실전 사례 · 수주레이더</span>매체 RSS 44개 직접 + DART 시설투자 공시 원문 + 나라장터 시설공사 + 식약처 GMP</div></div><p class="xf-h">과정 — 실제 코드 흐름</p><figure class="dg"><div class="dg-scroll"><svg viewBox="0 0 960 520" role="img" aria-label="출처 네 곳이 각자 받기와 거르기를 거쳐 파일로 쌓이는 수집 흐름"><defs><marker id="mk-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk " d="M0,0 L10,5 L0,10 z"/></marker><marker id="mk-c-k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk k" d="M0,0 L10,5 L0,10 z"/></marker><marker id="mk-c-drop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk drop" d="M0,0 L10,5 L0,10 z"/></marker></defs><text class="col" x="120" y="18" text-anchor="middle">어디서</text><text class="col" x="360" y="18" text-anchor="middle">받아오기</text><text class="col" x="615" y="18" text-anchor="middle">거르기</text><text class="col" x="850" y="18" text-anchor="middle">모아두는 곳</text><rect class="lane" x="8" y="30" width="944" height="92" rx="10"/><text class="lane-t" x="20" y="48">매일 06:00</text><rect class="bx " x="20" y="52" width="200" height="58" rx="7"/><text class="h " x="120" y="77.5" text-anchor="middle">언론사 44곳 새 기사</text><text class="s" x="120" y="92.5" text-anchor="middle">종합·경제·산업 전문지</text><rect class="bx " x="250" y="52" width="220" height="58" rx="7"/><text class="h " x="360" y="77.5" text-anchor="middle">제목·요약 받기</text><text class="s" x="360" y="92.5" text-anchor="middle">빠지지 않게 이틀치씩 겹쳐서</text><rect class="bx " x="500" y="52" width="230" height="58" rx="7"/><text class="h " x="615" y="70.0" text-anchor="middle">1차 거르기</text><text class="s" x="615" y="85.0" text-anchor="middle">「착공+공장」 처럼 짝이 맞아야 통과</text><text class="s" x="615" y="100.0" text-anchor="middle">주택·관급 같은 말이 있으면 탈락</text><rect class="bx out" x="760" y="52" width="180" height="58" rx="7"/><text class="h " x="850" y="70.0" text-anchor="middle">뉴스 보관함</text><text class="s" x="850" y="85.0" text-anchor="middle">같은 기사는 한 번만</text><text class="s" x="850" y="100.0" text-anchor="middle">10일치 보관</text><polyline class="ln " points="220,81 246,81" marker-end="url(#mk-c)"/><polyline class="ln " points="470,81 496,81" marker-end="url(#mk-c)"/><polyline class="ln " points="730,81 756,81" marker-end="url(#mk-c)"/><rect class="lane" x="8" y="132" width="944" height="380" rx="10"/><text class="lane-t" x="20" y="150">금요일 06:40 — 한 주치를 한 번에</text><polyline class="ln " points="850,110 850,148" marker-end="url(#mk-c)"/><text class="al " x="876" y="140" text-anchor="middle">7일치</text><rect class="bx out" x="760" y="152" width="180" height="58" rx="7"/><text class="h " x="850" y="177.5" text-anchor="middle">한 주치 뉴스 묶음</text><text class="s" x="850" y="192.5" text-anchor="middle">며칠에 걸쳐 겹친 기사 정리</text><rect class="bx k" x="20" y="232" width="200" height="58" rx="7"/><text class="h " x="120" y="257.5" text-anchor="middle">DART 공시</text><text class="s" x="120" y="272.5" text-anchor="middle">회사가 수시로 내는 공시</text><rect class="bx " x="250" y="232" width="220" height="58" rx="7"/><text class="h " x="360" y="250.0" text-anchor="middle">공시 제목으로 고르기</text><text class="s" x="360" y="265.0" text-anchor="middle">시설투자 · 공장 신축 · 공급계약</text><text class="s" x="360" y="280.0" text-anchor="middle">합병 · 주식 매입은 뺌</text><rect class="bx k" x="500" y="232" width="230" height="58" rx="7"/><text class="h " x="615" y="250.0" text-anchor="middle">공시 본문까지 읽기</text><text class="s" x="615" y="265.0" text-anchor="middle">앞부분 3,000자를 받아서</text><text class="s" x="615" y="280.0" text-anchor="middle">장비만 사는 건 · 기존 건물 매입은 뺌</text><rect class="bx out" x="760" y="232" width="180" height="58" rx="7"/><text class="h " x="850" y="250.0" text-anchor="middle">공시 목록</text><text class="s" x="850" y="265.0" text-anchor="middle">투자금액·목적·기간은</text><text class="s" x="850" y="280.0" text-anchor="middle">보고서 만들 때 읽어냄</text><polyline class="ln " points="220,261 246,261" marker-end="url(#mk-c)"/><polyline class="ln " points="470,261 496,261" marker-end="url(#mk-c)"/><polyline class="ln " points="730,261 756,261" marker-end="url(#mk-c)"/><rect class="bx k" x="20" y="322" width="200" height="58" rx="7"/><text class="h " x="120" y="347.5" text-anchor="middle">나라장터</text><text class="s" x="120" y="362.5" text-anchor="middle">공공기관 시설공사 입찰공고</text><rect class="bx " x="250" y="322" width="220" height="58" rx="7"/><text class="h " x="360" y="347.5" text-anchor="middle">공고 받기</text><text class="s" x="360" y="362.5" text-anchor="middle">한 주치를 한 번에</text><rect class="bx " x="500" y="322" width="230" height="58" rx="7"/><text class="h " x="615" y="340.0" text-anchor="middle">공고명으로 고르기</text><text class="s" x="615" y="355.0" text-anchor="middle">「반도체」 「GMP」 같은 말이 있거나</text><text class="s" x="615" y="370.0" text-anchor="middle">「공장」+산업 이름이 함께 있으면</text><rect class="bx out" x="760" y="322" width="180" height="58" rx="7"/><text class="h " x="850" y="355.0" text-anchor="middle">입찰공고 목록</text><polyline class="ln " points="220,351 246,351" marker-end="url(#mk-c)"/><polyline class="ln " points="470,351 496,351" marker-end="url(#mk-c)"/><polyline class="ln " points="730,351 756,351" marker-end="url(#mk-c)"/><rect class="bx k" x="20" y="412" width="200" height="58" rx="7"/><text class="h " x="120" y="437.5" text-anchor="middle">식약처 GMP</text><text class="s" x="120" y="452.5" text-anchor="middle">의약품 제조 허가 공장 명단</text><rect class="bx " x="250" y="412" width="220" height="58" rx="7"/><text class="h " x="360" y="437.5" text-anchor="middle">이번 주 명단 받기</text><text class="s" x="360" y="452.5" text-anchor="middle">지난주 명단은 따로 보관</text><rect class="bx " x="500" y="412" width="230" height="58" rx="7"/><text class="h " x="615" y="437.5" text-anchor="middle">지난주와 비교</text><text class="s" x="615" y="452.5" text-anchor="middle">업체·주소·제품이 같은지</text><rect class="bx out" x="760" y="412" width="180" height="58" rx="7"/><text class="h " x="850" y="437.5" text-anchor="middle">GMP 공장 목록</text><text class="s" x="850" y="452.5" text-anchor="middle">새로 생긴 곳 표시</text><polyline class="ln " points="220,441 246,441" marker-end="url(#mk-c)"/><polyline class="ln " points="470,441 496,441" marker-end="url(#mk-c)"/><polyline class="ln " points="730,441 756,441" marker-end="url(#mk-c)"/><text class="note" x="500" y="500" text-anchor="start">네 목록 → 점수 매기기 · 보고서 만들기로 (STEP 7 · 8)</text></svg></div><figcaption>뉴스는 매일 조금씩 쌓아두고, 날짜로 조회되는 DART·나라장터·식약처는 금요일에 7일치를 한 번에 받는다. 주황 테두리는 기본 실습에 없던 출처다.</figcaption></figure><div class="xf-nums"><div class="xf-num"><b>44개</b><small>매체 RSS</small></div><div class="xf-num"><b>4종</b><small>출처 — 뉴스 · DART · 식약처 · 나라장터</small></div><div class="xf-num"><b>7일</b><small>한 번에 보는 기간</small></div><div class="xf-num"><b>1,524건</b><small>9/18~25 한 주 수집</small></div></div></div>""",
         lib=None,
-        desc="",
-        todo=[
-            "목적 고르기 칸 — 영업·수주 / 리스크·안전 / 재무·투자",
-            "목적을 고르면 관심 키워드 자동 채우기 — 고쳐 써도 됨",
-            "뉴스 검색어를 「회사명 (키워드 OR 키워드)」 로",
-        ],
-        prompt="""지금 프로그램에 "목적에 맞게 모으기" 를 더해줘. 지금은 회사 이름으로만 찾아서 상관없는 기사가
-많이 섞여.
+        desc="수주레이더는 출처를 넷으로 넓히고, 매일 조금씩 · 금요일에 한 주치를 모았다.",
+        todo=[],
+        prompt="""지금 만든 뉴스 · DART 프로그램을 영업팀용 「수주 레이더」 로 키울 거야. 이번엔 모으는 범위부터 넓혀줘.
 
-1. 입력 칸 아래에 "목적" 고르기 칸 추가 — 영업 · 수주 / 리스크 · 안전 / 재무 · 투자 / 직접 입력
-2. 그 아래 "관심 키워드 (쉼표로 여러 개)" 칸 추가
-3. 목적을 고르면 관심 키워드 칸이 아래 값으로 채워지게, 채워진 뒤 고쳐 써도 되게
-   - 영업 · 수주: 수주, 계약, 착공, 입찰, 분양
-   - 리스크 · 안전: 중대재해, 사고, 사망, 소송, 제재
-   - 재무 · 투자: 실적, 영업이익, 유상증자, 신용등급, 배당
-4. 뉴스 검색어를 「회사명 (키워드1 OR 키워드2 OR …)」 모양으로 — 예: 현대건설 (수주 OR 계약 OR
-   착공). 구글 뉴스가 이 모양을 알아듣고 키워드가 든 기사 위주로 줘
-5. 관심 키워드 칸이 비어 있으면 지금처럼 회사명만으로 검색
-6. 목적과 관심 키워드도 창을 닫았다 열면 남아 있게 저장
+1. 뉴스는 구글 뉴스 대신 언론사 RSS 를 직접 받기 — 종합 · 경제지와 산업 전문지(반도체 · 전자, 제약 · 바이오,
+   식품 · 화장품, 건설 · 에너지). 주소 목록은 설정 파일(rss_feeds.yaml)로 빼서 늘리고 줄이기 쉽게
+2. 기사는 제목과 요약만 쓰고, 빠지는 기사가 없게 매일 이틀치씩 겹쳐 받기. 같은 주소의 기사는 한 번만
+3. 1차 거르기 — 「행동(착공 · 신축 · 증설 …) + 대상(공장 · 클린룸 · 데이터센터 …)」, 「대상 + 금액」,
+   「대상 + 면적」 중 하나가 맞아야 통과. 주택 · 관급 · 인프라 같은 제외어가 제목이나 본문 앞 200자에 있으면
+   탈락. 키워드는 전부 설정 파일(filter_rules.yaml)로
+4. 통과한 뉴스는 날짜별 파일로 쌓고 10일 지난 것은 지우기. 금요일에는 7일치를 합치고 겹친 기사 정리
+5. DART 는 수시공시를 기간으로 받고, 보고서 이름으로 신규시설투자 · 유형자산 양수 · 취득 · 공장 신축 · 증설 ·
+   공급계약만 고르기. 합병 · 주식 양수 · 계약 해지는 빼기
+6. 고른 공시는 「공시서류원본파일」 API 로 본문 앞 3,000자를 받아 파일로 저장해두고(다음엔 다시 안 받게),
+   장비만 사는 것 · 기존 건물 매입 · 원자재 취득은 빼기
+7. 나라장터 시설공사 입찰공고(공공데이터포털)도 받기 — 공고명에 제외어가 있으면 빼고, 반도체 · GMP ·
+   데이터센터 같은 말이 있거나 「공장 · 센터 · 시설」 과 산업 이름이 함께 있으면 남기기
+8. 식약처 「의약품 GMP 적합판정서 발급현황」 도 받기 — 발급일 항목이 없으니 매주 전체 명단을 저장하고
+   지난주 명단과 비교해서 새로 생긴 곳만 표시
+9. 인증키(DART, 공공데이터포털)는 코드에 쓰지 말고 환경변수에서 읽기 (자동화할 때 GitHub Secrets 로 넘긴다)
+10. 출처 하나가 실패해도 나머지는 계속 받고, 무엇이 실패했는지 남기기
 
-나머지 기능은 하나도 바꾸지 마.""",
+참고로 이렇게 만든 실제 사례: https://github.com/hong-seok-young/xicna-sujoo-radar""",
         need_install=None,
-        criteria=[
-            "목적을 바꾸면 관심 키워드 칸이 그 목적의 키워드로 바뀐다",
-            "뉴스 수집 결과에 관심 키워드가 든 기사가 전보다 많이 나온다",
-        ],
+        criteria=[],
     ),
 
     dict(
@@ -440,30 +439,34 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
         # 실전 사례(수주레이더)는 이 단계를 어떻게 했나 — 페이지에 그대로 들어가는 HTML
         visual="""<div class="xf"><p class="xf-title"><span class="xf-badge">실전 사례에서는</span>규칙으로 점수를 매기고 등급으로 나눈다</p><div class="xf-cmp"><div class="xf-side"><span>기본 실습 · 우리가 만든 것</span>관심 키워드 하나당 +3 · 중요 공시 +5 · 0점은 빼기</div><div class="xf-arrow">→</div><div class="xf-side real"><span>실전 사례 · 수주레이더</span>노이즈부터 잘라내고 100점 만점 · S/A/B/C 등급 · 같은 사안은 1건으로</div></div><p class="xf-h">과정 — 실제 코드 흐름</p><figure class="dg"><div class="dg-scroll"><svg viewBox="0 0 960 330" role="img" aria-label="뉴스와 공시 한 건이 필터, 분류, 점수, 묶기를 거쳐 TOP 10 이 되는 흐름"><defs><marker id="mk-s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk " d="M0,0 L10,5 L0,10 z"/></marker><marker id="mk-s-k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk k" d="M0,0 L10,5 L0,10 z"/></marker><marker id="mk-s-drop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk drop" d="M0,0 L10,5 L0,10 z"/></marker></defs><text class="al" x="19" y="50" text-anchor="start">뉴스 · 공시</text><polyline class="ln " points="19,56 79,56 79,66" marker-end="url(#mk-s)"/><rect class="bx " x="19" y="70" width="118" height="78" rx="7"/><text class="h " x="78" y="98.0" text-anchor="middle">1차 거르기</text><text class="s" x="78" y="113.0" text-anchor="middle">「착공+공장」 처럼</text><text class="s" x="78" y="128.0" text-anchor="middle">짝이 맞아야 통과</text><rect class="bx " x="153" y="70" width="118" height="78" rx="7"/><text class="h " x="212" y="98.0" text-anchor="middle">중요도 3단계</text><text class="s" x="212" y="113.0" text-anchor="middle">착공·증설 + 공장·클린룸</text><text class="s" x="212" y="128.0" text-anchor="middle">+ 금액 → HIGH</text><polyline class="ln " points="137,109 149,109" marker-end="url(#mk-s)"/><rect class="bx " x="287" y="70" width="118" height="78" rx="7"/><text class="h " x="346" y="98.0" text-anchor="middle">우리 일 아닌 것</text><text class="s" x="346" y="113.0" text-anchor="middle">경쟁사 수주 · 조선</text><text class="s" x="346" y="128.0" text-anchor="middle">부품 납품 · 10조↑</text><polyline class="ln " points="271,109 283,109" marker-end="url(#mk-s)"/><rect class="bx " x="421" y="70" width="118" height="78" rx="7"/><text class="h " x="480" y="98.0" text-anchor="middle">시설 종류 붙이기</text><text class="s" x="480" y="113.0" text-anchor="middle">클린룸 · 데이터센터</text><text class="s" x="480" y="128.0" text-anchor="middle">제약 · 이차전지 …</text><polyline class="ln " points="405,109 417,109" marker-end="url(#mk-s)"/><rect class="bx k" x="555" y="70" width="118" height="78" rx="7"/><text class="h " x="614" y="98.0" text-anchor="middle">점수 100</text><text class="s" x="614" y="113.0" text-anchor="middle">출처 + 규모</text><text class="s" x="614" y="128.0" text-anchor="middle">+ 시설 + 실현</text><polyline class="ln " points="539,109 551,109" marker-end="url(#mk-s)"/><rect class="bx " x="689" y="70" width="118" height="78" rx="7"/><text class="h " x="748" y="98.0" text-anchor="middle">같은 사안 묶기</text><text class="s" x="748" y="113.0" text-anchor="middle">제목 단어 60%↑</text><text class="s" x="748" y="128.0" text-anchor="middle">또는 같은 기업</text><polyline class="ln " points="673,109 685,109" marker-end="url(#mk-s)"/><rect class="bx out" x="823" y="70" width="118" height="78" rx="7"/><text class="h " x="882" y="98.0" text-anchor="middle">TOP 10</text><text class="s" x="882" y="113.0" text-anchor="middle">C 등급 빼고</text><text class="s" x="882" y="128.0" text-anchor="middle">점수순 10건</text><polyline class="ln " points="807,109 819,109" marker-end="url(#mk-s)"/><polyline class="ln drop" points="78,148 78,196" marker-end="url(#mk-s-drop)"/><rect class="bx drop" x="19" y="200" width="118" height="58" rx="7"/><text class="h " x="78" y="218.0" text-anchor="middle">탈락</text><text class="s" x="78" y="233.0" text-anchor="middle">주택 · 관급 · 인프라 같은</text><text class="s" x="78" y="248.0" text-anchor="middle">말이 앞부분에 있으면</text><polyline class="ln drop" points="212,148 212,196" marker-end="url(#mk-s-drop)"/><rect class="bx drop" x="153" y="200" width="118" height="58" rx="7"/><text class="h " x="212" y="225.5" text-anchor="middle">MID · LOW</text><text class="s" x="212" y="240.5" text-anchor="middle">참고용 칸 · 접어둠</text><polyline class="ln drop" points="346,148 346,196" marker-end="url(#mk-s-drop)"/><rect class="bx drop" x="287" y="200" width="118" height="58" rx="7"/><text class="h " x="346" y="225.5" text-anchor="middle">HIGH → MID 로</text><text class="s" x="346" y="240.5" text-anchor="middle">한 단계 내림</text><polyline class="ln drop" points="748,148 748,196" marker-end="url(#mk-s-drop)"/><rect class="bx drop" x="689" y="200" width="118" height="58" rx="7"/><text class="h " x="748" y="225.5" text-anchor="middle">대표 기사 밑에</text><text class="s" x="748" y="240.5" text-anchor="middle">같은 기사 보관</text><polyline class="ln k" points="614,148 614,196" marker-end="url(#mk-s-k)"/><rect class="bx k" x="555" y="200" width="118" height="58" rx="7"/><text class="h " x="614" y="218.0" text-anchor="middle">등급</text><text class="s" x="614" y="233.0" text-anchor="middle">S 80+ · A 60+</text><text class="s" x="614" y="248.0" text-anchor="middle">B 40+ · C</text><text class="note" x="480" y="300" text-anchor="middle">DART 1차 · 뉴스 HIGH · DART 2차 에서만 TOP 10 을 뽑는다 (식약처 제외)</text></svg></div><figcaption>점선 화살표가 떨어져 나가는 길이다. 점수는 AI 없이 규칙으로 매기고, 같은 사안을 여러 매체가 쓴 기사는 점수가 가장 높은 1건만 남긴다.</figcaption></figure><p class="xf-h">점수 100점 = 네 가지를 더한다</p><div class="xf-bar"><span style="flex:40">출처 40<small>DART 1차 38 · 뉴스 HIGH 34 …</small></span><span style="flex:30">시설 적합성 30<small>CR · 제약 · 이차전지 30</small></span><span style="flex:20">투자 규모 20<small>5,000억 이상 20</small></span><span style="flex:10">실현 10</span></div><div class="xf-grades"><span class="g-s">S · 80점+<small>즉시 영업</small></span><span class="g-a">A · 60~79<small>선제 접촉</small></span><span class="g-b">B · 40~59</span><span class="g-c">C · 40 미만<small>TOP 10 에서 뺌</small></span></div><div class="xf-nums"><div class="xf-num"><b>100점</b><small>만점 · 4요소</small></div><div class="xf-num"><b>80점+</b><small>S급 · 즉시 영업</small></div><div class="xf-num"><b>450억</b><small>최소 투자 규모</small></div><div class="xf-num"><b>27개</b><small>행동어 (착공 · 신축 · 증설 …)</small></div></div></div>""",
         lib=None,
-        desc="",
-        todo=[
-            "점수 규칙 — 관심 키워드 하나당 +3, 중요 공시 +5",
-            "결과를 점수순으로 · 날짜 옆에 점수와 걸린 키워드",
-            "0점은 빼기 — 뺀 건수는 진행 상황 칸에",
-        ],
-        prompt="""모은 뉴스와 공시에 점수를 매겨서 쓸모 있는 것만 남겨줘.
+        desc="수주레이더는 AI 없이 규칙으로 100점 만점 점수를 매기고, 등급으로 영업 우선순위를 정했다.",
+        todo=[],
+        prompt="""모은 뉴스 · 공시 · 입찰공고 · GMP 명단에 점수를 매겨서 영업에 쓸 것만 위로 올려줘. AI 는 쓰지 말고
+규칙으로만.
 
-1. 점수 규칙
-   - 제목에 관심 키워드가 하나 들어갈 때마다 +3
-   - DART 공시 제목에 아래 말이 들어가면 중요 공시로 보고 +5
-     단일판매, 공급계약, 유상증자, 소송, 중대재해, 합병, 분할, 영업정지, 횡령, 배임, 부도
-2. 날짜는 점수에 넣지 말고, 같은 점수끼리 줄 세울 때만 최신순으로
-3. 뉴스 수집 · DART 수집 직후에 점수를 매기고, 결과 칸에 점수 높은 순으로
-4. 결과 칸 날짜 옆에 "★8점 · 계약, 중요 공시" 처럼 점수와 걸린 키워드
-5. 0점은 빼고, 진행 상황 칸에 "12건 중 8건 남김 (관심 키워드가 없는 4건 제외)" 처럼 알리기
-6. 관심 키워드 칸이 비어 있으면 점수를 매기지 말고 다 남기기 — 전부 0점이라 다 빠져버려
-
-점수 규칙은 코드 맨 위에 모아둬. 나중에 숫자만 바꿔 쓰게.""",
+1. 뉴스 중요도 3단계 — 강한 행동(착공 · 신축 · 증설 · 수주) + 강한 대상(공장 · 플랜트 · 클린룸) + 금액이나
+   1,000㎡ 이상 면적이 있으면 HIGH. 준공 · 가동만 있으면 LOW. 나머지는 MID
+2. HIGH 라도 우리 일이 아니면 MID 로 내리기 — 경쟁 건설사 수주, 조선 · 해양, 부품 공급사 홍보, 10조 이상 거시
+   금액, 시공 얘기가 없는 기사
+3. 시설 종류 붙이기 — CR, 데이터센터, 일반생산, 제약/바이오, 식품/음료, R&D, 이차전지. 제목에 있으면 +2,
+   본문에 있으면 +1, 1점 이상이면 모두 붙이고 없으면 기타
+4. 글에서 금액(억 · 조)과 면적을 숫자로 뽑기 — 「4만1764㎡」 는 41,764㎡. 매출 · 수주잔고 금액은 빼기
+5. 점수 100점 = 출처 + 규모 + 시설 + 실현
+   - 출처: DART 1차 38 · 뉴스 HIGH 34 · 식약처 26 · DART 2차(공급계약) 24 · 뉴스 MID 16 · 뉴스 LOW 8
+   - 규모: 미공시 9 · 450억 미만 7 · 700억 미만 11 · 1천억 미만 14 · 2천억 미만 16 · 5천억 미만 18 · 그 이상 20
+   - 시설: CR · 제약/바이오 · 이차전지 30 · 데이터센터 27 · 일반생산 18 · 식품 · R&D · 화장품 12 · 기타 0
+     (여러 개면 가장 높은 것)
+   - 실현(최대 10): 신규 4 · 정정 1, 자기자본 대비 30% 이상 +3 · 10% 이상 +2 · 그 외 +1, 부지 있으면 +3
+   - 준공이면 총점 30 이하
+6. 등급 — S 80 이상 · A 60 이상 · B 40 이상 · C 나머지. 뉴스 칸은 등급으로 다시 나누기 (S · A = HIGH,
+   B = MID, C = LOW)
+7. 같은 사안 묶기 — 점수순으로 세운 뒤, 제목 단어가 60% 이상 겹치거나 같은 대기업 · 같은 지역 얘기면 한 건으로.
+   점수가 가장 높은 기사를 대표로 두고 나머지는 대표 밑에 보관
+8. DART 공급계약은 500억 이상만, 나라장터는 1억 미만 공고 빼기
+9. TOP 10 — DART 1차 · 뉴스 HIGH · DART 2차 에서 C 등급을 빼고 점수순 10건
+10. 점수 숫자와 키워드는 설정 파일로 빼서, 숫자만 바꿔 다시 돌려볼 수 있게""",
         need_install=None,
-        criteria=[
-            "결과 칸 날짜 옆에 ★점수와 걸린 키워드가 보인다",
-            "진행 상황 칸에 \"몇 건 중 몇 건 남김\" 이 찍힌다",
-        ],
+        criteria=[],
     ),
 
     dict(
@@ -472,31 +475,23 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
         # 실전 사례(수주레이더)는 이 단계를 어떻게 했나 — 페이지에 그대로 들어가는 HTML
         visual="""<div class="xf"><p class="xf-title"><span class="xf-badge">실전 사례에서는</span>영업팀이 바로 쓰는 한 장으로</p><div class="xf-cmp"><div class="xf-side"><span>기본 실습 · 우리가 만든 것</span>왼쪽 메뉴 · 검색 · 즐겨찾기 · TOP 10</div><div class="xf-arrow">→</div><div class="xf-side real"><span>실전 사례 · 수주레이더</span>우선순위 순서 · KPI 카드 · 카테고리 칩 · 테마 · 글씨 크기 · 접기 · 주간 아카이브</div></div><p class="xf-h">과정 — 실제 코드 흐름</p><figure class="dg"><div class="dg-scroll"><svg viewBox="0 0 960 420" role="img" aria-label="네 파일을 한 장의 HTML 로 조립하고, 화면 설정은 브라우저에 저장하는 보고서 구조"><defs><marker id="mk-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk " d="M0,0 L10,5 L0,10 z"/></marker><marker id="mk-r-k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk k" d="M0,0 L10,5 L0,10 z"/></marker><marker id="mk-r-drop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk drop" d="M0,0 L10,5 L0,10 z"/></marker></defs><rect class="bx " x="20" y="92" width="130" height="40" rx="7"/><text class="h " x="85" y="116.0" text-anchor="middle">한 주치 뉴스</text><polyline class="ln " points="150,112 180,112 180,210 196,210" marker-end="url(#mk-r)"/><rect class="bx " x="20" y="144" width="130" height="40" rx="7"/><text class="h " x="85" y="168.0" text-anchor="middle">공시 목록</text><polyline class="ln " points="150,164 180,164 180,210 196,210" marker-end="url(#mk-r)"/><rect class="bx " x="20" y="196" width="130" height="40" rx="7"/><text class="h " x="85" y="220.0" text-anchor="middle">입찰공고 목록</text><polyline class="ln " points="150,216 180,216 180,210 196,210" marker-end="url(#mk-r)"/><rect class="bx " x="20" y="248" width="130" height="40" rx="7"/><text class="h " x="85" y="272.0" text-anchor="middle">GMP 공장 목록</text><polyline class="ln " points="150,268 180,268 180,210 196,210" marker-end="url(#mk-r)"/><rect class="bx k" x="200" y="170" width="150" height="80" rx="7"/><text class="h " x="275" y="199.0" text-anchor="middle">보고서 만들기</text><text class="s" x="275" y="214.0" text-anchor="middle">웹 페이지 파일 하나로</text><text class="s" x="275" y="229.0" text-anchor="middle">모아 붙인다</text><polyline class="ln " points="350,210 386,210" marker-end="url(#mk-r)"/><rect class="bx " x="390" y="20" width="330" height="28" rx="7"/><text class="h " x="555" y="38.0" text-anchor="middle">제목 · 테마 · 글씨 크기</text><rect class="bx k" x="390" y="54" width="330" height="28" rx="7"/><text class="h " x="555" y="72.0" text-anchor="middle">고정 바 — 섹션 메뉴 · 카테고리 칩 · 검색</text><rect class="bx out" x="390" y="88" width="330" height="40" rx="7"/><text class="h " x="555" y="112.0" text-anchor="middle">KPI 4카드 + TOP 10</text><rect class="bx " x="390" y="134" width="330" height="28" rx="7"/><text class="h " x="555" y="152.0" text-anchor="middle">⭐ 중요정보 (즐겨찾기)</text><rect class="bx " x="390" y="168" width="330" height="28" rx="7"/><text class="h " x="555" y="186.0" text-anchor="middle">1 DART 1차 — 신규 · 정정 · 유형자산</text><rect class="bx " x="390" y="202" width="330" height="28" rx="7"/><text class="h " x="555" y="220.0" text-anchor="middle">2 뉴스 HIGH</text><rect class="bx " x="390" y="236" width="330" height="28" rx="7"/><text class="h " x="555" y="254.0" text-anchor="middle">3 식약처 GMP — 기간 버튼</text><rect class="lane" x="384" y="272" width="342" height="132" rx="10"/><text class="lane-t" x="396" y="290">참조 · 기본 접힘</text><rect class="bx " x="400" y="298" width="310" height="22" rx="7"/><text class="h " x="555" y="313.0" text-anchor="middle">4 DART 2차 (500억↑ 공급계약)</text><rect class="bx " x="400" y="324" width="310" height="22" rx="7"/><text class="h " x="555" y="339.0" text-anchor="middle">5 뉴스 MID</text><rect class="bx " x="400" y="350" width="310" height="22" rx="7"/><text class="h " x="555" y="365.0" text-anchor="middle">6 뉴스 LOW</text><rect class="bx " x="400" y="376" width="310" height="22" rx="7"/><text class="h " x="555" y="391.0" text-anchor="middle">7 나라장터</text><rect class="bx k" x="770" y="60" width="175" height="150" rx="7"/><text class="h " x="857" y="94.0" text-anchor="middle">내 브라우저가 기억</text><text class="s" x="857" y="109.0" text-anchor="middle">다음에 열어도 그대로</text><text class="s" x="857" y="124.0" text-anchor="middle"></text><text class="s" x="857" y="139.0" text-anchor="middle">화면 테마</text><text class="s" x="857" y="154.0" text-anchor="middle">글씨 크기</text><text class="s" x="857" y="169.0" text-anchor="middle">☆ 즐겨찾기</text><text class="s" x="857" y="184.0" text-anchor="middle">접어둔 칸</text><polyline class="ln k" points="720,34 766,90" marker-end="url(#mk-r-k)"/><text class="al k" x="743" y="29" text-anchor="middle">기억</text><polyline class="ln k" points="720,148 766,150" marker-end="url(#mk-r-k)"/><polyline class="ln k" points="726,300 740,300 740,196 766,196" marker-end="url(#mk-r-k)"/><rect class="bx out" x="770" y="300" width="175" height="56" rx="7"/><text class="h " x="857" y="324.5" text-anchor="middle">지난 보고서 모음</text><text class="s" x="857" y="339.5" text-anchor="middle">주마다 한 장씩 쌓임</text><polyline class="ln " points="726,340 766,330" marker-end="url(#mk-r)"/><text class="al " x="746" y="325" text-anchor="middle">올림</text></svg></div><figcaption>보고서는 웹 페이지 파일 한 장이다. 영업 우선순위대로 1~3 을 펼쳐두고 참고용 4~7 은 접어둔다. 테마 · 글씨 · 즐겨찾기 · 접어둔 칸은 보는 사람 브라우저가 기억한다.</figcaption></figure><div class="xf-nums"><div class="xf-num"><b>7개</b><small>우선순위 섹션</small></div><div class="xf-num"><b>4개</b><small>KPI 카드</small></div><div class="xf-num"><b>3종</b><small>테마</small></div><div class="xf-num"><b>주 1회</b><small>아카이브 쌓임</small></div></div></div>""",
         lib=None,
-        desc="",
-        todo=[
-            "왼쪽 고정 메뉴 — TOP 10 · 뉴스 · 공시 · 즐겨찾기",
-            "맨 위 검색창 — 치는 대로 걸러짐",
-            "★ 즐겨찾기 — 보고서를 다시 열어도 남음",
-            "TOP 10 만 보기 — 점수 1~10위만",
-        ],
-        prompt="""HTML 보고서를 더 쓰기 좋게 바꿔줘. 파일로 열어 보는 보고서만 바꾸고, 메일 본문은 지금 것
-그대로 둬 — 메일에서는 스크립트가 안 돌아.
+        desc="수주레이더는 영업팀이 바로 쓰도록 우선순위 순서의 웹 페이지 한 장으로 보여준다.",
+        todo=[],
+        prompt="""보고서를 영업팀이 바로 쓰는 웹 페이지 한 장으로 바꿔줘.
 
-1. 왼쪽에 스크롤해도 따라오는 메뉴 — TOP 10, 뉴스, 공시(DART), ★ 즐겨찾기. 누르면 그 칸으로
-   이동하고 옆에 건수
-2. 맨 위에 검색창 — 치는 대로 제목 · 회사 · 키워드로 걸러지게
-3. 검색창 옆에 "TOP 10 만 보기" 체크 — 켜면 점수 1~10위만 남게
-4. 항목마다 왼쪽에 점수 뱃지, 걸린 키워드는 작은 표시로
-5. 항목마다 오른쪽에 ★ 버튼 — 누르면 맨 위 즐겨찾기 칸에 모이고, 다시 누르면 빠지게. 브라우저에
-   저장해서 보고서를 다시 열어도 남게
-6. 같은 기사가 TOP 10 과 뉴스 칸에 둘 다 있어도 즐겨찾기에는 한 번만
-7. 파일 하나로 끝나게 — 디자인과 스크립트를 보고서 안에 같이 넣기""",
+1. HTML 파일 하나로 — 디자인과 기능을 그 안에 다 넣어서 파일만 열면 되게
+2. 맨 위 — KPI 카드 4개(총 분석 건수 · S급 · A급 · S·A 총 투자액)와 TOP 10 표(발주처/프로젝트 · 출처 ·
+   시설 유형 · 투자 규모 · 점수와 등급)
+3. 칸 순서는 영업 우선순위대로 — ⭐ 중요정보 → 1 DART 1차(신규 · 정정 · 유형자산으로 묶기) → 2 뉴스 HIGH →
+   3 식약처 GMP, 그 아래 [참조] 4 DART 2차 · 5 뉴스 MID · 6 뉴스 LOW · 7 나라장터. 참조 4개는 처음에 접어두기
+4. 스크롤해도 위에 붙어 있는 바 — 칸 메뉴, 시설 종류 칩(건수 표시), 키워드 검색. 칩과 검색으로 바로 걸러지게
+5. 줄마다 ☆ — 누르면 맨 위 중요정보에 모이고, 브라우저에 저장해서 다시 열어도 남게
+6. 화면 테마(다크 · 라이트 · 세피아), 글씨 크기 3단계, 접어둔 칸 — 모두 브라우저에 저장
+7. 오른쪽에 떠 있는 목차 — 지금 보고 있는 칸 표시, 누르면 그 칸으로 이동하고 접혀 있으면 펼치기
+8. 식약처 칸에는 기간 버튼(7 · 30 · 90 · 180 · 365일)
+9. 줄을 누르면 원문을 새 창으로
+10. 한 줄을 그리다 문제가 생겨도 그 줄만 건너뛰고 나머지는 그리기""",
         need_install=None,
-        criteria=[
-            "왼쪽 메뉴를 누르면 그 칸으로 이동한다",
-            "검색창에 키워드를 치면 그 항목만 남는다",
-            "★ 를 누르고 보고서를 다시 열어도 즐겨찾기가 남아 있다",
-            "TOP 10 만 보기를 켜면 10건만 남는다",
-        ],
+        criteria=[],
     ),
 ]

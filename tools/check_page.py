@@ -80,8 +80,8 @@ def main():
     # 단계마다 "그 단계까지 만든 상태" 파일이 제대로 박혀있는지. 하나라도 어긋나면
     # 수강생이 엉뚱한 단계의 코드를 받게 된다 (완성본을 받으면 실습이 사라진다).
     stages = dict(re.findall(r'"(\d)":"([A-Za-z0-9+/=]+)"', page))
-    if len(stages) != 9:
-        fail("단계별 정답 코드가 %d개만 박혀있다 (기대 9)" % len(stages))
+    if len(stages) != 6:
+        fail("단계별 정답 코드가 %d개만 박혀있다 (기대 6)" % len(stages))
     for num, b64 in stages.items():
         path = os.path.join(REPO, "news-report-bot", "단계별", "STEP%s.py" % num)
         if not os.path.exists(path):
@@ -91,8 +91,8 @@ def main():
             if base64.b64decode(b64) != f.read():
                 fail("박혀있는 STEP%s 코드가 파일과 다르다 — build_page.py 를 다시 실행할 것" % num)
     buttons = len(re.findall(r'class="btn primary download-stage-btn"', page))
-    if buttons != 9:
-        fail("단계별 코드 받기 버튼이 %d개다 (기대 9)" % buttons)
+    if buttons != 6:
+        fail("단계별 코드 받기 버튼이 %d개다 (기대 6)" % buttons)
 
     shot = re.search(r'<img src="data:image/png;base64,([A-Za-z0-9+/=]+)"', page)
     if not shot:

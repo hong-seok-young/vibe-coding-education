@@ -1772,10 +1772,7 @@ PREP_PAGE = f'''
   </section>'''
 
 
-FOOTER = '''
-  <footer>
-    입력한 인증키는 <code>settings.json</code> 에 저장됩니다 — 이 파일은 공유하지 마세요.
-  </footer>'''
+FOOTER = ''
 
 SCRIPT = '''<script>
 (function () {

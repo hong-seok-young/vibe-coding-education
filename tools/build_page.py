@@ -274,7 +274,7 @@ CASE_PAGE = f'''
     </figure>
 
 <p class="v-title">기본 실습에서 실전 사례까지 — 네 덩어리</p><div class="xf-pipe"><div><b>① 수집</b><small>출처 4종 · 매체 44개</small><em>STEP 6</em></div><div><b>② 거르기 · 점수</b><small>100점 · S/A 등급</small><em>STEP 7</em></div><div><b>③ 보고서</b><small>영업 우선순위 한 장</small><em>STEP 8</em></div><div class="auto"><b>④ 자동화</b><small>PC 없이 매주 발송</small><em>아래</em></div></div>
-    <div class="xf"><p class="xf-title"><span class="xf-badge">실전 사례에서는</span>PC 를 켜지 않아도 매주 금요일 아침에 나간다</p><div class="xf-cmp"><div class="xf-side"><span>기본 실습 · 우리가 만든 것</span>내 PC 에서 버튼을 눌러야 돈다 · 아웃룩으로 발송</div><div class="xf-arrow">→</div><div class="xf-side real"><span>실전 사례 · 수주레이더</span>GitHub 서버가 정해진 시각에 알아서 실행 · 웹 페이지 갱신 · 메일 발송</div></div><p class="xf-h">과정</p><ol class="xf-flow"><li>매일 06:00 — 매체 RSS 수집해 쌓기</li><li>금 06:40 — 7일치로 보고서 만들기 (안 되면 07:40 · 09:40 다시)</li><li>품질 검사 — 너무 작거나 핵심 섹션이 없으면 실패 처리</li><li>웹 페이지 갱신 + 날짜별 아카이브</li><li>영업팀에 메일 — 링크 + 보고서 첨부</li><li>금 11:00 — 안 나갔으면 운영자에게만 알림</li></ol><p class="xf-h">들어간 기술</p><div class="xf-chips"><span class="xf-chip">GitHub Actions — 예약 실행</span><span class="xf-chip">GitHub Secrets — 인증키 보관 (코드에 안 적음)</span><span class="xf-chip">GitHub Pages — 웹 주소로 공유</span><span class="xf-chip">메일 발송 (SMTP)</span><span class="xf-chip">이미 보냈는지 확인 — 중복 발송 방지</span></div><div class="xf-nums"><div class="xf-num"><b>매일</b><small>06:00 수집</small></div><div class="xf-num"><b>금요일</b><small>06:40 발송</small></div><div class="xf-num"><b>3번</b><small>발송 시도 06:40 · 07:40 · 09:40</small></div><div class="xf-num"><b>0대</b><small>켜둘 PC</small></div></div></div>
+    <div class="xf"><p class="xf-title"><span class="xf-badge">실전 사례에서는</span>PC 를 켜지 않아도 매주 금요일 아침에 나간다</p><div class="xf-cmp"><div class="xf-side"><span>기본 실습 · 우리가 만든 것</span>내 PC 에서 버튼을 눌러야 돈다 · 아웃룩으로 발송</div><div class="xf-arrow">→</div><div class="xf-side real"><span>실전 사례 · 수주레이더</span>GitHub 서버가 정해진 시각에 알아서 실행 · 웹 페이지 갱신 · 메일 발송</div></div><p class="xf-h">과정</p><ol class="xf-flow"><li>매일 06:00 — 매체 RSS 수집해 쌓기</li><li>금 06:40 — 7일치로 보고서 만들기 (안 되면 07:40 · 09:40 다시)</li><li>품질 검사 — 너무 작거나 핵심 섹션이 없으면 실패 처리</li><li>웹 페이지 갱신 + 날짜별 아카이브</li><li>영업팀에 메일 — 링크 + 보고서 첨부</li><li>금 11:00 — 안 나갔으면 운영자에게만 알림</li></ol><p class="xf-h">추가로 쓴 API</p><p class="xf-none">없음 — GitHub 기능(예약 실행 · 비밀값 보관 · 웹 공개)과 메일 발송만 쓴다</p><div class="xf-nums"><div class="xf-num"><b>매일</b><small>06:00 수집</small></div><div class="xf-num"><b>금요일</b><small>06:40 발송</small></div><div class="xf-num"><b>3번</b><small>발송 시도 06:40 · 07:40 · 09:40</small></div><div class="xf-num"><b>0대</b><small>켜둘 PC</small></div></div></div>
     <div class="xf-dev"><p class="xf-h">이렇게 만들었다 — 바이브코딩으로</p><div class="xf-chips"><span class="xf-chip">Claude Code 로 개발</span><span class="xf-chip">CLAUDE.md — AI 에게 주는 작업 지침</span><span class="xf-chip">HANDOFF — 다음 대화로 넘기는 인수인계 메모</span><span class="xf-chip">커밋 88개 중 30개 AI 공동 작성</span><span class="xf-chip">2026-05-28 시작 · 4개월째 매주 운영</span></div></div>
   </section>'''
 MAIN_PY_URL = "https://github.com/hong-seok-young/vibe-coding-education/blob/claude/vibe-coding-education-program-lgtqes/news-report-bot/main.py"
@@ -1194,6 +1194,13 @@ STYLE = '''<style>
   .xf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .xf-chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--surface);
              border: 1px solid var(--line-strong); color: var(--ink); }
+  .xf-api { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .xf-api li { padding: 9px 12px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line);
+               border-left: 3px solid var(--accent); }
+  .xf-api a { font-size: 13px; font-weight: 700; color: var(--ink); text-decoration: none; }
+  .xf-api a:hover { color: var(--accent); text-decoration: underline; }
+  .xf-api small { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+  .xf-none { margin: 6px 0 0; font-size: 12.5px; color: var(--ink-soft); }
   .xf-nums { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
   .xf-num { padding: 10px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line); text-align: center; }
   .xf-num b { display: block; font-size: 18px; color: var(--accent); }

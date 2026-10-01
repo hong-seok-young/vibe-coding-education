@@ -280,8 +280,7 @@ CASE_PAGE = f'''
       <div class="page-title-row">
         <h2>실전 사례 — 자이씨앤에이 수주레이더</h2>
       </div>
-      <p class="step-desc">영업팀 과제로 <strong>실제로 만든 결과물</strong>이다. 이어지는 STEP 6~8 이
-        이런 모습으로 가는 길이다.</p>
+      <p class="step-desc">영업팀 과제로 <strong>실제로 만든 결과물</strong>이다.</p>
     </div>
 
     <a class="case-go" href="{CASE_URL}" target="_blank" rel="noopener">

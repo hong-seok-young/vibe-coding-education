@@ -215,7 +215,7 @@ def render_step_page(step, index, total):
 {note_html}{step.get("visual", "")}{intro}{lib_html}
     <details class="prompt-box">
       <summary class="prompt-box-head">
-        <span class="prompt-label">{"이렇게 만들려면 — 프롬프트 보기" if showcase else "모범 프롬프트 보기"}</span>
+        <span class="prompt-label">{"내 목적에 맞게 만들기 — 프롬프트 보기" if showcase else "모범 프롬프트 보기"}</span>
         <span class="prompt-hint">클릭!</span>
         <button class="copy-btn" data-copy="prompt-{step['id']}">복사</button>
       </summary>

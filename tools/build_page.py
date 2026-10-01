@@ -125,6 +125,11 @@ SHOT_HTML = f'''
 '''
 
 
+# 받는 파일 이름 — 몇 단계까지 된 파일인지 이름만 보고 알 수 있게
+STAGE_FILE_NAMES = {
+    "s0": "STEP0_뼈대.py", "s1": "STEP1_뉴스수집.py", "s2": "STEP2_DART수집.py",
+    "s3": "STEP3_보고서.py", "s4": "STEP4_메일발송.py", "s5": "STEP5_통합실행.py",
+}
 CRITERIA_TMPL = '''    <div class="criteria-box">
       <p class="criteria-label">성공 기준</p>
       <ul>
@@ -139,8 +144,8 @@ DOWNLOAD_TMPL = '''    <details class="answer-details">
         다음 단계를 이어가면 된다.</p>
       <div class="actions" style="margin-top: 8px;">
         <button type="button" class="btn primary download-stage-btn"
-                data-stage="{num}">
-          <span class="arrow">⬇</span> STEP {num} 까지의 프로그램 받기
+                data-stage="{num}" data-file="{file}">
+          <span class="arrow">⬇</span> STEP {num} 까지의 프로그램 받기 <small class="dl-name">{file}</small>
         </button>
       </div>
     </details>'''
@@ -219,7 +224,7 @@ def render_step_page(step, index, total):
 
 {"" if showcase else CRITERIA_TMPL.format(criteria_html)}
 {trouble_html}
-{"" if showcase else DOWNLOAD_TMPL.format(num=step['num'])}
+{"" if showcase else DOWNLOAD_TMPL.format(num=step['num'], file=STAGE_FILE_NAMES[step['id']])}
   </section>'''
 
 
@@ -1218,6 +1223,7 @@ STYLE = '''<style>
   /* ── 알파 실습 — 실전 사례 과정·기술 그림 ── */
   .xf { margin: 14px 0 6px; padding: 16px; border-radius: 12px; background: var(--paper); border: 1px solid var(--line); }
   .xf-title { margin: 0 0 12px; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .download-stage-btn .dl-name { margin-left: 6px; font-size: 11.5px; font-weight: 500; opacity: 0.85; }
   .xf-badge { display: inline-block; margin-right: 8px; padding: 2px 9px; border-radius: 999px; font-size: 11px;
               background: var(--accent); color: var(--accent-ink); vertical-align: 2px; }
   .xf-cmp { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: stretch; }
@@ -2011,7 +2017,7 @@ SCRIPT = '''<script>
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
         a.href = url;
-        a.download = "main.py";   // 받는 이름은 늘 같게 — 학생이 헷갈리지 않는다
+        a.download = btn.dataset.file || ("STEP" + stage + ".py");   // 이름만 보고 몇 단계까지 된 파일인지 알게
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

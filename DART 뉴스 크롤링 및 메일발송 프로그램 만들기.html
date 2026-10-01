@@ -894,6 +894,7 @@
   /* ── 알파 실습 — 실전 사례 과정·기술 그림 ── */
   .xf { margin: 14px 0 6px; padding: 16px; border-radius: 12px; background: var(--paper); border: 1px solid var(--line); }
   .xf-title { margin: 0 0 12px; font-size: 15px; font-weight: 700; color: var(--ink); }
+  .download-stage-btn .dl-name { margin-left: 6px; font-size: 11.5px; font-weight: 500; opacity: 0.85; }
   .xf-badge { display: inline-block; margin-right: 8px; padding: 2px 9px; border-radius: 999px; font-size: 11px;
               background: var(--accent); color: var(--accent-ink); vertical-align: 2px; }
   .xf-cmp { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: stretch; }
@@ -1682,8 +1683,8 @@
         다음 단계를 이어가면 된다.</p>
       <div class="actions" style="margin-top: 8px;">
         <button type="button" class="btn primary download-stage-btn"
-                data-stage="0">
-          <span class="arrow">⬇</span> STEP 0 까지의 프로그램 받기
+                data-stage="0" data-file="STEP0_뼈대.py">
+          <span class="arrow">⬇</span> STEP 0 까지의 프로그램 받기 <small class="dl-name">STEP0_뼈대.py</small>
         </button>
       </div>
     </details>
@@ -1799,8 +1800,8 @@ urllib 을 쓰기 때문에 윈도우 인증서 저장소를 보고, 그래서 �
         다음 단계를 이어가면 된다.</p>
       <div class="actions" style="margin-top: 8px;">
         <button type="button" class="btn primary download-stage-btn"
-                data-stage="1">
-          <span class="arrow">⬇</span> STEP 1 까지의 프로그램 받기
+                data-stage="1" data-file="STEP1_뉴스수집.py">
+          <span class="arrow">⬇</span> STEP 1 까지의 프로그램 받기 <small class="dl-name">STEP1_뉴스수집.py</small>
         </button>
       </div>
     </details>
@@ -1917,8 +1918,8 @@ DART 는 함정이 넷 있어. 놓치면 결과가 조용히 틀리니 그대로
         다음 단계를 이어가면 된다.</p>
       <div class="actions" style="margin-top: 8px;">
         <button type="button" class="btn primary download-stage-btn"
-                data-stage="2">
-          <span class="arrow">⬇</span> STEP 2 까지의 프로그램 받기
+                data-stage="2" data-file="STEP2_DART수집.py">
+          <span class="arrow">⬇</span> STEP 2 까지의 프로그램 받기 <small class="dl-name">STEP2_DART수집.py</small>
         </button>
       </div>
     </details>
@@ -2002,8 +2003,8 @@ DART 는 함정이 넷 있어. 놓치면 결과가 조용히 틀리니 그대로
         다음 단계를 이어가면 된다.</p>
       <div class="actions" style="margin-top: 8px;">
         <button type="button" class="btn primary download-stage-btn"
-                data-stage="3">
-          <span class="arrow">⬇</span> STEP 3 까지의 프로그램 받기
+                data-stage="3" data-file="STEP3_보고서.py">
+          <span class="arrow">⬇</span> STEP 3 까지의 프로그램 받기 <small class="dl-name">STEP3_보고서.py</small>
         </button>
       </div>
     </details>
@@ -2113,8 +2114,8 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
         다음 단계를 이어가면 된다.</p>
       <div class="actions" style="margin-top: 8px;">
         <button type="button" class="btn primary download-stage-btn"
-                data-stage="4">
-          <span class="arrow">⬇</span> STEP 4 까지의 프로그램 받기
+                data-stage="4" data-file="STEP4_메일발송.py">
+          <span class="arrow">⬇</span> STEP 4 까지의 프로그램 받기 <small class="dl-name">STEP4_메일발송.py</small>
         </button>
       </div>
     </details>
@@ -2171,8 +2172,8 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
         다음 단계를 이어가면 된다.</p>
       <div class="actions" style="margin-top: 8px;">
         <button type="button" class="btn primary download-stage-btn"
-                data-stage="5">
-          <span class="arrow">⬇</span> STEP 5 까지의 프로그램 받기
+                data-stage="5" data-file="STEP5_통합실행.py">
+          <span class="arrow">⬇</span> STEP 5 까지의 프로그램 받기 <small class="dl-name">STEP5_통합실행.py</small>
         </button>
       </div>
     </details>
@@ -2685,7 +2686,7 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
         a.href = url;
-        a.download = "main.py";   // 받는 이름은 늘 같게 — 학생이 헷갈리지 않는다
+        a.download = btn.dataset.file || ("STEP" + stage + ".py");   // 이름만 보고 몇 단계까지 된 파일인지 알게
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

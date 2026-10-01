@@ -399,7 +399,7 @@ CoInitialize 를 먼저 불러줘. 안 하면 CoInitialize 가 호출되지 않�
         ],
     ),
 
-    # ── 알파 실습 · 고도화 — 샘플은 news-report-bot/고도화_main.py ──
+    # ── 알파 실습 · 고도화 — 사례(수주레이더) 설명 + 프롬프트만, 실습은 자율 ──
     dict(
         part=4, num="6", id="s6", time="20분",
         title="목적에 맞는 수집",

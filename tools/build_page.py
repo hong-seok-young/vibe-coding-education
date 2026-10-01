@@ -1113,6 +1113,10 @@ STYLE = '''<style>
   .pv-pic { position: relative; height: 84px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line);
             display: grid; place-items: center; overflow: hidden; }
 
+  a.pv-pic.pv-dl { text-decoration: none; cursor: pointer; border: 1.5px dashed var(--accent);
+                   transition: background 0.15s ease; }
+  a.pv-pic.pv-dl:hover { background: var(--accent-wash); border-style: solid; }
+  .pv-dl-hint { position: absolute; right: 8px; bottom: 6px; font-size: 10.5px; font-weight: 700; color: var(--accent); }
   .pv-folder { position: relative; width: 58px; height: 40px; margin-top: 6px; border-radius: 3px 7px 7px 7px;
                background: var(--accent-wash); border: 1.5px solid var(--accent); color: var(--accent);
                display: grid; place-items: center; font-size: 11px; font-weight: 700; }

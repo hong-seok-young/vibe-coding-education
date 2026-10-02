@@ -18,6 +18,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 
 from steps import STEPS
+from anim import ANIM_STYLE, ANIM_SCRIPT
+
+# 화면 애니메이션 (글·도식이 떠오르고 숫자가 0부터 올라감) — 문제가 생기면 False 로 바꾸고
+# 다시 만들면 애니메이션 없는 예전 화면 그대로다. 내용은 tools/anim.py.
+ANIMATE = True
 
 # 사내 AI 툴은 파일/폴더를 직접 만들거나 읽지 못하는 대화형 도구라 (프롬프트를 넣으면
 # 그에 맞는 .py 파일을 다운로드해 주는 방식), 매 단계마다 "앞에서 만든 것에 이걸 더해서
@@ -2023,6 +2028,8 @@ SCRIPT = '''<script>
 </script>'''
 SCRIPT = SCRIPT.replace("__STAGE_B64__", STAGE_B64_JS)
 # 서비스 워커 등록 — 웹 주소로 열었을 때만 (파일을 더블클릭해 열면 브라우저가 막는다)
+if ANIMATE:
+    SCRIPT += ANIM_SCRIPT
 SCRIPT += '''
 <script>
 if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
@@ -2065,6 +2072,7 @@ doc = f'''<!doctype html>
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 {fonts_head}
 {STYLE}
+{ANIM_STYLE if ANIMATE else ''}
 </head>
 <body>
 {body}

@@ -10,6 +10,8 @@ build_page.py 가 ANIMATE = True 일 때만 이 파일의 CSS · JS 를 페이�
   · SVG 도식은 왼쪽에서 오른쪽으로 상자가 나타나고, 화살표는 선을 그리듯 이어진다
   · 강조된 숫자(굵은 글씨 · 한도 칸 · 도식 속 숫자)는 0 부터 올라간다
     시각(06:00) · 날짜(9/18) · 연도 · 「STEP 3」「DART 30」 같은 이름 속 번호는 건드리지 않는다
+  · 화살표는 계속 천천히 움직인다 — 글자 화살표(→)는 가는 쪽으로 살짝 밀렸다 돌아오고,
+    도식의 화살표 선 위로는 작은 점이 왼쪽 선부터 차례로 흘러간다 (약 4초에 한 번)
   · 움직임 줄이기(윈도우 설정)를 켠 사람과 인쇄할 때는 아무것도 움직이지 않는다
   · 자바스크립트가 안 돌면 원래 화면 그대로 보인다 (숨기는 것도 자바스크립트가 한다)
 """
@@ -18,6 +20,21 @@ ANIM_STYLE = '''<style>
   /* ── 화면 애니메이션 (tools/anim.py) ── */
   .an-on .an-wait { opacity: 0; }
   .an-on .an-svg-wait > :not(defs) { opacity: 0; }
+
+  /* 화살표 — 가는 방향으로 살짝 밀렸다 돌아오기를 천천히 반복 (흐름 안에서는 차례로) */
+  @keyframes an-nudge {
+    0%, 55%, 100% { translate: 0 0; }
+    25%           { translate: var(--an-nx, 4px) var(--an-ny, 0px); }
+  }
+  .an-on :where(.varrow, .xf-arrow, .carrow, .case-go-arrow, .rv-arrow i) {
+    animation: an-nudge 2.8s ease-in-out var(--an-nd, 0s) infinite;
+  }
+  .an-on :where(.cert-box + .cert-box)::before { --an-nx: 0px; --an-ny: 3px;
+    animation: an-nudge 2.8s ease-in-out var(--an-nd, 0s) infinite; }
+  @media (max-width: 560px) {
+    .an-on :where(.varrow, .xf-arrow) { --an-nx: 0px; --an-ny: 4px; }   /* 좁은 화면에선 아래를 가리킨다 */
+  }
+  .an-dot { pointer-events: none; }
 
   @keyframes an-up   { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
   @keyframes an-pop  { from { opacity: 0; translate: 0 10px; scale: 0.96; } to { opacity: 1; translate: 0 0; scale: 1; } }
@@ -38,7 +55,7 @@ ANIM_STYLE = '''<style>
   .an-draw { animation: an-draw 0.55s ease-out both; }
 
   .an-num { font-variant-numeric: tabular-nums; }
-  span.an-num { display: inline-block; text-align: right; }
+  an-n.an-num { display: inline-block; text-align: right; }   /* 페이지 CSS 가 건드리지 않는 전용 태그 */
 
   @media print {
     .an-on .an-wait, .an-on .an-svg-wait > * { opacity: 1 !important; }
@@ -89,7 +106,7 @@ ANIM_SCRIPT = r'''
             var raw = m[0], before = s.slice(0, m.index), a = s.charAt(m.index - 1), z = s.charAt(m.index + raw.length);
             var to = parseInt(raw.replace(/,/g, ""), 10), comma = raw.indexOf(",") !== -1;
             if (/[:\/~.\-A-Za-z]/.test(a) || /[:\/~.\-A-Za-z0-9]/.test(z)) continue;   // 06:00 · 9/18 · 3.14 · A1
-            if (/[A-Za-z]\s*$/.test(before)) continue;                                   // STEP 3 · DART 30 · TOP 10 같은 이름
+            if (/[A-Za-z]\s*$|STEP[\s\d·~,]*$/i.test(before)) continue;                                // STEP 3 · DART 30 · TOP 10 같은 이름
             if (!comma && raw.length === 4 && to >= 1900 && to <= 2099) continue;         // 연도
             if (to < 2) continue;                                                         // 0 · 1 은 올라갈 게 없다
             if (before.trim() === "" && z === " " && to < 10) continue;                   // 「1 DART …」 같은 순번
@@ -99,7 +116,7 @@ ANIM_SCRIPT = r'''
           var isSvg = p instanceof SVGElement, frag = document.createDocumentFragment();
           parts.forEach(function (q) {
             if (q[0] > last) frag.appendChild(document.createTextNode(s.slice(last, q[0])));
-            var n = isSvg ? document.createElementNS(SVG_NS, "tspan") : document.createElement("span");
+            var n = isSvg ? document.createElementNS(SVG_NS, "tspan") : document.createElement("an-n");   // span 이면 「.xf-bar span」 같은 규칙이 숫자에도 걸린다
             n.setAttribute("class", "an-num");
             n.__to = q[2]; n.__comma = q[3];
             n.textContent = q[1];
@@ -107,6 +124,12 @@ ANIM_SCRIPT = r'''
             last = q[0] + q[1].length;
           });
           if (last < s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+          // 부모가 flex · grid 면 글 조각이 따로따로 줄을 차지한다 — 한 덩어리로 묶어서 넣는다
+          if (!isSvg && /flex|grid/.test(getComputedStyle(p).display)) {
+            var run = document.createElement("an-t");
+            run.appendChild(frag);
+            frag = run;
+          }
           p.replaceChild(frag, t);
         });
       });
@@ -167,16 +190,19 @@ ANIM_SCRIPT = r'''
   function playSvg(svg, delay) {
     var vb = svg.viewBox && svg.viewBox.baseVal;
     var W = (vb && vb.width) || 960, H = (vb && vb.height) || 400;
+    var flow = [], last = 0;
     Array.prototype.forEach.call(svg.children, function (c) {
       var tag = c.tagName.toLowerCase();
-      if (tag === "defs") return;
+      if (tag === "defs" || (c.classList && c.classList.contains("an-dot"))) return;
       var b; try { b = c.getBBox(); } catch (e) { b = { x: 0, y: 0, width: 0, height: 0 }; }
       var cls = c.getAttribute("class") || "", line = /^(polyline|line|path)$/.test(tag), t;
       if (/(^|\s)(lane|col)(\s|$)/.test(cls)) t = (b.y / H) * 150;                 // 바탕 띠 · 열 제목 먼저
       else t = 120 + ((line ? b.x : b.x + b.width / 2) / W) * 700 + (b.y / H) * 220 + (line ? 140 : 0);
       t = Math.round(delay + t);
       var dashed = line && (getComputedStyle(c).strokeDasharray || "none") !== "none";
-      var len = line && !dashed && c.getTotalLength ? c.getTotalLength() : 0;
+      var full = line && c.getTotalLength ? c.getTotalLength() : 0;
+      if (full > 0) flow.push({ el: c, x: b.x, len: full });
+      var len = dashed ? 0 : full;
       if (len > 0) {
         c.style.setProperty("--an-len", len);
         c.style.strokeDasharray = len;
@@ -187,9 +213,54 @@ ANIM_SCRIPT = r'''
         c.classList.add(line ? "an-fade" : "an-s");
       }
       c.style.animationDelay = t + "ms";
+      last = Math.max(last, t);
       c.querySelectorAll && c.querySelectorAll(".an-num").forEach(function (n) { countUp(n, t + 120); });
     });
     svg.classList.remove("an-svg-wait");
+    addFlowDots(svg, last + 600, flow);
+  }
+
+  // 도식 화살표 — 작은 점이 선을 따라 흘러간다. 한 바퀴(약 4초)에 선마다 한 번, 왼쪽 선부터 차례로
+  function addFlowDots(svg, startMs, lines) {
+    Array.prototype.forEach.call(svg.querySelectorAll(".an-dot"), function (d) { d.remove(); });
+    if (!lines.length || !svg.getCurrentTime) return;
+    var P = 4.2, now = svg.getCurrentTime() + startMs / 1000;
+    var xs = lines.map(function (l) { return l.x; }), x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    lines.forEach(function (l) {
+      var d = l.el.tagName.toLowerCase() === "path" ? l.el.getAttribute("d")
+            : l.el.tagName.toLowerCase() === "line"
+              ? "M" + l.el.getAttribute("x1") + "," + l.el.getAttribute("y1") + " L" + l.el.getAttribute("x2") + "," + l.el.getAttribute("y2")
+              : "M" + (l.el.getAttribute("points") || "").trim().split(/\s+/).join(" L");
+      if (!d || d === "M") return;
+      var travel = Math.min(1.0, Math.max(0.6, l.len / 140)) / P;          // 한 바퀴 중 움직이는 비율
+      var begin = (now + ((l.x - x0) / Math.max(1, x1 - x0)) * P * 0.55).toFixed(2) + "s";
+      var c = document.createElementNS(SVG_NS, "circle");
+      c.setAttribute("class", "an-dot");
+      c.setAttribute("r", "3.4");
+      c.setAttribute("opacity", "0");
+      c.setAttribute("fill", getComputedStyle(l.el).stroke || "#c96a1a");
+      var mv = document.createElementNS(SVG_NS, "animateMotion");
+      [["path", d], ["dur", P + "s"], ["begin", begin], ["repeatCount", "indefinite"], ["calcMode", "linear"],
+       ["keyPoints", "0;1;1"], ["keyTimes", "0;" + travel.toFixed(3) + ";1"]].forEach(function (kv) { mv.setAttribute(kv[0], kv[1]); });
+      var op = document.createElementNS(SVG_NS, "animate");
+      [["attributeName", "opacity"], ["dur", P + "s"], ["begin", begin], ["repeatCount", "indefinite"],
+       ["values", "0;0.85;0.85;0;0"],
+       ["keyTimes", "0;" + (travel * 0.2).toFixed(3) + ";" + (travel * 0.8).toFixed(3) + ";" + travel.toFixed(3) + ";1"]
+      ].forEach(function (kv) { op.setAttribute(kv[0], kv[1]); });
+      c.appendChild(mv); c.appendChild(op);
+      svg.appendChild(c);
+    });
+  }
+
+  // HTML 화살표 — 같은 흐름 안에서 앞 화살표부터 차례로 움직이게
+  function staggerArrows() {
+    var seen = new Map();
+    document.querySelectorAll(".varrow, .xf-arrow, .carrow, .rv-arrow i").forEach(function (a) {
+      var box = a.closest(".vflow, .xf-cmp, .rv, .chips, .case-go") || a.parentElement;
+      var i = seen.get(box) || 0;
+      seen.set(box, i + 1);
+      a.style.setProperty("--an-nd", (i * 0.35).toFixed(2) + "s");
+    });
   }
 
   function restore(el) {
@@ -253,6 +324,7 @@ ANIM_SCRIPT = r'''
   }
 
   wrapNumbers();
+  staggerArrows();
 
   // 페이지가 바뀌는 순간(.page 에 active 가 붙을 때)마다 다시 재생
   var mo = new MutationObserver(function (records) {

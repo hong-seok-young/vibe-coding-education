@@ -3118,11 +3118,11 @@ radar/
     addFlowDots(svg, last + 600, flow);
   }
 
-  // 도식 화살표 — 작은 점이 선을 따라 흘러간다. 한 바퀴(약 4초)에 선마다 한 번, 왼쪽 선부터 차례로
+  // 도식 화살표 — 작은 점이 선을 따라 흘러간다. 한 바퀴(약 2.4초)에 선마다 한 번, 왼쪽 선부터 차례로
   function addFlowDots(svg, startMs, lines) {
     Array.prototype.forEach.call(svg.querySelectorAll(".an-dot"), function (d) { d.remove(); });
     if (!lines.length || !svg.getCurrentTime) return;
-    var P = 4.2, now = svg.getCurrentTime() + startMs / 1000;
+    var P = 2.4, now = svg.getCurrentTime() + startMs / 1000;
     var xs = lines.map(function (l) { return l.x; }), x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
     lines.forEach(function (l) {
       var d = l.el.tagName.toLowerCase() === "path" ? l.el.getAttribute("d")

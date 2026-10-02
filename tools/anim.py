@@ -11,7 +11,7 @@ build_page.py 가 ANIMATE = True 일 때만 이 파일의 CSS · JS 를 페이�
   · 강조된 숫자(굵은 글씨 · 한도 칸 · 도식 속 숫자)는 0 부터 올라간다
     시각(06:00) · 날짜(9/18) · 연도 · 「STEP 3」「DART 30」 같은 이름 속 번호는 건드리지 않는다
   · 화살표는 계속 천천히 움직인다 — 글자 화살표(→)는 가는 쪽으로 살짝 밀렸다 돌아오고,
-    도식의 화살표 선 위로는 작은 점이 왼쪽 선부터 차례로 흘러간다 (약 4초에 한 번)
+    도식의 화살표 선 위로는 작은 점이 왼쪽 선부터 차례로 흘러간다 (약 2.4초에 한 번)
   · 움직임 줄이기(윈도우 설정)를 켠 사람과 인쇄할 때는 아무것도 움직이지 않는다
   · 자바스크립트가 안 돌면 원래 화면 그대로 보인다 (숨기는 것도 자바스크립트가 한다)
 """
@@ -220,11 +220,11 @@ ANIM_SCRIPT = r'''
     addFlowDots(svg, last + 600, flow);
   }
 
-  // 도식 화살표 — 작은 점이 선을 따라 흘러간다. 한 바퀴(약 4초)에 선마다 한 번, 왼쪽 선부터 차례로
+  // 도식 화살표 — 작은 점이 선을 따라 흘러간다. 한 바퀴(약 2.4초)에 선마다 한 번, 왼쪽 선부터 차례로
   function addFlowDots(svg, startMs, lines) {
     Array.prototype.forEach.call(svg.querySelectorAll(".an-dot"), function (d) { d.remove(); });
     if (!lines.length || !svg.getCurrentTime) return;
-    var P = 4.2, now = svg.getCurrentTime() + startMs / 1000;
+    var P = 2.4, now = svg.getCurrentTime() + startMs / 1000;
     var xs = lines.map(function (l) { return l.x; }), x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
     lines.forEach(function (l) {
       var d = l.el.tagName.toLowerCase() === "path" ? l.el.getAttribute("d")

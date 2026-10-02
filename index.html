@@ -1484,6 +1484,7 @@
           </div>
           <div class="actions">
             <a class="btn primary" href="https://opendart.fss.or.kr" target="_blank" rel="noopener">발급받으러 가기</a>
+            <button type="button" class="btn test-key-btn" data-key="6e78e8e0b40e671bb3c86d97d6e73dcc5b04a9e7" title="발급이 안 될 때 실습용으로 쓰는 키">테스트용 인증키 복사</button>
           </div>
         </span>
       </label>
@@ -2923,6 +2924,15 @@ radar/
         set textContent(v) { /* 조각 안의 글자는 그대로 둔다 */ },
         classList: el.classList
       });
+    });
+  });
+
+  /* 사전 준비 B — DART 발급이 막혔을 때 쓰는 테스트용 인증키. 체크박스 label 안이라 기본 동작을 막는다. */
+  Array.prototype.slice.call(document.querySelectorAll(".test-key-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      copyText(btn.dataset.key, btn);
     });
   });
 

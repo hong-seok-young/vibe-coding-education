@@ -1990,6 +1990,15 @@ SCRIPT = '''<script>
     });
   });
 
+  /* 사전 준비 B — DART 발급이 막혔을 때 쓰는 테스트용 인증키. 체크박스 label 안이라 기본 동작을 막는다. */
+  Array.prototype.slice.call(document.querySelectorAll(".test-key-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      copyText(btn.dataset.key, btn);
+    });
+  });
+
   Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
     btn.addEventListener("click", function (e) {
       // summary 안에 있는 버튼이라, 막지 않으면 복사하면서 블록이 같이 펼쳐진다.
